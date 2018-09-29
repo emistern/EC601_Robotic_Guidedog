@@ -1,2 +1,7 @@
 *.mov
 *.weights
+*.json
+*.sqlite
+*.pyc
+*.jpg
+*.ckpt*
