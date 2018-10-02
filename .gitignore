@@ -5,3 +5,7 @@
 *.pyc
 *.jpg
 *.ckpt*
+graph
+*/devel/*
+*/build/*
+CMakeLists.txt
