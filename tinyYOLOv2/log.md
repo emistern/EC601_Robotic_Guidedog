@@ -13,3 +13,11 @@ Refactor previous hack code into: 1. video testbench for decision algorithm; 2. 
 Idea: Decision engine code should be separated from detection code. Encpsulate detection code into testbench.
 
 Files: decisionTestbench.py, decisionEngine.py
+
+Adding blob detection module from openCV to the decision algorithm
+
+Idea: Using blob detection to help solving the problem of detection failure when objects only partly shown in image
+
+Link: https://docs.opencv.org/3.4.3/d0/d7a/classcv_1_1SimpleBlobDetector.html
+
+Adding home-made blob detection module using color filtering

@@ -134,6 +134,124 @@ class decisionEngine(object):
  
         return im_with_keypoints
 
+    #---------- Find Main Color using Gaussian Model ------
+
+    def find_color(self, frame, predictions, padding = 5):
+
+        image_bgr = cv2.resize(frame,(self.input_height, self.input_width), interpolation = cv2.INTER_CUBIC)
+
+        image = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
+
+        from sklearn.mixture import GaussianMixture as GMM
+
+        colors = []
+
+        for pred in predictions:
+
+            box = pred[0]  # left top right bottom
+
+            # determin boundraies of the predict box
+            left = 0 if (box[0] <= 0) else box[0]
+            top  = 0 if (box[1] <= 0) else box[1]
+            right  = self.input_width - 1 if (box[2] >= self.input_width) else box[2]
+            bottom = self.input_height- 1 if (box[3] >= self.input_height)else box[3]
+
+            left += padding
+            top += padding
+            right -= padding
+            bottom -= padding
+
+            # transfer the image from [width, height, 3] to [3, width * height]        
+            pixels = []
+
+            for i in range(left, right):
+
+                for j in range(top, bottom):
+
+                    pixels.append(image[j][i])
+            
+            # fit a gaussian model to find the theme color
+            gmm = GMM(n_components=1, covariance_type='full').fit(pixels)
+
+            colors.append(gmm.means_[0])
+            #input()
+
+        return colors
+
+    #---------- Generate Color Masks ----------
+
+    def gen_color_mask(self, frame, predictions, colors, window_size = 130.0):
+
+        import numpy as np
+
+        image_bgr = cv2.resize(frame,(self.input_height, self.input_width), interpolation = cv2.INTER_CUBIC)
+
+        image = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
+
+        masks = []
+
+        for i, pred in enumerate(predictions):
+
+            color = colors[i]
+
+            box = pred[0]
+
+            # determin boundraies of the predict box
+            left = 0 if (box[0] <= 0) else box[0]
+            top  = 0 if (box[1] <= 0) else box[1]
+            right  = self.input_width - 1 if (box[2] >= self.input_width) else box[2]
+            bottom = self.input_height- 1 if (box[3] >= self.input_height)else box[3]
+            
+            # crop image
+            cropped_image = image[top: bottom, left: right]
+            # cv2.imshow("cropped_image", cropped_image)
+
+            # determine the lower bar and the upper bar
+            lower = np.array(color) - (window_size / 2.0)
+            upper = np.array(color) + (window_size / 2.0)
+
+            # generate mask
+            mask = cv2.inRange(cropped_image, lower, upper)
+            # cv2.imshow("mask", mask)
+            masks.append([mask, [left, top, right, bottom]])
+
+        return masks
+
+    #---------- Draw Color Masks on Image ----------
+
+    def draw_color_mask(self, image, colors, masks):
+
+        for k, raw_mask in enumerate(masks):
+
+            mask = raw_mask[0]
+            #print(mask)
+            box = raw_mask[1]
+            
+            color = colors[k]
+
+            # determine the boundries of the object
+            left = box[0]
+            top  = box[1]
+            right= box[2]
+            bottom=box[3]
+            #print(right-left, bottom-top)
+            #print(mask.shape)
+            # apply mask on image
+            for i in range(left, right):
+
+                for j in range(top, bottom):
+
+                    m = i - left
+                    n = j - top
+                    #print(mask[m][n])
+                    if(mask[n][m] == 255):
+                        #print("*")
+                        image[j][i][0] = 0#int(color[0])
+                        image[j][i][1] = 255#int(color[1])
+                        image[j][i][2] = 0#int(color[2])
+
+        return image
+
 #----------- The Decision Function ----------
 
     def decide(self, nms_predictions):

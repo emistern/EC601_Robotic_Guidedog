@@ -74,10 +74,17 @@ class decisionTestbench(object):
 
         filt_image = self.decider.draw_freespace(output_image, freespace, (127.0, 254.0, 254))
 
-        # detect blob
-        dispay_img = self.decider.detect_blob(filt_image)
+        colors = self.decider.find_color(frame, nms_predictions)
 
-        cv2.imshow('Video', dispay_img)
+        masks = self.decider.gen_color_mask(frame, nms_predictions, colors)
+        
+        display_img = self.decider.draw_color_mask(output_image, colors, masks)
+        # detect blob
+        # dispay_img = self.decider.detect_blob(filt_image)
+
+        cv2.imshow('Video', display_img)
+        cv2.waitKey(10)
+        #input()
 
     def detect_video(self):
 
