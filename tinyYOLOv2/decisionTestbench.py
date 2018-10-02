@@ -15,7 +15,8 @@ class decisionTestbench(object):
     def __init__(self, 
                  weight_path='./yolov2-tiny-voc.weights', 
                  ckpt_folder_path = './ckpt/',
-                 video_source = './videos/test_video.mov'):
+                 video_source = './videos/test_video.mov',
+                 speed = 3):
 
         # Step 1: Setup TensorFlow environment for object detection
 
@@ -43,10 +44,15 @@ class decisionTestbench(object):
 
         self.decider = decisionEngine()
 
+        # Additional parameter for speed up the video
+
+        self.speed = speed
+
     def detect_frame(self):
 
         # Read frame from video
-        _, frame = self.video_capture.read()
+        for i in range(self.speed):
+            _, frame = self.video_capture.read()
 
         # Image preprocessing
         preprocessed_image = preprocessing(frame,self.input_height,self.input_width)
@@ -68,7 +74,10 @@ class decisionTestbench(object):
 
         filt_image = self.decider.draw_freespace(output_image, freespace, (127.0, 254.0, 254))
 
-        cv2.imshow('Video', filt_image)
+        # detect blob
+        dispay_img = self.decider.detect_blob(filt_image)
+
+        cv2.imshow('Video', dispay_img)
 
     def detect_video(self):
 

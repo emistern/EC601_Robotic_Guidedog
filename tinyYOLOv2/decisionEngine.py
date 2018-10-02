@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 class decisionEngine(object):
     def __init__(self,
@@ -95,6 +96,43 @@ class decisionEngine(object):
         len_filt = int(len_filt / sum(self.wei_len))
 
         return [pos_filt, len_filt]
+
+#----------- DEV: Modules under Development ---------
+
+    #---------- Blob Detection Module ----------
+
+    def detect_blob(self, image):
+
+        # convert color image into grayscale
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        cv2.imshow("gray", gray)
+
+        # Initialize parameter for blob detector
+        params = cv2.SimpleBlobDetector_Params()
+        params.minThreshold = 0;    # the graylevel of images
+        params.maxThreshold = 100;
+        params.filterByColor = False
+        params.blobColor = 50
+        params.filterByArea = True
+        params.minArea = 2000  # The dot in 20pt font has area of about 30
+        params.filterByCircularity = False
+        params.minCircularity = 0.7
+        params.filterByConvexity = False
+        params.minConvexity = 0.8
+        params.filterByInertia = False
+        params.minInertiaRatio = 0.4
+
+        # Instantiate blob detector with parameters
+        detector = cv2.SimpleBlobDetector_create(params)
+
+        # deetct
+        keypoints = detector.detect(gray)
+
+        # draw keypoint in image
+        im_with_keypoints = cv2.drawKeypoints(image, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+ 
+        return im_with_keypoints
 
 #----------- The Decision Function ----------
 
