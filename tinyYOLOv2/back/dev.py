@@ -13,9 +13,9 @@ from test_webcam import *
 class DecisionEngine(object):
     """ Decision Engine of Robot Guide Dog """
     def __init__(self, 
-                 weight_path='./tiny-yolo-voc.weights', 
+                 weight_path='./yolov2-tiny-voc.weights', 
                  ckpt_folder_path = './ckpt/',
-                 video_source = './first_run.mov'):
+                 video_source = './test_video.mov'):
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
 
