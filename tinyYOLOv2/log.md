@@ -21,3 +21,7 @@ Idea: Using blob detection to help solving the problem of detection failure when
 Link: https://docs.opencv.org/3.4.3/d0/d7a/classcv_1_1SimpleBlobDetector.html
 
 Adding home-made blob detection module using color filtering
+
+Link:
+http://sklearn.apachecn.org/cn/stable/modules/generated/sklearn.mixture.GaussianMixture.html#sklearn.mixture.GaussianMixture
+http://sklearn.apachecn.org/cn/stable/modules/mixture.html

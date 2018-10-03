@@ -9,6 +9,7 @@ import sys
 import time
 from utils import *
 from decisionEngine import *
+from blobFinder import *
 
 class decisionTestbench(object):
     """Testbench for decision algorithms on robot guide dog"""
@@ -44,6 +45,8 @@ class decisionTestbench(object):
 
         self.decider = decisionEngine()
 
+        self.finder = blobFinder()
+
         # Additional parameter for speed up the video
 
         self.speed = speed
@@ -74,11 +77,11 @@ class decisionTestbench(object):
 
         filt_image = self.decider.draw_freespace(output_image, freespace, (127.0, 254.0, 254))
 
-        colors = self.decider.find_color(frame, nms_predictions)
+        colors = self.finder.find_color(frame, nms_predictions)
 
-        masks = self.decider.gen_color_mask(frame, nms_predictions, colors)
+        masks = self.finder.gen_color_mask(frame, nms_predictions, colors)
         
-        display_img = self.decider.draw_color_mask(output_image, colors, masks)
+        display_img = self.finder.draw_color_mask(output_image, colors, masks)
         # detect blob
         # dispay_img = self.decider.detect_blob(filt_image)
 
@@ -91,7 +94,7 @@ class decisionTestbench(object):
         while True:
 
             self.detect_frame()
-
+            
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
