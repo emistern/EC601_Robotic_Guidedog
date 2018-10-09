@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from command import *
 
 class decisionEngine(object):
     def __init__(self,
@@ -12,6 +13,10 @@ class decisionEngine(object):
 
         self.input_width = input_width
 
+        # Setup command buffer
+
+        self.command =  CommandSet.F
+
         # Initialize parameters for linear filter
 
         self.buf_pos = [0, 0, 0, 0, 0]
@@ -21,6 +26,10 @@ class decisionEngine(object):
         self.wei_pos = [1, 1, 1, 1, 1]
         
         self.wei_len = [1, 1, 1, 1, 1]
+
+    def set_command(self, command):
+
+        self.command = command
 
 #----------- Stage 1: finding the maximum empty interval between objects -------------
 
@@ -99,6 +108,103 @@ class decisionEngine(object):
 
 #----------- DEV: Modules under Development ---------
 
+    #---------- Find Matched Decision Boxes ---------
+
+    def match_boxes(self, freespace, min_len = 40, n_box = 5, overlap_rate = 0.5):
+
+        free_pos = freespace[0]
+        free_len = freespace[1]
+        free_head = free_pos
+        free_tail = free_pos + free_len
+
+        # check minumum freespace size
+        if (free_len < min_len):
+            return []
+
+        bounds = []
+
+        # calculate the boundary of decision boxes
+        unit = float(self.input_width) / float(n_box)
+        bounds.append(0)
+
+        for i in range(1, n_box + 1):
+            
+            bound = int(bounds[i - 1] + unit)
+
+            bounds.append(bound)
+
+        #print(bounds)
+        #input()
+
+        # find the matched decision box
+        matched_box = []
+
+        for i in range(n_box):
+
+            box_head = bounds[i]
+            box_tail = bounds[i + 1]
+
+            if (free_head < box_head):
+
+                if (free_tail <= box_head):
+                    continue
+                else:
+                    if(free_tail <= box_tail):
+                        overlap = free_tail - box_head
+                    else:
+                        overlap = unit
+                    if (float(overlap) / unit > overlap_rate):
+                        matched_box.append([box_head, int(unit)])
+
+            elif (free_head >= box_head and free_head < box_tail):
+
+                if(free_tail <= box_tail):
+                    overlap = free_tail - free_head
+                else:
+                    overlap = box_tail - free_head
+
+                if (float(overlap) / unit > overlap_rate):
+                    matched_box.append([box_head, int(unit)])
+
+            else:
+                continue
+
+        return matched_box
+
+    #---------- Make Decision ---------
+
+    def make_decision(self, boxes):
+
+        # Select decision box according to command
+
+        if (self.command.code == Code.F):
+
+            # Forward: choose the decision box closest to the center
+
+            # calculate center
+            center = float(self.input_width / 2)
+
+            # find the box closest to center
+            min_dist = self.input_width
+            best_box = boxes[0]
+
+            for box in boxes:
+
+                box_head = box[0]
+                box_len = box[1]
+
+                box_center = float(box_head) + (float(box_len) / 2.0)
+
+                dist = abs(box_center - center)
+
+                if (dist < min_dist):
+
+                    min_dist = dist
+
+                    best_box = box
+
+        return best_box
+
     #---------- Blob Detection Module ----------
 
     def detect_blob(self, image):
@@ -145,7 +251,13 @@ class decisionEngine(object):
         # Stage 2
         filted_freespace = self.filt_freespace(freespace)
 
-        return filted_freespace
+        # Stage 3
+        decision_box = self.match_boxes(filted_freespace)
+
+        # Srage 4
+        best_box = self.make_decision(decision_box)
+
+        return filted_freespace, decision_box, best_box
 
 #----------- Additional Draw Function
 

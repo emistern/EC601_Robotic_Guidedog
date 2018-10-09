@@ -16,7 +16,7 @@ class decisionTestbench(object):
     def __init__(self, 
                  weight_path='./yolov2-tiny-voc.weights', 
                  ckpt_folder_path = './ckpt/',
-                 video_source = './videos/test_video.mov',
+                 video_source = './videos/first_run.mov',
                  speed = 3):
 
         # Step 1: Setup TensorFlow environment for object detection
@@ -73,19 +73,24 @@ class decisionTestbench(object):
                                       self.input_width)
 
         # Call the decision engine
-        freespace = self.decider.decide(nms_predictions)
+        freespace, decision_boxes, best_box = self.decider.decide(nms_predictions)
 
         filt_image = self.decider.draw_freespace(output_image, freespace, (127.0, 254.0, 254))
 
-        colors = self.finder.find_color(frame, nms_predictions)
-
-        masks = self.finder.gen_color_mask(frame, nms_predictions, colors)
+        for box in decision_boxes:
+            filt_image = self.decider.draw_freespace(filt_image, box, (255, 0, 0))
         
-        display_img = self.finder.draw_color_mask(output_image, colors, masks)
-        # detect blob
+        filt_image = self.decider.draw_freespace(filt_image, best_box, (0, 255, 0))
+
+        #colors = self.finder.find_color(frame, nms_predictions)
+
+        #masks = self.finder.gen_color_mask(frame, nms_predictions, colors)
+        
+        #display_img = self.finder.draw_color_mask(output_image, colors, masks)
+        
         # dispay_img = self.decider.detect_blob(filt_image)
 
-        cv2.imshow('Video', display_img)
+        cv2.imshow('Video', filt_image)
         cv2.waitKey(10)
         #input()
 
