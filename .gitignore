@@ -9,4 +9,6 @@
 graph
 */devel/*
 */build/*
+*.bag
+*/tmp_img/*
 CMakeLists.txt

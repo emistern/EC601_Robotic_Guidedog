@@ -16,8 +16,8 @@ class decisionTestbench(object):
     def __init__(self, 
                  weight_path='./yolov2-tiny-voc.weights', 
                  ckpt_folder_path = './ckpt/',
-                 video_source = './videos/first_run.mov',
-                 speed = 3):
+                 video_source = './videos/test_video.mov',
+                 speed = 2):
 
         # Step 1: Setup TensorFlow environment for object detection
 
