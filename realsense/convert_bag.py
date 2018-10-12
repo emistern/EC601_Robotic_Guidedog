@@ -11,7 +11,7 @@ import numpy as np
 import cv2
 # Import argparse for command-line options
 import argparse
-# Import os.path for file path manipulation
+# Import os.path for file path manipulation 
 import os.path
 
 # Create object for parsing command-line options
@@ -49,9 +49,9 @@ try:
     pipeline.start(config)
 
     # Create opencv window to render image in
-    #cv2.namedWindow("Depth Stream", cv2.WINDOW_AUTOSIZE)
+    cv2.namedWindow("Depth Stream", cv2.WINDOW_AUTOSIZE)
     #cv2.namedWindow("Color Stream", cv2.WINDOW_AUTOSIZE)
-
+    
     # save
     save_dir = ".\\tmp_img\\"
     count = 0
@@ -83,14 +83,14 @@ try:
         # save images
         #print(save_dir+"%04d"%count+"depth.jpg")
         #cv2.imwrite(save_dir+"%4d"%count+"depth.jpg", color_image)
-        wr_depth.write(depth_color_image)
+        #wr_depth.write(depth_image)
         wr_color.write(cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR))
 
         count = count + 1
         print(count)
 
         # Render image in opencv window
-        #cv2.imshow("Depth Stream", depth_image)
+        cv2.imshow("Depth Stream", depth_color_image)
         #cv2.imshow("Color Stream", cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR))
         key = cv2.waitKey(1)
         # if pressed escape exit program
