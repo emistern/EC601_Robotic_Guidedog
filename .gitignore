@@ -12,3 +12,4 @@ graph
 *.bag
 */tmp_img/*
 CMakeLists.txt
+/.vs/EC601_Robotic_Guidedog/v15/Browse.VC.opendb
