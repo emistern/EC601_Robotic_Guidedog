@@ -94,7 +94,11 @@ class depth_worker():
             config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
 
             # Start streaming from file
-            pipeline.start(config)
+            profile = pipeline.start(config)
+
+            depth_sensor = profile.get_device().first_depth_sensor()
+            depth_scale = depth_sensor.get_depth_scale()
+            print("Depth Scale is: " , depth_scale)
 
             # Declare filters
             dec_filter = rs.decimation_filter()   # Decimation - reduces depth frame density
@@ -166,7 +170,7 @@ class depth_worker():
             
             # Tell config that we will use a recorded device from filem to be used by the pipeline through playback.
             rs.config.enable_device_from_file(config, input)
-            
+        
             # Configure the pipeline to stream the depth stream
             config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
 
@@ -182,7 +186,11 @@ class depth_worker():
             disp_filter = rs.disparity_transform()  # Disparity Transform filter
 
             # Start streaming from file
-            pipeline.start(config)
+            profile = pipeline.start(config)
+
+            depth_sensor = profile.get_device().first_depth_sensor()
+            depth_scale = depth_sensor.get_depth_scale()
+            print("Depth Scale is: " , depth_scale)
 
             count = 0
 
@@ -233,8 +241,8 @@ if __name__ == "__main__":
     
     w = depth_worker()
 
-    #w.play_depth_stream("./20181011_223353.bag")
+    w.play_depth_stream("./20181011_223353.bag")
     
-    w.save_depth_to_npy("./20181011_223353.bag")
+    #w.save_depth_to_npy("./20181011_223353.bag")
 
-    w.verify_depth_matrix()
+    #w.verify_depth_matrix()
