@@ -5,18 +5,9 @@ m_v = float("inf")
 
 class path_planner(object):
 
-    def __init__(self):
+    def __init__(self, map):
 
-        self.map = [
-            [0, 0, 0],
-            [1, 0, 0],
-            [0, 0, 0],
-            [0, 1, 0],
-            [0, 0, 1],
-            [1, 0, 0],
-            [0, 1, 0],
-            [1, 1, 0]
-        ]
+        self.map = map
 
         self.nodes = [[2, 1, 2], 
                       [m_v, m_v, m_v], 
@@ -245,12 +236,29 @@ class path_planner(object):
         cv2.waitKey(0)
 
 if __name__ == "__main__":
+    default_map = [
+            [0, 0, 0],
+            [1, 0, 0],
+            [0, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            [1, 0, 0],
+            [0, 1, 0],
+            [1, 1, 0]
+        ]
 
-    p = path_planner()
+    big_map = [
+        [0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 1],
+        [0, 0, 0, 1, 0]
+    ]
+    p = path_planner(big_map)
 
     p.gen_nodes()
     p.gen_paths()
     p.gen_buffer_mats()
-    path = p.plan([6, 0])
+    path = p.plan([4, 0])
     p.draw_path(path)
                       
