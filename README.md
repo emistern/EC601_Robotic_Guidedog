@@ -32,7 +32,27 @@ Repository for EC601 Project: Robotic Guide dog
 
 ## How things work and Examples
 
+0. System Block Diagram
+   
+   Three main modules in our system:
+   
+   * Image Processing and Object Detection module
+   * Decision Module
+   * User Interface Module 
+
+    ![block image](images/block_diagram.png "Block Diagram")
 1. Object Detection and Decision Algorithm
+   
+    The Object Detection module(TinyYOLO Neural Network) find the obstacles in scene, and pass obstacle information to decision algorithm. The decision algorithm generate resonable instruction based on finding the maximum free space in scene.
+
    ![decision image](images/decision.jpg "Detection and Decision")
 2. Intel RealSense depth data post-processing
+
+    We are trying to use depth data from Intel RealSense RGB-D camera to imporve the capability of obstacle detection.
+
+    ![depth data](images/hole_filling.jpg "Image Processing")
 3. Path Planning
+   
+   Performing path planning on depth data.
+
+   ![path planning](images/path_planning.png "Path Planning")
