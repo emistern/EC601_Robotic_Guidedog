@@ -11,7 +11,7 @@ class path_planner(object):
     def __init__(self, map):
 
         self.map = map
-        
+
         self.nodes = [[2, 1, 2], 
                       [m_v, m_v, m_v], 
                       [m_v, m_v, m_v], 
@@ -57,6 +57,7 @@ class path_planner(object):
                         ]
                     ]
     
+    # Fills the prev matrix (Prevs for each node, record its previous layers' optimal path)
     def gen_buffer_mats(self):
 
         height = len(self.map)
@@ -76,6 +77,7 @@ class path_planner(object):
                 new_row.append(0)
             self.prevs.append(new_row)
 
+    # This generates the graph
     def gen_paths(self):
 
         paths = []
@@ -151,6 +153,8 @@ class path_planner(object):
         if (t_layer >= nodes.shape[0] or t_pos >= nodes.shape[1] or self.map[t_layer][t_pos] ==1):
             print("Invalid target")
             return
+
+        # A* 
 
         # Dynamic Programming
         # while(m_v in nodes):
@@ -237,3 +241,33 @@ class path_planner(object):
 
         cv2.imshow("path", world)
         cv2.waitKey(0)
+
+
+# Testing Here!
+default_map = [
+        [0, 0, 0],
+        [1, 0, 0],
+        [0, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+        [1, 0, 0],
+        [0, 1, 0],
+        [1, 1, 0]
+    ]
+
+big_map = [
+    [0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 0],
+    [0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 1],
+    [0, 0, 0, 1, 0]
+]
+p = path_planner(big_map)
+
+p.gen_nodes()
+p.gen_paths()
+p.gen_buffer_mats()
+print(p.nodes)
+print(p.paths)
+#path = p.plan([4, 0])
+#p.draw_path(path)
