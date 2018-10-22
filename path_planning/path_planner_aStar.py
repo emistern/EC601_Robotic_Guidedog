@@ -1,256 +1,113 @@
 # Path Planner with A* algorith
 
+#######################################################
+#################### Assumptions ######################
+#######################################################
+
+# the starting position is the center position of the map, one layer below.
+# the first step the person can take is directly in front of them or
+# the diagonal in front of them
+
+#######################################################
+#######################################################
+
+
 #Import Libraries
 import sys
 import cv2
 import numpy as np
 m_v = float("inf")
 
+# Define Path Planning Class
 class path_planner(object):
+	def __init__(self, map, goal=None):
+		self.map = map
 
-    def __init__(self, map):
+		height = len(map)
+		width = len(map[1])
+		center = int(int(width) / int(2))
 
-        self.map = map
+		# If no goal provided, then assume the goal is the center position
+		# at the end of the map.
+		if goal == None:
+			goal = [height-1, center]
+		else:
+			self.goal = goal
 
-        self.nodes = [[2, 1, 2], 
-                      [m_v, m_v, m_v], 
-                      [m_v, m_v, m_v], 
-                      [m_v, m_v, m_v],
-                      [m_v, m_v, m_v]]
+		# Initialize the heuristics map
+		m_v_map = []
+		[m_v_map.append([m_v]*width) for x in range(0,height)]
+		self.heuristics = m_v_map.copy()
+		self.heuristics[goal[0]][goal[1]] = 0 
 
-        self.prevs = [
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0]
-        ]
+		# Initialize the nodes map
+		nodes_map=[]
+		[nodes_map.append([m_v]*width) for x in range(0,height)]
+		self.nodes = nodes_map.copy()	
 
-        self.values = [
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0]
-        ]
+		self.openset = []
 
-        self.paths = [
-                        [
-                            [m_v, 2,   m_v],
-                            [m_v, 1,   2  ],
-                            [m_v, 2,   1  ]
-                        ],
-                        [
-                            [m_v, m_v, m_v],
-                            [2,   1,   2  ],
-                            [m_v, 2,   1  ]
-                        ],
-                        [
-                            [1,   m_v, m_v],
-                            [2,   m_v, 2  ],
-                            [m_v, m_v, 1  ]
-                        ],
-                        [
-                            [1,   2,   m_v],
-                            [m_v, m_v, m_v],
-                            [m_v, 2,   m_v],
-                        ]
-                    ]
-    
-    # Fills the prev matrix (Prevs for each node, record its previous layers' optimal path)
-    def gen_buffer_mats(self):
+		self.closedsed = []
 
-        height = len(self.map)
-        width = len(self.map[0])
-        
-        self.values = []
-        for i in range(height):
-            new_row = []
-            for j in range(width):
-                new_row.append(0)
-            self.values.append(new_row)
+	def __str__(self):
+		return str(self.map)
 
-        self.prevs = []
-        for i in range(height):
-            new_row = []
-            for j in range(width):
-                new_row.append(0)
-            self.prevs.append(new_row)
+	def __repr__(self):
+		return str(self.map)
 
-    # This generates the graph
-    def gen_paths(self):
-
-        paths = []
-        height = len(self.map)
-        width = len(self.map[0])
-        for i in range(height - 1):
-            cur_row = self.map[i]
-            nxt_row = self.map[i+1]
-            trans_mat = []
-            for j in range(len(cur_row)):
-                if (cur_row[j] == 1):
-                    trans = [m_v] * width
-                else:
-                    trans = [0] * width
-                    for k in range(len(nxt_row)):
-                        if nxt_row[k] == 1:
-                            trans[k] = m_v
-                        else:
-                            if k == j:
-                                trans[k] = 1
-                            elif (abs(k - j) == 1):
-                                trans[k] = 2
-                            else:
-                                trans[k] = m_v
-                trans_mat.append(trans.copy())
-            paths.append(trans_mat)
-        self.paths = paths
-
-    def gen_nodes(self):
-
-        nodes = []
-
-        # Check if map is valid
-        if len(self.map[1]) % 2 == 0:
-            print("map in invalid shape!")
-        width = len(self.map[1])
-        center = int(int(width) / int(2)) 
-
-        # Generate node representation from map
-        for i, row in enumerate(self.map):
-
-            new_row = [m_v] * width
-
-            # Assign initial value to each node
-            if (i == 0):
-                for j, e in enumerate(row):
-                    if e == 0:
-                        if j == center:
-                            new_row[j] = 1
-                        elif (abs(j - center) == 1):
-                            new_row[j] = 2
-                        else:
-                            new_row[j] = m_v
-                    else:
-                        new_row[j] = m_v
-            
-            nodes.append(new_row.copy())
-        
-        self.nodes = nodes
+	def gen_heuristics(self):
+		# loop over the heuristics map adding distances to each cell from the goal 
+		# get the list of neighbors that are decided
 
 
-    def plan(self, target):
-        
-        # Transer into numpy array
-        nodes = np.array(self.nodes)
-        paths = np.array(self.paths)
 
-        # Target node
-        t_layer = target[0]
-        t_pos = target[1]
 
-        # Check if the target node is valid
-        if (t_layer >= nodes.shape[0] or t_pos >= nodes.shape[1] or self.map[t_layer][t_pos] ==1):
-            print("Invalid target")
-            return
+	def gen_nearest_decided_neighbors(self, Nquery, which_map=1):
+		# Get the 8 nearest neighbors to NQuery (i,j)
+		# Need each point to be within the boundary
+		# | (i-1, j-1) | (i-1, j,) |  (i-1, j+1) |
+		# | (i, j-1)   |  (i, j,)  |  (i, j+1)   |
+		# | (i+1, j-1) | (i+1, j,) |  (i+1, j+1) |
 
-        # A* 
+		if which_map==1:
+			the_map = self.map
+		else:
+			the_map = self.heuristics
+		
+		# for the given nQuery get the 8 neighbors and their corresponding cost.
+		# Send it back in a dictionary maybe with the keys set to the position of the neighbor?
+		list_of_neighbors = [[Nquery[0]-1, Nquery[1]-1], [Nquery[0]-1, Nquery[1]], [Nquery[0]-1, Nquery[1]+1],
+							[Nquery[0], Nquery[1]-1], [Nquery[0], Nquery[1]+1], 
+							[Nquery[0]+1, Nquery[1]-1], [Nquery[0]+1, Nquery[1]], [Nquery[0]+1, Nquery[1]+1]]
 
-        # Dynamic Programming
-        # while(m_v in nodes):
-            
-        #     # Extract min node
-        #     min_index = np.unravel_index(np.argmin(nodes, axis=None), nodes.shape)
-        #     layer = min_index[0]
-        #     pos = min_index[1]
-        #     val = nodes[layer][pos]
-            
-        #     # Loop though all outgoing archs
-        #     if (layer != nodes.shape[0]-1):
-        #         outs = paths[layer][pos]
-        #         for i, out in enumerate(outs):
-        #             prev_v = nodes[layer+1][i]
-        #             curr_v = val + out
-        #             if (curr_v < prev_v):
-        #                 nodes[layer+1][i] = curr_v
-        #                 self.prevs[layer+1][i] = pos
+		# Loop over all of the neighbors. Check if the neighbor is
+		# 1. Defined! (it's not inf)
+		# 2. Within the boundary of the map
+		nearest_decided_neighbors = []
 
-        #     # Save the optimal path length
-        #     self.values[layer][pos] = nodes[layer][pos]
-        #     nodes[layer][pos] = m_v
-        #     if (layer == t_layer and pos == t_pos):
-        #         break
-        
-        # # find the optimal path
-        # opt_path = []
-        # opt_path.append(t_pos)
-        # for i in range(t_layer, 0, -1):
-        #     if (i == t_layer):
-        #         prev_pos =int(self.prevs[i][t_pos])
-        #     else:
-        #         prev_pos = int(self.prevs[i][prev_pos])
-        #     opt_path.insert(0, prev_pos)
-        # print (opt_path)
-        # return opt_path
+		for iNeigh in range(len(list_of_neighbors)):
+			# Now check if you're within the boundary (0 < index < size_map)
+			if (list_of_neighbors[iNeigh][0] >= 0 and list_of_neighbors[iNeigh][0] <= len(the_map) and
+			list_of_neighbors[iNeigh][1] >= 0 and list_of_neighbors[iNeigh][1] <= len(the_map[1])):
+				# Check if the value is Decided
+				if the_map[list_of_neighbors[iNeigh][0]][list_of_neighbors[iNeigh][1]]!=m_v:
+					nearest_decided_neighbors.append(list_of_neighbors[iNeigh])
+		
+		return nearest_decided_neighbors
 
-    def draw_path(self, path):
 
-        unit_size = 60
-        height = len(self.map)
-        width = len(self.map[0])
-        t_h = unit_size * height
-        t_w = unit_size * width
-        world = np.array([[[240] * 3] * (t_w)] * (t_h)).astype(np.uint8)
 
-        for x in range(0, t_w, unit_size):
-            pt1 = (x, 0)
-            pt2 = (x, t_h)
-            world = cv2.line(world, pt1, pt2, (255, 0, 0))
-        
-        for y in range(0, t_h, unit_size):
-            pt1 = (0, y)
-            pt2 = (t_w, y)
-            world = cv2.line(world, pt1, pt2, (255, 0, 0))
 
-        # Draw Obstacles
-        ofs = int(unit_size / 5)
-        for i, row in enumerate(self.map):
-            for j, e in enumerate(row):
-                if (e == 1):
-                    # Draw an obstacle in world
-                    pt1 = (j * unit_size + ofs, i * unit_size + ofs)
-                    pt2 = ((j+1) * unit_size - ofs, (i+1) * unit_size - ofs)
-                    cv2.rectangle(world, pt1, pt2, (0, 0, 255), 5)
-
-        # Draw Optimal Path 
-        x_ofs = int(unit_size / 2)
-        y_ofs = int(unit_size / 2)
-        for i in range(len(path)-1):
-            
-            f_p = path[i]
-            t_p = path[i+1]
-
-            pt1 = (f_p * unit_size + x_ofs, i * unit_size + y_ofs)
-            pt2 = (t_p * unit_size + x_ofs, (i+1) * unit_size + y_ofs)
-
-            world = cv2.line(world, pt1, pt2, (0, 255, 0), 5)
-
-            if i == len(path) - 2:
-                # draw target
-                world = cv2.circle(world, pt2, int(unit_size / 3), (255, 0, 255), 10)
-
-        cv2.imshow("path", world)
-        cv2.waitKey(0)
 
 
 # Testing Here!
 default_map = [
         [0, 0, 0],
-        [1, 0, 0],
+        [1, 12, 0],
         [0, 0, 0],
         [0, 1, 0],
-        [0, 0, 1],
-        [1, 0, 0],
+        [0, 1, 1],
+        [0, 0, 0],
         [0, 1, 0],
         [1, 1, 0]
     ]
@@ -260,14 +117,14 @@ big_map = [
     [0, 1, 0, 0, 0],
     [0, 0, 1, 0, 0],
     [0, 0, 0, 0, 1],
-    [0, 0, 0, 1, 0]
-]
-p = path_planner(big_map)
+    [0, 0, 0, 1, 0]]
 
-p.gen_nodes()
-p.gen_paths()
-p.gen_buffer_mats()
-print(p.nodes)
-print(p.paths)
-#path = p.plan([4, 0])
-#p.draw_path(path)
+
+# Test the Class
+p = path_planner(big_map, [4,1])
+#print(p.map)
+#print(p.nodes)
+print(p.heuristics)
+#print(p.gen_nearest_decided_neighbors([3,1], 0))
+# print(p.gen_heuristics())
+
