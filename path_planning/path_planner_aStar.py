@@ -16,6 +16,7 @@
 import sys
 import cv2
 import numpy as np
+import math
 m_v = float("inf")
 
 # Define Path Planning Class
@@ -55,10 +56,19 @@ class path_planner(object):
 	def __repr__(self):
 		return str(self.map)
 
-	def gen_heuristics(self):
+	def gen_heuristics(self, heuristic_function=1):
 		# loop over the heuristics map adding distances to each cell from the goal 
 		# get the list of neighbors that are decided
-
+		# If the heuristic_function is 1 then use diagonal distance max(abs(x-x_goal), abs(y-y_goal)),
+		# otherwise use the euclidean distance
+		for iHeight in range(len(self.heuristics)):
+			for iWidth in range(len(self.heuristics)):
+				# Use the diagonal distance as the heuristic function
+				if heuristic_function==1:
+					self.heuristics[iHeight][iWidth] = max(abs(iHeight-self.goal[0]), abs(iWidth-self.goal[1]))
+				else:
+					self.heuristics[iHeight][iWidth] = math.sqrt((iHeight-self.goal[0])**2 + (iWidth-self.goal[1])**2)
+		return self.heuristics
 
 
 
@@ -121,10 +131,12 @@ big_map = [
 
 
 # Test the Class
-p = path_planner(big_map, [4,1])
+p = path_planner(big_map, [3,1])
 #print(p.map)
 #print(p.nodes)
 print(p.heuristics)
 #print(p.gen_nearest_decided_neighbors([3,1], 0))
-# print(p.gen_heuristics())
+t=p.gen_heuristics(0)
+for i in range(len(t)):
+	print(t[i])
 
