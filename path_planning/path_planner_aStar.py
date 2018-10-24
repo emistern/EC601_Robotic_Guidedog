@@ -41,12 +41,14 @@ class path_planner(object):
 		self.heuristics = m_v_map.copy()
 		self.heuristics[goal[0]][goal[1]] = 0 
 
-		# Initialize the nodes map
-		nodes_map=[]
-		[nodes_map.append([m_v]*width) for x in range(0,height)]
-		self.nodes = nodes_map.copy()	
+		# Initialize the graph map
+		the_graph=[]
+		[the_graph.append([m_v]*width) for x in range(0,height)]
+		self.graph = the_graph.copy()	
 
-		self.openset = []
+		# Initialize the openset with a starting location. For us this will be the center point
+		# of the first row.
+		self.openset = [[0,center]]
 
 		self.closedsed = []
 
@@ -105,6 +107,30 @@ class path_planner(object):
 		
 		return nearest_decided_neighbors
 
+	def gen_graph(self):
+		# also need to define a gen_graph function and set that up based on where the obstacles are
+		# the graph is the same size as the map. however it will have m_v's where obstacles are.
+		# it will then be passed to the path_planner for use in calculating the total cost of moving
+		# to each node?
+
+		print("still writing")
+
+	def path_planner(self):
+		# The starting location is always from the row beneath, so our first row
+		# will always be the heuristics + cost for the immediate three positions. need to add the 
+		# center position to the open list. 
+
+		# Run the path planner while the open set is not empty!
+		print("still writiting.")
+
+		
+
+## Things to implement:
+# - in the graph, the first row will be 2,1,2 centered at the center of the graph.
+# - before we set the first row, we need to check if all three of those locations
+# 	are an obstacle. if that's the case then send back an empty list.
+# - not sure if i need the nearest neighbors algorithm?
+# - 
 
 
 
@@ -113,7 +139,7 @@ class path_planner(object):
 # Testing Here!
 default_map = [
         [0, 0, 0],
-        [1, 12, 0],
+        [1, 0, 0],
         [0, 0, 0],
         [0, 1, 0],
         [0, 1, 1],
@@ -133,7 +159,7 @@ big_map = [
 # Test the Class
 p = path_planner(big_map, [3,1])
 #print(p.map)
-#print(p.nodes)
+#print(p.graph)
 print(p.heuristics)
 #print(p.gen_nearest_decided_neighbors([3,1], 0))
 t=p.gen_heuristics(0)
