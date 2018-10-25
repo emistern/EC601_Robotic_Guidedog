@@ -13,17 +13,17 @@ TOP_THRESHOLD = 0.6
 BOTTOM_THRESHOLD = 0.6
 STEP_LENGTH = 0.5
 MINIMUM_RANGE = 0.25
-VERTICAL_SIZE_THRESHOLD = 20
-HORIZONTAL_SIZE_THRESHOLD = 15
+VERTICAL_SIZE_THRESHOLD = 1
+HORIZONTAL_SIZE_THRESHOLD = 1
 NO_CEIL = TOP_THRESHOLD/math.sin(VERTICAL_FOV/2)
 NO_FLOOR = BOTTOM_THRESHOLD/math.sin(VERTICAL_FOV/2)
 
 class depth_bird_view():
 
-    def __init__(self, path = './', img_width = 1280, img_height = 720):
+    def __init__(self, path = './'):
         self.path = path
-        self.width = 1280
-        self.height = 720
+        self.width = slicer.WIDTH
+        self.height = slicer.HEIGHT
 
     def squeeze_jpg(self):
         filenames = listdir(self.path)
@@ -52,7 +52,7 @@ class depth_bird_view():
         squeezed_matrix = np.zeros([slicer.TOTAL_LAYER_NUMBER, self.width])
         for z in range(slicer.TOTAL_LAYER_NUMBER):
             no_ceil_floor_nparray = self.remove_ceiling_floor(raw_matrix[:,:,z], z)
-            self.show_image(no_ceil_floor_nparray)
+            #self.show_image(no_ceil_floor_nparray)
             for x in range(self.width):
                 pixel_count = 0
                 for y in range(self.height):
@@ -73,7 +73,7 @@ class depth_bird_view():
                     black_count = 0
                 else:
                     black_count = 0
-        birdmap = cv2.resize(squeezed_matrix,(self.width, 500), interpolation = cv2.INTER_LINEAR)
+        birdmap = cv2.resize(squeezed_matrix,(1280, 500), interpolation = cv2.INTER_LINEAR)
         self.show_image(birdmap)
         return squeezed_matrix
 
@@ -104,7 +104,6 @@ class depth_bird_view():
 def main():
     squeeze = depth_bird_view()
     squeezed_matrix = squeeze.squeeze_matrix()
-    squeeze.show_image(squeezed_matrix)
     #squeeze.squeeze_jpg()
 if __name__ == "__main__":
     main()
