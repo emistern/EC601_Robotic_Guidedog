@@ -11,6 +11,10 @@ import math
 VERTICAL_FOV = 58/180*math.pi
 TOP_THRESHOLD = 0.6
 BOTTOM_THRESHOLD = 0.6
+STEP_LENGTH = 0.5
+MINIMUM_RANGE = 0.25
+VERTICAL_SIZE_THRESHOLD = 20
+HORIZONTAL_SIZE_THRESHOLD = 15
 NO_CEIL = TOP_THRESHOLD/math.sin(VERTICAL_FOV/2)
 NO_FLOOR = BOTTOM_THRESHOLD/math.sin(VERTICAL_FOV/2)
 
@@ -48,17 +52,33 @@ class depth_bird_view():
         squeezed_matrix = np.ones([slicer.TOTAL_LAYER_NUMBER, self.width])
         for z in range(slicer.TOTAL_LAYER_NUMBER):
             no_ceil_floor_nparray = self.remove_ceiling_floor(raw_matrix[:,:,z], z)
-            #self.show_image(no_ceil_floor_nparray)
+            self.show_image(no_ceil_floor_nparray)
             for x in range(self.width):
+                pixel_count = 0
                 for y in range(self.height):
                     if no_ceil_floor_nparray[y, x] > 0:
-                        squeezed_matrix[slicer.TOTAL_LAYER_NUMBER-1-z, x] = 0
-                        break
-        self.show_image(squeezed_matrix)
+                        pixel_count += 1
+                        if pixel_count > VERTICAL_SIZE_THRESHOLD:
+                            squeezed_matrix[slicer.TOTAL_LAYER_NUMBER-1-z, x] = 0
+                            break
+                    else:
+                        pixel_count = 0
+            black_count = 0
+            for x in range(self.width):
+                if squeezed_matrix[slicer.TOTAL_LAYER_NUMBER-1-z, x] == 0:
+                    black_count += 1
+                elif (black_count <= HORIZONTAL_SIZE_THRESHOLD and black_count > 0):
+                    for i in range(black_count):
+                        squeezed_matrix[slicer.TOTAL_LAYER_NUMBER-1-z,x-i-1] = 1
+                    black_count = 0
+                else:
+                    black_count = 0
+        birdmap = cv2.resize(squeezed_matrix,(self.width, 500), interpolation = cv2.INTER_LINEAR)
+        self.show_image(birdmap)
 
     def remove_ceiling_floor(self, nparray, layer_number):
         no_ceil_floor_nparray = nparray
-        distance = 0.25+layer_number*0.5
+        distance = MINIMUM_RANGE+layer_number*STEP_LENGTH
         if distance > NO_CEIL:
             ceil_percent = (VERTICAL_FOV/2-math.asin(TOP_THRESHOLD/distance))/VERTICAL_FOV
             ceil_vrange = int(ceil_percent*self.height)
