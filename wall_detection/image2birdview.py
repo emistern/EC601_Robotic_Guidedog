@@ -49,7 +49,7 @@ class depth_bird_view():
 
     def squeeze_matrix(self):
         raw_matrix = slicer.slicer()
-        squeezed_matrix = np.ones([slicer.TOTAL_LAYER_NUMBER, self.width])
+        squeezed_matrix = np.zeros([slicer.TOTAL_LAYER_NUMBER, self.width])
         for z in range(slicer.TOTAL_LAYER_NUMBER):
             no_ceil_floor_nparray = self.remove_ceiling_floor(raw_matrix[:,:,z], z)
             self.show_image(no_ceil_floor_nparray)
@@ -59,17 +59,17 @@ class depth_bird_view():
                     if no_ceil_floor_nparray[y, x] > 0:
                         pixel_count += 1
                         if pixel_count > VERTICAL_SIZE_THRESHOLD:
-                            squeezed_matrix[slicer.TOTAL_LAYER_NUMBER-1-z, x] = 0
+                            squeezed_matrix[slicer.TOTAL_LAYER_NUMBER-1-z, x] = 1
                             break
                     else:
                         pixel_count = 0
             black_count = 0
             for x in range(self.width):
-                if squeezed_matrix[slicer.TOTAL_LAYER_NUMBER-1-z, x] == 0:
+                if squeezed_matrix[slicer.TOTAL_LAYER_NUMBER-1-z, x] == 1:
                     black_count += 1
                 elif (black_count <= HORIZONTAL_SIZE_THRESHOLD and black_count > 0):
                     for i in range(black_count):
-                        squeezed_matrix[slicer.TOTAL_LAYER_NUMBER-1-z,x-i-1] = 1
+                        squeezed_matrix[slicer.TOTAL_LAYER_NUMBER-1-z,x-i-1] = 0
                     black_count = 0
                 else:
                     black_count = 0
