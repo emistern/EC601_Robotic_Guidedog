@@ -1,28 +1,21 @@
 import numpy as np
-import cv2
-'''
-Take one frame of depth image and slice it into pieces, return a 3-d matrix [y,x,layer]
-'''
-#.np file addr
-file_name = 'wall_detection/depth0003.npy'
-WIDTH = 640
-HEIGHT = 360
-TOTAL_LAYER_NUMBER = 10
-def slicer_bak():
-    a = np.load(file_name)
 
-    b = np.zeros((HEIGHT,WIDTH,TOTAL_LAYER_NUMBER))
+def squeeze(z, height, width, no_ceil_floor_nparray, squeezed_matrix, VERTICAL_SIZE_THRESHOLD):
+    
+    for x in range(width):
+        pixel_count = 0
+        column = no_ceil_floor_nparray[:, x]
+        for y in range(height):
+            if column[y] > 0:
+                pixel_count += 1
+                if pixel_count > VERTICAL_SIZE_THRESHOLD:
+                    squeezed_matrix[x] = 1
+                    break
+            else:
+                pixel_count = 0
+    return squeezed_matrix
 
-    for i in range (HEIGHT):
-        for j in range (WIDTH):
-            if(a.item(i,j)!=0):
-                if(a.item(i,j)<TOTAL_LAYER_NUMBER*500+250):
-                    c = int((a.item(i,j)-250)/500)
-                    a[i,j] = 0
-                    b[i,j,c] = 1
-    return b
-
-def slicer(fn, WIDTH, HEIGHT):
+def slicer(fn, WIDTH, HEIGHT, TOTAL_LAYER_NUMBER):
     a = np.load(fn)
     #print(a.shape)
     w = int(a.shape[1])
@@ -56,11 +49,3 @@ def slicer(fn, WIDTH, HEIGHT):
         x += 1
         #print(b)
     return b
-'''
-    for k in range (TOTAL_LAYER_NUMBER):
-        cv2.imshow("Verify", b[:,:,k])
-        cv2.waitKey(20)
-        input()
-'''
-if __name__ == "__main__":
-    print(slicer('depth0003.npy'))

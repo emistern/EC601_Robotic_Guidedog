@@ -93,7 +93,7 @@ class path_planner(object):
                         else:
                             if k == j:
                                 trans[k] = 1
-                            elif (abs(k - j) == 1):
+                            elif (abs(k - j) == 1 and cur_row[j + (k-j)] == 0):
                                 trans[k] = 2
                             else:
                                 trans[k] = m_v
@@ -150,7 +150,8 @@ class path_planner(object):
             return
 
         # Dynamic Programming
-        while(m_v in nodes):
+        finish = False
+        while(not finish):
             
             # Extract min node
             min_index = np.unravel_index(np.argmin(nodes, axis=None), nodes.shape)
@@ -173,6 +174,14 @@ class path_planner(object):
             nodes[layer][pos] = m_v
             if (layer == t_layer and pos == t_pos):
                 break
+
+            # Check finish
+            finish = True
+            for row in self.nodes:
+                for e in row:
+                    if (e != m_v):
+                        finish = False
+                        break
         
         # find the optimal path
         opt_path = []
@@ -238,27 +247,31 @@ class path_planner(object):
 if __name__ == "__main__":
     default_map = [
             [0, 0, 0],
-            [1, 0, 0],
             [0, 0, 0],
+            [1, 0, 0],
             [0, 1, 0],
+            [0, 0, 0],
             [0, 0, 1],
             [1, 0, 0],
-            [0, 1, 0],
-            [1, 1, 0]
+            [1, 1, 0],
+            [0, 0, 0],
+            [0, 0, 1],
+            [0, 1, 1],
+            [0, 1, 1]
         ]
 
     big_map = [
-        [0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0],
-        [0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 1],
-        [0, 0, 0, 1, 0]
+        [0, 0, 0, 0, 0, 0, 1, 1, 1],
+        [0, 1, 0, 0, 0, 1, 1, 0, 0],
+        [0, 0, 1, 0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 1, 0, 0, 0, 0, 0]
     ]
-    p = path_planner(big_map)
+    p = path_planner(default_map)
 
     p.gen_nodes()
     p.gen_paths()
     p.gen_buffer_mats()
-    path = p.plan([4, 0])
+    path = p.plan([11, 0])
     p.draw_path(path)
                       
