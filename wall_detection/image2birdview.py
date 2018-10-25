@@ -4,7 +4,7 @@ from os import listdir
 import slicer
 import math
 
-'''Put this py file in the same folder where 1280*960 jpg files (fake data) are saved
+'''Put this py file in the same folder where 1280*720 jpg files (fake data) are saved
    Simply run the program
    The white pieces of the line are the places without obstacles. 
    You can imagine that the pictures are vertically squeezed''' 
@@ -75,6 +75,7 @@ class depth_bird_view():
                     black_count = 0
         birdmap = cv2.resize(squeezed_matrix,(self.width, 500), interpolation = cv2.INTER_LINEAR)
         self.show_image(birdmap)
+        return squeezed_matrix
 
     def remove_ceiling_floor(self, nparray, layer_number):
         no_ceil_floor_nparray = nparray
@@ -102,7 +103,8 @@ class depth_bird_view():
 
 def main():
     squeeze = depth_bird_view()
-    squeeze.squeeze_matrix()
+    squeezed_matrix = squeeze.squeeze_matrix()
+    squeeze.show_image(squeezed_matrix)
     #squeeze.squeeze_jpg()
 if __name__ == "__main__":
     main()
