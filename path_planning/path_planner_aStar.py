@@ -7,6 +7,9 @@
 # the starting position is the center position of the map, one layer below.
 # the first step the person can take is directly in front of them or
 # the diagonal in front of them
+# - the first line is the first step someone will take.
+# - 0 in a map represents free space
+# - 1 in a map represents an obstacle
 
 #######################################################
 #######################################################
@@ -19,7 +22,10 @@ import numpy as np
 import math
 m_v = float("inf")
 
-# Define Path Planning Class
+#######################################################
+############ Define Path Planner Class ################
+#######################################################
+
 class path_planner(object):
 	def __init__(self, map, goal=None):
 		self.map = map
@@ -27,6 +33,7 @@ class path_planner(object):
 		height = len(map)
 		width = len(map[1])
 		center = int(int(width) / int(2))
+		self.center = center
 
 		# If no goal provided, then assume the goal is the center position
 		# at the end of the map.
@@ -41,9 +48,9 @@ class path_planner(object):
 		self.heuristics = m_v_map.copy()
 		self.heuristics[goal[0]][goal[1]] = 0 
 
-		# Initialize the graph map
+		# Initialize the graph map with zeros, the same size as the given map
 		the_graph=[]
-		[the_graph.append([m_v]*width) for x in range(0,height)]
+		[the_graph.append([0]*width) for x in range(0,height)]
 		self.graph = the_graph.copy()	
 
 		# Initialize the openset with a starting location. For us this will be the center point
@@ -51,6 +58,9 @@ class path_planner(object):
 		self.openset = [[0,center]]
 
 		self.closedsed = []
+
+		# Initialize the path list
+		self.path = []
 
 	def __str__(self):
 		return str(self.map)
@@ -113,15 +123,32 @@ class path_planner(object):
 		# it will then be passed to the path_planner for use in calculating the total cost of moving
 		# to each node?
 
-		print("still writing")
+		# if either of the first step positions, center, center-1, or center+1 is an obstacle
+		# then set that position on the graph to be m_v. If there are no obstacles then 
+		# set the first row to be 2 1 2 centered at center
+
+		# Initialize the three steps surround center in the first row to be 2, 1, 2
+		self.graph[0][self.center-1] = 2
+		self.graph[0][self.center] = 1
+		self.graph[0][self.center+1] = 2
+
+		# Check if there are obstacles in the first three immediate steps
+		if self.map[0][self.center] == 1:
+			self.graph[0][self.center] = m_v
+		if self.map[0][self.center+1] == 1:
+			self.graph[0][self.center+1] = m_v
+		if self.map[0][self.center-1] == 1:
+			self.graph[0][self.center-1] = m_v
+
+
+		return self.graph
+
 
 	def path_planner(self):
 		# The starting location is always from the row beneath, so our first row
 		# will always be the heuristics + cost for the immediate three positions. need to add the 
 		# center position to the open list. 
-
-		# Run the path planner while the open set is not empty!
-		print("still writiting.")
+		print ("here")
 
 		
 
@@ -130,7 +157,7 @@ class path_planner(object):
 # - before we set the first row, we need to check if all three of those locations
 # 	are an obstacle. if that's the case then send back an empty list.
 # - not sure if i need the nearest neighbors algorithm?
-# - 
+
 
 
 
@@ -155,14 +182,29 @@ big_map = [
     [0, 0, 0, 0, 1],
     [0, 0, 0, 1, 0]]
 
+blocked_map = [
+        [1, 0, 1],
+        [1, 0, 0],
+        [0, 0, 0],
+        [0, 1, 0],
+        [0, 1, 1],
+        [0, 0, 0],
+        [0, 1, 0],
+        [1, 1, 0]
+    ]
+
 
 # Test the Class
-p = path_planner(big_map, [3,1])
+p = path_planner(blocked_map, [3,1])
 #print(p.map)
 #print(p.graph)
-print(p.heuristics)
+#print(p.heuristics)
+t = p.gen_graph()
+print(t)
+
+print(p.path_planner())
 #print(p.gen_nearest_decided_neighbors([3,1], 0))
-t=p.gen_heuristics(0)
-for i in range(len(t)):
-	print(t[i])
+# t=p.gen_heuristics(0)
+# for i in range(len(t)):
+# 	print(t[i])
 
