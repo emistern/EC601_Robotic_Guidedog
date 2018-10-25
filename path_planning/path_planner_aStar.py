@@ -148,7 +148,17 @@ class path_planner(object):
 		# The starting location is always from the row beneath, so our first row
 		# will always be the heuristics + cost for the immediate three positions. need to add the 
 		# center position to the open list. 
-		print ("here")
+		
+		# If there is an obstacle in the center, center-1, and center + 1 then 
+		# return self.path as an empty list
+		if (self.map[0][self.center]==1) and (self.map[0][self.center-1]==1) and (self.map[0][self.center+1]==1):
+			# then return self.path = []
+			self.path = []
+			return self.path
+		else:
+			# there is a possible path. so go fine it :)
+			self.path = [2, 1]
+			return self.path
 
 		
 
