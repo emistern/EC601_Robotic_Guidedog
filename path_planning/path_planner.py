@@ -63,7 +63,7 @@ class path_planner(object):
         for i in range(height):
             new_row = []
             for j in range(width):
-                new_row.append(0)
+                new_row.append(m_v)
             self.values.append(new_row)
 
         self.prevs = []
@@ -134,20 +134,11 @@ class path_planner(object):
         self.nodes = nodes
 
 
-    def plan(self, target):
+    def plan(self):
         
         # Transer into numpy array
         nodes = np.array(self.nodes)
         paths = np.array(self.paths)
-
-        # Target node
-        t_layer = target[0]
-        t_pos = target[1]
-
-        # Check if the target node is valid
-        if (t_layer >= nodes.shape[0] or t_pos >= nodes.shape[1] or self.map[t_layer][t_pos] ==1):
-            print("Invalid target")
-            return
 
         # Dynamic Programming
         finish = False
@@ -172,18 +163,22 @@ class path_planner(object):
             # Save the optimal path length
             self.values[layer][pos] = nodes[layer][pos]
             nodes[layer][pos] = m_v
-            if (layer == t_layer and pos == t_pos):
-                break
 
             # Check finish
             finish = True
-            for row in self.nodes:
+            for row in nodes:
                 for e in row:
                     if (e != m_v):
                         finish = False
                         break
         
+    def find_optimal_path(self, target):
         # find the optimal path
+        
+        # Target node
+        t_layer = target[0]
+        t_pos = target[1]
+
         opt_path = []
         opt_path.append(t_pos)
         for i in range(t_layer, 0, -1):
@@ -192,8 +187,20 @@ class path_planner(object):
             else:
                 prev_pos = int(self.prevs[i][prev_pos])
             opt_path.insert(0, prev_pos)
-        print (opt_path)
         return opt_path
+
+    def find_default_target(self):
+        # find the default target based on minimal distances
+        height = np.array(self.values).shape[0]
+        width = np.array(self.values).shape[1]
+
+        center = int((width - 1) / 2)
+        for i in range(height-1, 0, -1):
+            if (self.values[i][center] != m_v):
+                return [i, center]
+
+        return []
+
 
     def draw_path(self, path):
 
@@ -242,7 +249,6 @@ class path_planner(object):
                 world = cv2.circle(world, pt2, int(unit_size / 3), (255, 0, 255), 10)
 
         cv2.imshow("path", world)
-        cv2.waitKey(0)
 
 if __name__ == "__main__":
     default_map = [
@@ -253,7 +259,7 @@ if __name__ == "__main__":
             [0, 0, 0],
             [0, 0, 1],
             [1, 0, 0],
-            [1, 1, 0],
+            [1, 1, 1],
             [0, 0, 0],
             [0, 0, 1],
             [0, 1, 1],
@@ -272,6 +278,9 @@ if __name__ == "__main__":
     p.gen_nodes()
     p.gen_paths()
     p.gen_buffer_mats()
-    path = p.plan([11, 0])
-    p.draw_path(path)
+    p.plan()
+    target = p.find_default_target()
+    if len(target) > 0:
+        path = p.find_optimal_path(target)
+        p.draw_path(path)
                       

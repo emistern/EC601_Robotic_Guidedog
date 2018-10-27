@@ -15,9 +15,10 @@ def squeeze(z, height, width, no_ceil_floor_nparray, squeezed_matrix, VERTICAL_S
                 pixel_count = 0
     return squeezed_matrix
 
-def slicer(fn, WIDTH, HEIGHT, TOTAL_LAYER_NUMBER):
-    a = np.load(fn)
+def slicer(depth_mat, WIDTH, HEIGHT, TOTAL_LAYER_NUMBER):
+    #a = np.load(fn)
     #print(a.shape)
+    a = depth_mat
     w = int(a.shape[1])
     h = int(a.shape[0])
     step_w = w / WIDTH

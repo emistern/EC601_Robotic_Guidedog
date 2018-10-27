@@ -51,14 +51,15 @@ class depth_bird_view():
             else:
                 continue
 
-    def squeeze_matrix(self, timing=True):
+    def squeeze_matrix(self, depth_mat, num_slice=10, timing=True):
         t_start = time.time()
         #raw_matrix = slicer.slicer('wall_detection/depth0003.npy', self.width, self.height)
-        raw_matrix = squeeze.slicer('wall_detection/depth0003.npy', self.width, self.height, 10)
-        
+        #raw_matrix = squeeze.slicer('wall_detection/depth0003.npy', self.width, self.height, 10)
+        raw_matrix = squeeze.slicer(depth_mat, self.width, self.height, num_slice)
+
         #squeezed_matrix = np.zeros([slicer.TOTAL_LAYER_NUMBER, self.width])
         squeezed_matrix = np.array([[]])
-        for z in range(slicer.TOTAL_LAYER_NUMBER):
+        for z in range(num_slice):
             t_loop_s = time.time()
 
             no_ceil_floor_nparray = self.remove_ceiling_floor(raw_matrix[:,:,z], z)
@@ -135,7 +136,7 @@ class depth_bird_view():
         cv2.waitKey(20)
         input()
 
-    def quantilize(self, sque_mat, n_sec=5, max_per_occ=0.01):
+    def quantilize(self, sque_mat, n_sec=7, max_per_occ=0.3):
 
         # Quantilize the squeezed matrix into different sections
 
