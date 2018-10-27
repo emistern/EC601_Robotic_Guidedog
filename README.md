@@ -56,3 +56,6 @@ Repository for EC601 Project: Robotic Guide dog
    Performing path planning on depth data.
 
    ![path planning](images/path_planning.png "Path Planning")
+4. Voice Interface
+   
+   Our syetem use voice interface to give instructions to the user. As the path planner gives out a list indicating the following steps to go, the voice interface will play corresponding audio to guide the user to move as the path plan.
