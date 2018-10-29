@@ -1,8 +1,53 @@
 import sys
 import cv2
 import numpy as np
+import os
+import time
 m_v = float("inf")
+class VoiceInterface(object):
 
+  def __init__(self):
+    self.straight_file= 'straight.mp3'
+    self.turnleft_file= 'turnleft.mp3'
+    self.turnright_file='turnright.mp3'
+    self.hardleft_file='hardleft.mp3'
+    self.hardright_file='hardright.mp3'
+    self.STOP_file='STOP.mp3'
+    self.noway_file='noway.mp3'
+
+  def play(self, pat, width):
+    b=10
+    center=width/2-0.5
+    if len(pat)==0:
+        cmd = 'play' + ' ' + self.noway_file
+        os.system(cmd)
+        time.sleep(1)
+        return
+    path=[]
+    path.append(pat[0]-center)
+    for i in range (1,len(pat)):
+        path.append(pat[i]-pat[i-1])
+    print(path)
+    for step in path:
+        if step == 1 and step!=b:
+            cmd = 'play' + ' ' + self.turnleft
+            os.system(cmd)
+        if step == 2 and step!=b:
+            cmd = 'play' + ' ' + self.hardleft_file
+            os.system(cmd)
+        if step == -1 and step!=b:
+            cmd = 'play' + ' ' + self.turnright_file
+            os.system(cmd)
+        if step == -2 and step!=b:
+            cmd = 'play' + ' ' + self.hardright_file
+            os.system(cmd)
+        if step == 0 and step!=b:
+            cmd = 'play' + ' ' + self.straight_file
+            os.system(cmd)
+        b=step
+        time.sleep(1)
+    cmd = 'play' + ' ' + self.STOP_file
+    os.system(cmd)
 class path_planner(object):
 
     def __init__(self, map):
@@ -63,7 +108,7 @@ class path_planner(object):
         for i in range(height):
             new_row = []
             for j in range(width):
-                new_row.append(m_v)
+                new_row.append(0)
             self.values.append(new_row)
 
         self.prevs = []
@@ -93,7 +138,7 @@ class path_planner(object):
                         else:
                             if k == j:
                                 trans[k] = 1
-                            elif (abs(k - j) == 1 and cur_row[j + (k-j)] == 0):
+                            elif (abs(k - j) == 1):
                                 trans[k] = 2
                             else:
                                 trans[k] = m_v
@@ -134,15 +179,23 @@ class path_planner(object):
         self.nodes = nodes
 
 
-    def plan(self):
+    def plan(self, target):
         
         # Transer into numpy array
         nodes = np.array(self.nodes)
         paths = np.array(self.paths)
 
+        # Target node
+        t_layer = target[0]
+        t_pos = target[1]
+
+        # Check if the target node is valid
+        if (t_layer >= nodes.shape[0] or t_pos >= nodes.shape[1] or self.map[t_layer][t_pos] ==1):
+            print("Invalid target")
+            return
+
         # Dynamic Programming
-        finish = False
-        while(not finish):
+        while(m_v in nodes):
             
             # Extract min node
             min_index = np.unravel_index(np.argmin(nodes, axis=None), nodes.shape)
@@ -163,22 +216,10 @@ class path_planner(object):
             # Save the optimal path length
             self.values[layer][pos] = nodes[layer][pos]
             nodes[layer][pos] = m_v
-
-            # Check finish
-            finish = True
-            for row in nodes:
-                for e in row:
-                    if (e != m_v):
-                        finish = False
-                        break
+            if (layer == t_layer and pos == t_pos):
+                break
         
-    def find_optimal_path(self, target):
         # find the optimal path
-        
-        # Target node
-        t_layer = target[0]
-        t_pos = target[1]
-
         opt_path = []
         opt_path.append(t_pos)
         for i in range(t_layer, 0, -1):
@@ -187,20 +228,8 @@ class path_planner(object):
             else:
                 prev_pos = int(self.prevs[i][prev_pos])
             opt_path.insert(0, prev_pos)
+        print (opt_path)
         return opt_path
-
-    def find_default_target(self):
-        # find the default target based on minimal distances
-        height = np.array(self.values).shape[0]
-        width = np.array(self.values).shape[1]
-
-        center = int((width - 1) / 2)
-        for i in range(height-1, 0, -1):
-            if (self.values[i][center] != m_v):
-                return [i, center]
-
-        return []
-
 
     def draw_path(self, path):
 
@@ -249,38 +278,34 @@ class path_planner(object):
                 world = cv2.circle(world, pt2, int(unit_size / 3), (255, 0, 255), 10)
 
         cv2.imshow("path", world)
+        cv2.waitKey(0)
 
 if __name__ == "__main__":
     default_map = [
             [0, 0, 0],
+            [1, 0, 0],
             [0, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
             [1, 0, 0],
             [0, 1, 0],
-            [0, 0, 0],
-            [0, 0, 1],
-            [1, 0, 0],
-            [1, 1, 1],
-            [0, 0, 0],
-            [0, 0, 1],
-            [0, 1, 1],
-            [0, 1, 1]
+            [1, 1, 0]
         ]
 
     big_map = [
-        [0, 0, 0, 0, 0, 0, 1, 1, 1],
-        [0, 1, 0, 0, 0, 1, 1, 0, 0],
-        [0, 0, 1, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 1],
+        [0, 0, 0, 1, 0]
     ]
-    p = path_planner(default_map)
+    p = path_planner(big_map)
 
     p.gen_nodes()
     p.gen_paths()
     p.gen_buffer_mats()
-    p.plan()
-    target = p.find_default_target()
-    if len(target) > 0:
-        path = p.find_optimal_path(target)
-        p.draw_path(path)
+    path = p.plan([4, 0])
+    p.draw_path(path)
+    interface = VoiceInterface()
+    interface.play(path,5)
                       

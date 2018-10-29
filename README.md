@@ -7,6 +7,7 @@ Repository for EC601 Project: Robotic Guide dog
 2. ad-hoc decision algorithm to generate directional instruction
 3. utilities for processing and storing depth data obtained from Intel RealSense RGB-D camera.
 4. Implementation of Djikstra Algorithm for path planning using depth data
+5. Voice user interface.
 
 ## Get Started
 
@@ -40,19 +41,50 @@ Repository for EC601 Project: Robotic Guide dog
    * Decision Module
    * User Interface Module 
 
-    ![block image](images/block_diagram.png "Block Diagram")
-1. Object Detection and Decision Algorithm
+    <img src="images/block_diagram.png" height=200>
+1. Object Detection and Decision Algorithm(Baseline)
    
     The Object Detection module(TinyYOLO Neural Network) find the obstacles in scene, and pass obstacle information to decision algorithm. The decision algorithm generate resonable instruction based on finding the maximum free space in scene.
 
-   ![decision image](images/decision.jpg "Detection and Decision")
+   <img src="images/decision.jpg" height=200>
+
+    ```
+    cd [EC601_ROBOTIC_GUIDEDOG]/tinyYOLOv2
+    python decisionTestbench.py
+    ```
+
 2. Intel RealSense depth data post-processing
 
     We are trying to use depth data from Intel RealSense RGB-D camera to imporve the capability of obstacle detection.
 
-    ![depth data](images/hole_filling.jpg "Image Processing")
-3. Path Planning
-   
-   Performing path planning on depth data.
+    <img src="images/hole_filling.jpg" height=200>
 
-   ![path planning](images/path_planning.png "Path Planning")
+    ```
+    cd [EC601_ROBOTIC_GUIDEDOG]/realsense
+    python rs_depth_worker.py
+    ```
+
+3. Path Planning on Depth Data(Develop)
+   
+   Performing path planning on depth data. You can change the **dep_mat_fn** variable in **wrapper.py** to test on different depth images.
+
+   ```
+    cd [EC601_ROBOTIC_GUIDEDOG]
+    python wrapper.py
+    ```
+
+   <img src="images/path_plan_with_depth.jpg" height=200>
+   
+   Path planning to avoid a chair in front of you.
+
+   <img src="images/path_plan_with_depth_1.jpg" height=200>
+
+
+   Path planning to let you walk straight in freespace.
+
+4. Voice-based User Interface
+   
+   ```
+    cd [EC601_ROBOTIC_GUIDEDOG]/voice
+    python voice-class.py
+    ```
