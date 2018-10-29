@@ -24,7 +24,7 @@ NO_FLOOR = BOTTOM_THRESHOLD/math.sin(VERTICAL_FOV/2)
 
 class depth_bird_view():
 
-    def __init__(self, path = './', img_width = 1280, img_height = 720):
+    def __init__(self, path = './'):
         self.path = path
         self.width = 320
         self.height = 240
@@ -172,6 +172,7 @@ def main():
     quntilized_matrix = squeeze.quantilize(squeezed_matrix)
     #print(quntilized_matrix)
     #squeeze.show_image(squeezed_matrix)
+
     #squeeze.squeeze_jpg()
 if __name__ == "__main__":
     main()

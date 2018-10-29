@@ -79,6 +79,7 @@ Repository for EC601 Project: Robotic Guide dog
 
    <img src="images/path_plan_with_depth_1.jpg" height=200>
 
+
    Path planning to let you walk straight in freespace.
 
 4. Voice-based User Interface

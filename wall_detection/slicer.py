@@ -4,6 +4,7 @@ import cv2
 Take one frame of depth image and slice it into pieces, return a 3-d matrix [y,x,layer]
 '''
 #.np file addr
+
 file_name = 'wall_detection/depth0003.npy'
 WIDTH = 640
 HEIGHT = 360
@@ -21,6 +22,7 @@ def slicer_bak():
                     a[i,j] = 0
                     b[i,j,c] = 1
     return b
+
 
 def slicer(fn, WIDTH, HEIGHT):
     a = np.load(fn)
@@ -56,11 +58,12 @@ def slicer(fn, WIDTH, HEIGHT):
         x += 1
         #print(b)
     return b
-'''
+
     for k in range (TOTAL_LAYER_NUMBER):
         cv2.imshow("Verify", b[:,:,k])
         cv2.waitKey(20)
         input()
-'''
+
 if __name__ == "__main__":
     print(slicer('depth0003.npy'))
+
