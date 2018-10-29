@@ -4,12 +4,17 @@
 #################### Assumptions ######################
 #######################################################
 
-# the starting position is the center position of the map, one layer below.
-# the first step the person can take is directly in front of them or
-# the diagonal in front of them
-# - the first line is the first step someone will take.
+# - the starting position is the center position of the map, one layer above.
+# - the first step the person can take is directly in front of them or
+#	the diagonal in front of them 
+# - the first row of the list is the first step someone will take.
 # - 0 in a map represents free space
 # - 1 in a map represents an obstacle
+# - User can more straight, diagonal left, or diagonal right 
+# - in the path planner, 1 is the cost given to a 
+#	straight motion and 2 is the cost given to diagonal motions
+# - if there is no path available, the planner will return []
+# - the planner also needs to return the size of the map (just width)
 
 #######################################################
 #######################################################
@@ -140,6 +145,10 @@ class path_planner(object):
 		if self.map[0][self.center-1] == 1:
 			self.graph[0][self.center-1] = m_v
 
+		# Now with the first three immediate steps set up, we can continue to make the graph.
+		# Every layer has a matrix that determines the available options to move to between
+		# two layers
+
 
 		return self.graph
 
@@ -148,7 +157,7 @@ class path_planner(object):
 		# The starting location is always from the row beneath, so our first row
 		# will always be the heuristics + cost for the immediate three positions. need to add the 
 		# center position to the open list. 
-		
+
 		# If there is an obstacle in the center, center-1, and center + 1 then 
 		# return self.path as an empty list
 		if (self.map[0][self.center]==1) and (self.map[0][self.center-1]==1) and (self.map[0][self.center+1]==1):
@@ -163,9 +172,6 @@ class path_planner(object):
 		
 
 ## Things to implement:
-# - in the graph, the first row will be 2,1,2 centered at the center of the graph.
-# - before we set the first row, we need to check if all three of those locations
-# 	are an obstacle. if that's the case then send back an empty list.
 # - not sure if i need the nearest neighbors algorithm?
 
 
@@ -193,7 +199,7 @@ big_map = [
     [0, 0, 0, 1, 0]]
 
 blocked_map = [
-        [1, 0, 1],
+        [1, 1, 1],
         [1, 0, 0],
         [0, 0, 0],
         [0, 1, 0],
