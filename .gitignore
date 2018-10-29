@@ -10,7 +10,8 @@ graph
 */build/*
 *.bag
 */tmp_img/*
-CMakeLists.txt
+*.mp3
+*.wav
 */build/*
 */devel/*
 /.vs/EC601_Robotic_Guidedog/v15/Browse.VC.opendb

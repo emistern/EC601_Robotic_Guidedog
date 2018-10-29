@@ -37,6 +37,18 @@ class depth_worker():
 
         return np.asanyarray(mat / np.amax(mat) * 255.0).astype(np.uint8)
 
+    def show_depth_matrix(self, path):
+
+        # show the depth matrix given path with OpenCV
+
+        raw = np.load(path)
+
+        normalized = self.normalize_matrix(raw)
+
+        image_color = cv2.applyColorMap(normalized, cv2.COLORMAP_JET)
+
+        cv2.imshow("Verify", image_color)
+    
     def verify_depth_matrix(self, n_img = 3, show_img = True):
 
         # -------------------------------------------- #
