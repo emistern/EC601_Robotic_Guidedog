@@ -19,6 +19,15 @@
 #######################################################
 #######################################################
 
+#######################################################
+################ Things to Consider ###################
+#######################################################
+# - if there is a row filled with obstacles and the goal 
+#	is behind the row of obstacles then pass back an empty
+#	path or should we pass back a path that gets you closest
+#	to it?
+
+
 
 #Import Libraries
 import sys
