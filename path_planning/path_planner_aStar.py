@@ -63,9 +63,14 @@ class path_planner(object):
 		self.heuristics[goal[0]][goal[1]] = 0 
 
 		# Initialize the graph map with zeros, the same size as the given map
+		# the_graph=[]
+		# [the_graph.append([0]*width) for x in range(0,height)]
+		# self.graph = the_graph.copy()	
+		one_layer = []
+		[one_layer.append([m_v]*width) for x in range(0,width)]
 		the_graph=[]
-		[the_graph.append([0]*width) for x in range(0,height)]
-		self.graph = the_graph.copy()	
+		[the_graph.append(one_layer.copy()) for x in range(0,height-1)]
+		self.graph = the_graph.copy()
 
 		# Initialize the openset with a starting location. For us this will be the center point
 		# of the first row.
@@ -142,17 +147,17 @@ class path_planner(object):
 		# set the first row to be 2 1 2 centered at center
 
 		# Initialize the three steps surround center in the first row to be 2, 1, 2
-		self.graph[0][self.center-1] = 2
-		self.graph[0][self.center] = 1
-		self.graph[0][self.center+1] = 2
+		self.graph[0][0][self.center-1] = 2
+		self.graph[0][0][self.center] = 1
+		self.graph[0][0][self.center+1] = 2
 
 		# Check if there are obstacles in the first three immediate steps
 		if self.map[0][self.center] == 1:
-			self.graph[0][self.center] = m_v
+			self.graph[0][0][self.center] = m_v
 		if self.map[0][self.center+1] == 1:
-			self.graph[0][self.center+1] = m_v
+			self.graph[0][0][self.center+1] = m_v
 		if self.map[0][self.center-1] == 1:
-			self.graph[0][self.center-1] = m_v
+			self.graph[0][0][self.center-1] = m_v
 
 		# Now with the first three immediate steps set up, we can continue to make the graph.
 		# Every layer has a matrix that determines the available options to move to between
@@ -220,10 +225,11 @@ blocked_map = [
 
 
 # Test the Class
-p = path_planner(blocked_map, [3,1])
+p = path_planner(big_map, [3,1])
 #print(p.map)
 #print(p.graph)
 #print(p.heuristics)
+# print(p.graph)
 t = p.gen_graph()
 print(t)
 
