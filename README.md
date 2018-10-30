@@ -3,27 +3,27 @@ Repository for EC601 Project: Robotic Guide dog
 
 ## Abstract
 
-    For people who are visually impaired or blind there are only two options currently available to allow them to navigate the world independently:
-    1. White Cane
-    2. Guide Dog
+For people who are visually impaired or blind there are only two options currently available to allow them to navigate the world independently:
+1. White Cane
+2. Guide Dog
 
-    The main purpose of both items is to help a user avoid obstacles as they navigate from a starting position to a goal location. The high level path planning, (i.e. knowing what streets to walk down to get to a location) is done by the user, while the lower level path planning, (i.e. avoiding obstacles in the immediate path) is done by the Cane or dog. However, both of these options require the use of the user’s hand leaving them with only one free hand to use while they are navigating through their life. Additionally, the Cane, although only a few hundred dollars [1], protects a user from obstacles solely on the ground while a Guide dog, (costs: $50,000 + $1500/year [2]), can protect a user from obstacles between the ground and the height of the user. A new product that offers a user similar capabilities of a guide dog for a much lower price, and most importantly giving the user use of both hands, is needed to disrupt this environment.
+The main purpose of both items is to help a user avoid obstacles as they navigate from a starting position to a goal location. The high level path planning, (i.e. knowing what streets to walk down to get to a location) is done by the user, while the lower level path planning, (i.e. avoiding obstacles in the immediate path) is done by the Cane or dog. However, both of these options require the use of the user’s hand leaving them with only one free hand to use while they are navigating through their life. Additionally, the Cane, although only a few hundred dollars [1], protects a user from obstacles solely on the ground while a Guide dog, (costs: $50,000 + $1500/year [2]), can protect a user from obstacles between the ground and the height of the user. A new product that offers a user similar capabilities of a guide dog for a much lower price, and most importantly giving the user use of both hands, is needed to disrupt this environment.
 
-    The device will help a user safely and independently navigate the world in a care-free and hands-free environment. It will be powered by a depth camera and a small computer for image processing, path planning, and object detection. The depth camera will serve two purposes:
-    1. Detect distance to obstacles using depth data
-        The depth data will be sliced into layers, (each layer represents the average step a user will take), and then each             layer will be discretized into 0 for free space and 1 for an obstacle. 
-    2. RGB data for object detection using neural network
-        A neural network will be used to detect an object (either a door or a chair) in the RGB data and then the location of           that object will be passed to the path planning algorithm as the goal for the user.
-    The device will be used in two ways:
-    1. Infinite Free Forward: if the user wants to walk freely the goal will be set to the farthest free location on the            discretized map in front of them
-    2. Walk to object: The location of a specified object will be passed to the path planning alogirthm as the goal. If there       are many objects available then the program will return 1 of the objects and if no objects are available the device will        command the user to rotate, which will effectively scan a different part of the room for the object.
-    The path planning algorithm defaults the goal location to the infinitely farthest free location in front of them unless a   goal from the object detection algorithm passes in a goal location. Currently, the team is testing between the efficiency/performance of two path planning algorithms: 
-    1. Dijkstra
-    2. A*
-    The interaction between the user and the device goes in two directions:
-    1. User to Robot: the user will tell the device if they want to walk to an object
-    2. Device to User: the device will communicate to the user what path to take via sound. 
-    Currently, the team is testing different means of communication between the device and the user.
+The device will help a user safely and independently navigate the world in a care-free and hands-free environment. It will be powered by a depth camera and a small computer for image processing, path planning, and object detection. The depth camera will serve two purposes:
+1. Detect distance to obstacles using depth data
+    The depth data will be sliced into layers, (each layer represents the average step a user will take), and then each             layer will be discretized into 0 for free space and 1 for an obstacle. 
+2. RGB data for object detection using neural network
+    A neural network will be used to detect an object (either a door or a chair) in the RGB data and then the location of           that object will be passed to the path planning algorithm as the goal for the user.
+The device will be used in two ways:
+1. Infinite Free Forward: if the user wants to walk freely the goal will be set to the farthest free location on the            discretized map in front of them
+2. Walk to object: The location of a specified object will be passed to the path planning alogirthm as the goal. If there       are many objects available then the program will return 1 of the objects and if no objects are available the device will        command the user to rotate, which will effectively scan a different part of the room for the object.
+The path planning algorithm defaults the goal location to the infinitely farthest free location in front of them unless a   goal from the object detection algorithm passes in a goal location. Currently, the team is testing between the efficiency/performance of two path planning algorithms: 
+1. Dijkstra
+2. A*
+The interaction between the user and the device goes in two directions:
+1. User to Robot: the user will tell the device if they want to walk to an object
+2. Device to User: the device will communicate to the user what path to take via sound. 
+Currently, the team is testing different means of communication between the device and the user.
     
     
 
