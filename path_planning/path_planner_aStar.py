@@ -63,9 +63,6 @@ class path_planner(object):
 		self.heuristics[goal[0]][goal[1]] = 0 
 
 		# Initialize the graph map with zeros, the same size as the given map
-		# the_graph=[]
-		# [the_graph.append([0]*width) for x in range(0,height)]
-		# self.graph = the_graph.copy()	
 		one_layer = []
 		[one_layer.append([m_v]*width) for x in range(0,width)]
 		the_graph=[]
