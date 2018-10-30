@@ -100,6 +100,13 @@ Currently, the team is testing different means of communication between the devi
    
    Performing path planning on depth data. You can change the **dep_mat_fn** variable in **wrapper.py** to test on different depth images.
 
+   Before you can run the wrapper, please complie the cython code first with
+   ```
+   cd [EC601_ROBOTIC_GUIDEDOG]/wall_detection # where you can find the setup.py
+   python setup.py build_ext --inplace  # compile the cython code
+   ```
+   Then you can run it
+
    ```
     cd [EC601_ROBOTIC_GUIDEDOG]
     python wrapper.py
