@@ -11,8 +11,8 @@
 # - 0 in a map represents free space
 # - 1 in a map represents an obstacle
 # - User can more straight, diagonal left, or diagonal right 
-# - in the path planner, 1 is the cost given to a 
-#	straight motion and 2 is the cost given to diagonal motions
+# - in the path planner, the cost given to a 
+#	straight motion is 1 and the cost given to diagonal motions is 2
 # - if there is no path available, the planner will return []
 # - the planner also needs to return the size of the map (just width)
 
