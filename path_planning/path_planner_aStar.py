@@ -48,6 +48,8 @@ class path_planner(object):
 		width = len(map[1])
 		center = int(int(width) / int(2))
 		self.center = center
+		self.height = height
+		self.width = width
 
 		# If no goal provided, then assume the goal is the center position
 		# at the end of the map.
@@ -65,9 +67,7 @@ class path_planner(object):
 		# Initialize the graph map with zeros, the same size as the given map
 		one_layer = []
 		[one_layer.append([m_v]*width) for x in range(0,width)]
-		the_graph=[]
-		[the_graph.append(one_layer.copy()) for x in range(0,height-1)]
-		self.graph = the_graph.copy()
+		self.graph=one_layer.copy()
 
 		# Initialize the openset with a starting location. For us this will be the center point
 		# of the first row.
@@ -134,32 +134,39 @@ class path_planner(object):
 		return nearest_decided_neighbors
 
 	def gen_graph(self):
-		# also need to define a gen_graph function and set that up based on where the obstacles are
-		# the graph is the same size as the map. however it will have m_v's where obstacles are.
-		# it will then be passed to the path_planner for use in calculating the total cost of moving
-		# to each node?
-
-		# if either of the first step positions, center, center-1, or center+1 is an obstacle
-		# then set that position on the graph to be m_v. If there are no obstacles then 
-		# set the first row to be 2 1 2 centered at center
+		# Set up the graph 
+		# if either of the first step positions (first row), center, center-1, or center+1 
+		# is an obstacle then set that position on the graph to be m_v. If there are no 
+		# obstacles then set the first row to be 2 1 2 centered at center
 
 		# Initialize the three steps surround center in the first row to be 2, 1, 2
-		self.graph[0][0][self.center-1] = 2
-		self.graph[0][0][self.center] = 1
-		self.graph[0][0][self.center+1] = 2
-
-		# Check if there are obstacles in the first three immediate steps
+		self.graph[1][self.center-1] = 2
+		self.graph[1][self.center] = 1
+		self.graph[1][self.center+1] = 2
 		if self.map[0][self.center] == 1:
-			self.graph[0][0][self.center] = m_v
+			self.graph[1][self.center] = m_v
 		if self.map[0][self.center+1] == 1:
-			self.graph[0][0][self.center+1] = m_v
+			self.graph[1][self.center+1] = m_v
 		if self.map[0][self.center-1] == 1:
-			self.graph[0][0][self.center-1] = m_v
+			self.graph[1][self.center-1] = m_v
 
-		# Now with the first three immediate steps set up, we can continue to make the graph.
-		# Every layer has a matrix that determines the available options to move to between
-		# two layers
-
+		for i_row in range(self.height-1):
+			new_layer = []
+			[new_layer.append([m_v]*self.width) for x in range(0,self.width)]
+			for i_col in range(self.width):
+				for j_col in range(self.width):
+					if self.map[i_row+1][j_col] == 1: #this location on the map is an obstacle
+						new_layer[i_col][j_col] = m_v
+					else:
+						diff = abs(j_col-i_col)
+						if diff == 0:
+							new_layer[i_col][j_col] = 1
+						elif diff == 1:
+							new_layer[i_col][j_col] = 2
+						else:
+							new_layer[i_col][j_col] = m_v
+			self.graph.append(new_layer)
+						
 
 		return self.graph
 
@@ -180,14 +187,6 @@ class path_planner(object):
 			self.path = [2, 1]
 			return self.path
 
-		
-
-## Things to implement:
-# - not sure if i need the nearest neighbors algorithm?
-
-
-
-
 
 
 # Testing Here!
@@ -204,8 +203,8 @@ default_map = [
 
 big_map = [
     [0, 0, 0, 0, 0],
-    [0, 1, 0, 0, 0],
-    [0, 0, 1, 0, 0],
+    [1, 1, 0, 0, 0],
+    [0, 0, 0, 1, 1],
     [0, 0, 0, 0, 1],
     [0, 0, 0, 1, 0]]
 
@@ -222,17 +221,18 @@ blocked_map = [
 
 
 # Test the Class
-p = path_planner(big_map, [3,1])
+p = path_planner(default_map, [3,1])
 #print(p.map)
 #print(p.graph)
 #print(p.heuristics)
 # print(p.graph)
 t = p.gen_graph()
-print(t)
+#print(t)
 
-print(p.path_planner())
+#print(p.path_planner())
 #print(p.gen_nearest_decided_neighbors([3,1], 0))
 # t=p.gen_heuristics(0)
-# for i in range(len(t)):
-# 	print(t[i])
+for i in range(len(t)):
+	for j in range(len(t[0])):
+		print(t[i][j])
 
