@@ -1,5 +1,6 @@
 from wall_detection import image2birdview
 from path_planning import path_planner
+from voice import voice_class
 import time
 import numpy as np
 from realsense.rs_depth_util import *
@@ -48,6 +49,14 @@ class ModuleWrapper(object):
             print("plan time" + str(t_plan_e - t_plan_s))
 
         cv2.waitKey(0)
+        i = voice_class.VoiceInterface(straight_file='voice/straight.mp3',
+                                       turnleft_file = 'voice/turnleft.mp3',
+                                        turnright_file = 'voice/turnright.mp3',
+                                        hardleft_file = 'voice/hardleft.mp3',
+                                        hardright_file = 'voice/hardright.mp3',
+                                        STOP_file = 'voice/STOP.mp3',
+                                        noway_file = 'voice/noway.mp3')
+        i.play(path,nun_section)
 
 if __name__ == "__main__":
 
