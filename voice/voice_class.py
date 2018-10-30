@@ -3,14 +3,20 @@ import os
 import time
 class VoiceInterface(object):
 
-  def __init__(self):
-    self.straight_file= 'straight.mp3'
-    self.turnleft_file= 'turnleft.mp3'
-    self.turnright_file='turnright.mp3'
-    self.hardleft_file='hardleft.mp3'
-    self.hardright_file='hardright.mp3'
-    self.STOP_file='STOP.mp3'
-    self.noway_file='noway.mp3'
+  def __init__(self, straight_file = 'straight.mp3',
+                     turnleft_file = 'turnleft.mp3',
+                     turnright_file = 'turnright.mp3',
+                     hardleft_file = 'hardleft.mp3',
+                     hardright_file = 'hardright.mp3',
+                     STOP_file = 'STOP.mp3',
+                     noway_file = 'noway.mp3'):
+    self.straight_file= straight_file
+    self.turnleft_file= turnleft_file
+    self.turnright_file=turnleft_file
+    self.hardleft_file=hardleft_file
+    self.hardright_file=hardright_file
+    self.STOP_file=STOP_file
+    self.noway_file=noway_file
 
   def play(self, pat, width):
     b=10
@@ -27,7 +33,7 @@ class VoiceInterface(object):
     print(path)
     for step in path:
         if step == 1 and step!=b:
-            cmd = 'play' + ' ' + self.turnleft
+            cmd = 'play' + ' ' + self.turnleft_file
             os.system(cmd)
         if step == 2 and step!=b:
             cmd = 'play' + ' ' + self.hardleft_file
