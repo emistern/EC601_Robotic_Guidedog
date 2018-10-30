@@ -14,12 +14,15 @@ The device will help a user safely and independently navigate the world in a car
     The depth data will be sliced into layers, (each layer represents the average step a user will take), and then each             layer will be discretized into 0 for free space and 1 for an obstacle. 
 2. RGB data for object detection using neural network
     A neural network will be used to detect an object (either a door or a chair) in the RGB data and then the location of           that object will be passed to the path planning algorithm as the goal for the user.
+
 The device will be used in two ways:
 1. Infinite Free Forward: if the user wants to walk freely the goal will be set to the farthest free location on the            discretized map in front of them
 2. Walk to object: The location of a specified object will be passed to the path planning alogirthm as the goal. If there       are many objects available then the program will return 1 of the objects and if no objects are available the device will        command the user to rotate, which will effectively scan a different part of the room for the object.
+
 The path planning algorithm defaults the goal location to the infinitely farthest free location in front of them unless a   goal from the object detection algorithm passes in a goal location. Currently, the team is testing between the efficiency/performance of two path planning algorithms: 
 1. Dijkstra
 2. A*
+
 The interaction between the user and the device goes in two directions:
 1. User to Robot: the user will tell the device if they want to walk to an object
 2. Device to User: the device will communicate to the user what path to take via sound. 
