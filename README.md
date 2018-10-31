@@ -62,6 +62,8 @@ Currently, the team is testing different means of communication between the devi
 4. For using path planning:
    
    * OpenCV (Only used for drawing planning result) 
+5. For audio to play on PC
+   * use sox to play audio
 
 ## How things work and Examples
 
