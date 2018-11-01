@@ -142,25 +142,18 @@ class path_planner(object):
 		# is an obstacle then set that position on the graph to be m_v. If there are no 
 		# obstacles then set the first row to be 2 1 2 centered at center
 
-		# Initialize the three steps surround center in the first row to be 2, 1, 2 + obstacle cost
-		next2you_obstacles = self.get_next_2_you_neighbors(0, self.center-1)
-		diag2you_obstacles = self.get_diag_2_you(0, self.center-1)
-		obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15
-		self.graph[0][self.center][self.center-1] = 2 + obstacles_cost
-		next2you_obstacles = self.get_next_2_you_neighbors(0, self.center)
-		diag2you_obstacles = self.get_diag_2_you(0, self.center)
-		obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15
-		self.graph[0][self.center][self.center] = 1
-		next2you_obstacles = self.get_next_2_you_neighbors(0, self.center+1)
-		diag2you_obstacles = self.get_diag_2_you(0, self.center+1)
-		obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15
-		self.graph[0][self.center][self.center+1] = 2
-		if self.map[0][self.center] == 1:
-			self.graph[0][self.center][self.center] = m_v
-		if self.map[0][self.center+1] == 1:
-			self.graph[0][self.center][self.center+1] = m_v
-		if self.map[0][self.center-1] == 1:
-			self.graph[0][self.center][self.center-1] = m_v
+		#Initialize the three steps surround center in the first row to be 2, 1, 2 + obstacle cost
+		first_row = [-1 ,0, 1]
+		for a_point in first_row:
+			next2you_obstacles = self.get_next_2_you_neighbors(0, self.center+a_point)
+			diag2you_obstacles = self.get_diag_2_you(0, self.center+a_point)
+			obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15
+			if a_point != 0:
+				cost = 2
+			else:
+				cost = 1
+			self.graph[0][self.center][self.center+a_point] = cost + obstacles_cost
+
 		
 		# For every additional pair of rows in the map (loop height - 1) create the graph
 		# for the given pair of rows. Then append this to the start of the graph!
