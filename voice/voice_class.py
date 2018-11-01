@@ -1,6 +1,7 @@
 import sys
 import os
 import time
+from playsound import playsound as play
 class VoiceInterface(object):
 
   def __init__(self, straight_file = 'straight.mp3',
@@ -12,7 +13,7 @@ class VoiceInterface(object):
                      noway_file = 'noway.mp3'):
     self.straight_file= straight_file
     self.turnleft_file= turnleft_file
-    self.turnright_file=turnleft_file
+    self.turnright_file=turnright_file
     self.hardleft_file=hardleft_file
     self.hardright_file=hardright_file
     self.STOP_file=STOP_file
@@ -22,8 +23,7 @@ class VoiceInterface(object):
     b=10
     center=width/2-0.5
     if len(pat)==0:
-        cmd = 'play' + ' ' + self.noway_file
-        os.system(cmd)
+        play(self.noway_file)
         time.sleep(1)
         return
     path=[]
@@ -33,26 +33,20 @@ class VoiceInterface(object):
     print(path)
     for step in path:
         if step == 1 and step!=b:
-            cmd = 'play' + ' ' + self.turnleft_file
-            os.system(cmd)
+            play(self.turnleft_file)
         if step == 2 and step!=b:
-            cmd = 'play' + ' ' + self.hardleft_file
-            os.system(cmd)
+            play(self.hardleft_file)
         if step == -1 and step!=b:
-            cmd = 'play' + ' ' + self.turnright_file
-            os.system(cmd)
+            play(self.turnright_file)
         if step == -2 and step!=b:
-            cmd = 'play' + ' ' + self.hardright_file
-            os.system(cmd)
+            play(self.hardright_file)
         if step == 0 and step!=b:
-            cmd = 'play' + ' ' + self.straight_file
-            os.system(cmd)
+            play(self.straight_file)
         b=step
         time.sleep(1)
-    cmd = 'play' + ' ' + self.STOP_file
-    os.system(cmd)
+    play(self.STOP_file)
 
 if __name__=="__main__":
 
     interface = VoiceInterface()
-    interface.play([],5)
+    interface.play([2,1,2,3,2],5)

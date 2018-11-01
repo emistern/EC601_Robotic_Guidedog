@@ -62,6 +62,8 @@ Currently, the team is testing different means of communication between the devi
 4. For using path planning:
    
    * OpenCV (Only used for drawing planning result) 
+5. For voice interface
+   * use sox to play audio
 
 ## How things work and Examples
 
@@ -133,5 +135,6 @@ Currently, the team is testing different means of communication between the devi
    
    ```
     cd [EC601_ROBOTIC_GUIDEDOG]/voice
-    python voice-class.py
+    python voice_class.py
     ```
+    The voice interface requires python playsound module. You can install this by pip(3) install playsound.
