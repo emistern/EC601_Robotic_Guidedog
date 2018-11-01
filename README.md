@@ -136,5 +136,5 @@ Currently, the team is testing different means of communication between the devi
    ```
     cd [EC601_ROBOTIC_GUIDEDOG]/voice
     python voice_class.py
-    The voice interface requires python playsound module. You can install this by pip(3) install playsound.
     ```
+    The voice interface requires python playsound module. You can install this by pip(3) install playsound.
