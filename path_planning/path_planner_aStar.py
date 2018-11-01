@@ -26,6 +26,13 @@
 #	is behind the row of obstacles then pass back an empty
 #	path or should we pass back a path that gets you closest
 #	to it?
+# - need to add in extra costs to open positions that are
+#	near obstacles (as we are building the graph when you
+#	are looking at a given position, check if it is next 
+#	an obstacle on the map. if it is, then give it a value 
+#	of 50!)
+# - The goal is an actual obstacle on the map. So I need
+#	to find the location closest to there?
 
 
 
@@ -140,6 +147,7 @@ class path_planner(object):
 		# obstacles then set the first row to be 2 1 2 centered at center
 
 		# Initialize the three steps surround center in the first row to be 2, 1, 2
+		
 		self.graph[0][self.center][self.center-1] = 2
 		self.graph[0][self.center][self.center] = 1
 		self.graph[0][self.center][self.center+1] = 2
@@ -149,7 +157,9 @@ class path_planner(object):
 			self.graph[0][self.center][self.center+1] = m_v
 		if self.map[0][self.center-1] == 1:
 			self.graph[0][self.center][self.center-1] = m_v
-		final = []
+		
+		# For every additional pair of rows in the map (loop height - 1) create the graph
+		# for the given pair of rows. Then append this to the start of the graph!
 		for i_row in range(self.height-1):
 			new_layer = []
 			[new_layer.append([m_v]*self.width) for x in range(0,self.width)]
@@ -165,10 +175,7 @@ class path_planner(object):
 							new_layer[i_col][j_col] = 2
 						else:
 							new_layer[i_col][j_col] = m_v
-			final.append(new_layer)
-		self.graph.append(final)
-						
-
+			self.graph.append(new_layer)
 		return self.graph
 
 
@@ -222,17 +229,17 @@ blocked_map = [
 
 
 # Test the Class
-p = path_planner(default_map, [3,1])
+p = path_planner(big_map, [3,1])
 #print(p.map)
 #print(p.graph)
 #print(p.heuristics)
 # print(p.graph)
 t = p.gen_graph()
-print(t)
+#print(t)
 
 #print(p.path_planner())
 
-# for i in range(len(t)):
-# 	for j in range(len(t[0])):
-# 		print(t[i][j])
+for i in range(len(t)):
+	for j in range(len(t[0])):
+		print(t[i][j])
 
