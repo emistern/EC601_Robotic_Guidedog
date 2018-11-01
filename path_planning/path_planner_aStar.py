@@ -186,6 +186,18 @@ class path_planner(object):
 			self.graph.append(new_layer)
 		return self.graph
 
+	def pick_start_pos(self):
+		graph_vals = self.graph[0][self.center]
+		min_index=graph_vals.index(min(graph_vals))
+		# If the first row is all obstacles then pass back an empty start list, which
+		# should tell the path_planner that there is no start
+		if (self.map[0][self.center]==1) and (self.map[0][self.center-1]==1) and (self.map[0][self.center+1]==1):
+			starting_location = []
+			return starting_location
+		else:
+			starting_location = [min_index]
+		return starting_location
+
 
 	def path_planner(self):
 		# The starting location is always from the row beneath, so our first row
@@ -194,7 +206,7 @@ class path_planner(object):
 
 		# If there is an obstacle in the center, center-1, and center + 1 then 
 		# return self.path as an empty list
-		if (self.map[0][self.center]==1) and (self.map[0][self.center-1]==1) and (self.map[0][self.center+1]==1):
+		if len(self.pick_start_pos())==0:
 			# then return self.path = []
 			self.path = []
 			return self.path
@@ -242,19 +254,14 @@ blocked_map = [
 
 
 # Test the Class
-p = path_planner(default_map, [4,2])
-#print(p.map)
-#print(p.graph)
-#print(p.heuristics)
-# print(p.graph)
-for i in range(len(p.map)):
-	print(p.map[i])
-# t = p.gen_graph()
-# # diags = p.get_diag_2_you(0, 1)
-# # print(diags)
-# print(t)
+p = path_planner(blocked_map, [4,2])
+t = p.gen_graph()
+print(t)
+startpos = p.pick_start_pos()
+print(startpos)
 
-#print(p.path_planner())
+
+print(p.path_planner())
 
 # for i in range(len(t)):
 # 	for j in range(len(t[0])):
