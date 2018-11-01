@@ -119,10 +119,11 @@ class path_planner(object):
 		for a_point in range(len(next2you)):
 			# First check if you're within the boundary
 			if (next2you[a_point][0] >= 0 and next2you[a_point][1] >= 0 and
-				next2you[a_point][0] <= self.height and next2you[a_point][1] <= self.width):
+				next2you[a_point][0] <= self.height-1 and next2you[a_point][1] <= self.width-1):
 				if self.map[next2you[a_point][0]][next2you[a_point][1]] == 1:
 					count_next2you_obstacles+=1
 		return count_next2you_obstacles
+
 
 	def gen_graph(self):
 		# Set up the graph 
@@ -154,8 +155,7 @@ class path_planner(object):
 						new_layer[i_col][j_col] = m_v
 					else:
 						diff = abs(j_col-i_col)
-						# next2you_obstacles = self.get_next_2_you_neighbors(i_row+1, j_col)
-						# print(next2you_obstacles)
+						next2you_obstacles = self.get_next_2_you_neighbors(i_row+1, j_col)
 						if diff == 0:
 							# Need to get the number of diag's that are obstacles
 							# and the number of next2you's that are obstacles
@@ -229,7 +229,7 @@ p = path_planner(small_map, [2,2])
 #print(p.heuristics)
 # print(p.graph)
 t = p.gen_graph()
-neighs = p.get_next_2_you_neighbors(1, 1)
+neighs = p.get_next_2_you_neighbors(1, 2)
 print(neighs)
 #print(t)
 
