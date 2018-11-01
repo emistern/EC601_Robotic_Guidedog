@@ -13,7 +13,7 @@ class VoiceInterface(object):
                      noway_file = 'noway.mp3'):
     self.straight_file= straight_file
     self.turnleft_file= turnleft_file
-    self.turnright_file=turnleft_file
+    self.turnright_file=turnright_file
     self.hardleft_file=hardleft_file
     self.hardright_file=hardright_file
     self.STOP_file=STOP_file
@@ -49,4 +49,4 @@ class VoiceInterface(object):
 if __name__=="__main__":
 
     interface = VoiceInterface()
-    interface.play([2,2,2,2,2],5)
+    interface.play([2,1,2,3,2],5)
