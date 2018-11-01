@@ -8,17 +8,32 @@ import squeeze
 import math
 import time
 
-'''Put this py file in the same folder where 1280*720 jpg files (fake data) are saved
+'''Put this py file in the same folder where slicer.py is saved
    Simply run the program
-   The white pieces of the line are the places without obstacles. 
-   You can imagine that the pictures are vertically squeezed''' 
+   Black = free space, white = obstacle
+   You can imagine that the pictures are vertically squeezed
+''' 
+
+'''Configuration Constants. Assume the camera is parallel to the ground'''
+# The maximum vertical angle (FOV) of realsense camera
 VERTICAL_FOV = 58/180*math.pi
+
+# Estimated distance between camera and ceiling/floor, used for removing the ceiling/floor area
+# More area will be cut out if the value is lowered
 TOP_THRESHOLD = 0.6
 BOTTOM_THRESHOLD = 0.6
+
+# Make a slice once every 0.5 meters
 STEP_LENGTH = 0.5
+
+# Minimum detection range of realsense camera
 MINIMUM_RANGE = 0.25
+
+# Ignore items which are smaller or equal to (5) pixel(s)
 VERTICAL_SIZE_THRESHOLD = 5
 HORIZONTAL_SIZE_THRESHOLD = 5
+
+# Distances within which no ceiling or floor area needs to be removed
 NO_CEIL = TOP_THRESHOLD/math.sin(VERTICAL_FOV/2)
 NO_FLOOR = BOTTOM_THRESHOLD/math.sin(VERTICAL_FOV/2)
 
@@ -28,7 +43,8 @@ class depth_bird_view():
         self.path = path
         self.width = 320
         self.height = 240
-
+      
+    # Used to squeeze jpg files, currently abandoned because we are not saving jpg files locally
     def squeeze_jpg(self):
         filenames = listdir(self.path)
         image = np.empty([self.height, self.width])
@@ -50,7 +66,8 @@ class depth_bird_view():
                 print(squeezed)
             else:
                 continue
-
+                  
+    # Squeeze a depth image (ndarray format), 10 128*72 pictures -> 128*10 birdview map
     def squeeze_matrix(self, depth_mat, num_slice=10, timing=True):
         t_start = time.time()
         #raw_matrix = slicer.slicer('wall_detection/depth0003.npy', self.width, self.height)

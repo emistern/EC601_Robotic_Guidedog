@@ -97,7 +97,15 @@ Currently, the team is testing different means of communication between the devi
     cd [EC601_ROBOTIC_GUIDEDOG]/realsense
     python rs_depth_worker.py
     ```
+    For a depth frame image, we separate it into several images of different length ranges (e.g. 0.25 m-0.75 m, 0.75 m-1.25 m). Each slice is compressed vertically into an array. The image below shows the birdview map made of 10 slices.
+    
+    <img src="images/squeeze_demo.jpeg" height=300>
 
+    ```
+    cd [EC601_ROBOTIC_GUIDEDOG]/wall_detection
+    python image2birdview.py
+    ```
+    
 3. Path Planning on Depth Data(Develop)
    
    Performing path planning on depth data. You can change the **dep_mat_fn** variable in **wrapper.py** to test on different depth images.
