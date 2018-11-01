@@ -64,10 +64,10 @@ class path_planner(object):
 		self.heuristics = m_v_map.copy()
 		self.heuristics[goal[0]][goal[1]] = 0 
 
-		# Initialize the graph map with zeros, the same size as the given map
+		# Initialize the graph map with infs, the same size as the given map
 		one_layer = []
 		[one_layer.append([m_v]*width) for x in range(0,width)]
-		self.graph=one_layer.copy()
+		self.graph=[one_layer.copy()]
 
 		# Initialize the openset with a starting location. For us this will be the center point
 		# of the first row.
@@ -140,22 +140,22 @@ class path_planner(object):
 		# obstacles then set the first row to be 2 1 2 centered at center
 
 		# Initialize the three steps surround center in the first row to be 2, 1, 2
-		self.graph[1][self.center-1] = 2
-		self.graph[1][self.center] = 1
-		self.graph[1][self.center+1] = 2
+		self.graph[0][self.center][self.center-1] = 2
+		self.graph[0][self.center][self.center] = 1
+		self.graph[0][self.center][self.center+1] = 2
 		if self.map[0][self.center] == 1:
-			self.graph[1][self.center] = m_v
+			self.graph[0][self.center][self.center] = m_v
 		if self.map[0][self.center+1] == 1:
-			self.graph[1][self.center+1] = m_v
+			self.graph[0][self.center][self.center+1] = m_v
 		if self.map[0][self.center-1] == 1:
-			self.graph[1][self.center-1] = m_v
-
+			self.graph[0][self.center][self.center-1] = m_v
+		final = []
 		for i_row in range(self.height-1):
 			new_layer = []
 			[new_layer.append([m_v]*self.width) for x in range(0,self.width)]
 			for i_col in range(self.width):
 				for j_col in range(self.width):
-					if self.map[i_row+1][j_col] == 1: #this location on the map is an obstacle
+					if self.map[i_row+1][j_col] == 1: #is this location on the map an obstacle?
 						new_layer[i_col][j_col] = m_v
 					else:
 						diff = abs(j_col-i_col)
@@ -165,7 +165,8 @@ class path_planner(object):
 							new_layer[i_col][j_col] = 2
 						else:
 							new_layer[i_col][j_col] = m_v
-			self.graph.append(new_layer)
+			final.append(new_layer)
+		self.graph.append(final)
 						
 
 		return self.graph
@@ -227,12 +228,11 @@ p = path_planner(default_map, [3,1])
 #print(p.heuristics)
 # print(p.graph)
 t = p.gen_graph()
-#print(t)
+print(t)
 
 #print(p.path_planner())
-#print(p.gen_nearest_decided_neighbors([3,1], 0))
-# t=p.gen_heuristics(0)
-for i in range(len(t)):
-	for j in range(len(t[0])):
-		print(t[i][j])
+
+# for i in range(len(t)):
+# 	for j in range(len(t[0])):
+# 		print(t[i][j])
 
