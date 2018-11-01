@@ -15,6 +15,8 @@
 #	straight motion is 1 and the cost given to diagonal motions is 2
 # - if there is no path available, the planner will return []
 # - the planner also needs to return the size of the map (just width)
+# - the graph generator adds additional costs if there are obstacles
+#	near the position you are calculating the cost for.
 
 #######################################################
 #######################################################
@@ -26,13 +28,6 @@
 #	is behind the row of obstacles then pass back an empty
 #	path or should we pass back a path that gets you closest
 #	to it?
-# - need to add in extra costs to open positions that are
-#	near obstacles (as we are building the graph when you
-#	are looking at a given position, check if it is next 
-#	an obstacle on the map. if it is, then give it a value 
-#	of 50!)
-# - The goal is an actual obstacle on the map. So I need
-#	to find the location closest to there?
 
 
 
