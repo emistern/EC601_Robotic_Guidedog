@@ -124,6 +124,17 @@ class path_planner(object):
 					count_next2you_obstacles+=1
 		return count_next2you_obstacles
 
+	def get_diag_2_you(self, row_val, NQuery_j):
+		diag2you = [[row_val+1, NQuery_j-1], [row_val+1, NQuery_j+1]]
+		count_diag2you_obstacles = 0
+		for a_point in range(len(diag2you)):
+			# Verify the point is on the map!
+			if (diag2you[a_point][0] >= 0 and diag2you[a_point][1] >= 0 and
+				diag2you[a_point][0] <= self.height-1 and diag2you[a_point][1] <= self.width-1):
+				if self.map[diag2you[a_point][0]][diag2you[a_point][1]] == 1:
+					count_diag2you_obstacles+=1
+		return count_diag2you_obstacles
+
 
 	def gen_graph(self):
 		# Set up the graph 
@@ -200,7 +211,7 @@ default_map = [
 
 small_map = [
         [0, 0, 0],
-        [1, 0, 0],
+        [1, 0, 1],
         [0, 1, 0]]
 
 big_map = [
@@ -229,8 +240,8 @@ p = path_planner(small_map, [2,2])
 #print(p.heuristics)
 # print(p.graph)
 t = p.gen_graph()
-neighs = p.get_next_2_you_neighbors(1, 2)
-print(neighs)
+diags = p.get_diag_2_you(0, 1)
+print(diags)
 #print(t)
 
 #print(p.path_planner())
