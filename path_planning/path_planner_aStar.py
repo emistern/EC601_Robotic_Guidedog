@@ -142,10 +142,18 @@ class path_planner(object):
 		# is an obstacle then set that position on the graph to be m_v. If there are no 
 		# obstacles then set the first row to be 2 1 2 centered at center
 
-		# Initialize the three steps surround center in the first row to be 2, 1, 2
-		
-		self.graph[0][self.center][self.center-1] = 2
+		# Initialize the three steps surround center in the first row to be 2, 1, 2 + obstacle cost
+		next2you_obstacles = self.get_next_2_you_neighbors(0, self.center-1)
+		diag2you_obstacles = self.get_diag_2_you(0, self.center-1)
+		obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15
+		self.graph[0][self.center][self.center-1] = 2 + obstacles_cost
+		next2you_obstacles = self.get_next_2_you_neighbors(0, self.center)
+		diag2you_obstacles = self.get_diag_2_you(0, self.center)
+		obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15
 		self.graph[0][self.center][self.center] = 1
+		next2you_obstacles = self.get_next_2_you_neighbors(0, self.center+1)
+		diag2you_obstacles = self.get_diag_2_you(0, self.center+1)
+		obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15
 		self.graph[0][self.center][self.center+1] = 2
 		if self.map[0][self.center] == 1:
 			self.graph[0][self.center][self.center] = m_v
@@ -166,13 +174,17 @@ class path_planner(object):
 						new_layer[i_col][j_col] = m_v
 					else:
 						diff = abs(j_col-i_col)
+						# Add extra costs if you are near an obstacle. 15 if the point has
+						# diagonal with obstacle, and 25 if the obstacle is next to you.
 						next2you_obstacles = self.get_next_2_you_neighbors(i_row+1, j_col)
+						diag2you_obstacles = self.get_diag_2_you(i_row+1, j_col)
+						obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15
 						if diff == 0:
 							# Need to get the number of diag's that are obstacles
 							# and the number of next2you's that are obstacles
-							new_layer[i_col][j_col] = 1 
+							new_layer[i_col][j_col] = 1 + obstacles_cost 
 						elif diff == 1:
-							new_layer[i_col][j_col] = 2
+							new_layer[i_col][j_col] = 2 + obstacles_cost
 						else:
 							new_layer[i_col][j_col] = m_v
 			self.graph.append(new_layer)
@@ -234,15 +246,15 @@ blocked_map = [
 
 
 # Test the Class
-p = path_planner(small_map, [2,2])
+p = path_planner(default_map, [4,2])
 #print(p.map)
 #print(p.graph)
 #print(p.heuristics)
 # print(p.graph)
 t = p.gen_graph()
-diags = p.get_diag_2_you(0, 1)
-print(diags)
-#print(t)
+# diags = p.get_diag_2_you(0, 1)
+# print(diags)
+print(t)
 
 #print(p.path_planner())
 
