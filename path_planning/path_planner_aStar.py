@@ -65,6 +65,9 @@ class path_planner(object):
 		else:
 			self.goal = goal
 
+		# Set the goal location on the map equal to a free space
+		self.map[goal[0]][goal[1]] = 0
+
 		# Initialize the heuristics map
 		m_v_map = []
 		[m_v_map.append([m_v]*width) for x in range(0,height)]
@@ -244,10 +247,12 @@ p = path_planner(default_map, [4,2])
 #print(p.graph)
 #print(p.heuristics)
 # print(p.graph)
-t = p.gen_graph()
-# diags = p.get_diag_2_you(0, 1)
-# print(diags)
-print(t)
+for i in range(len(p.map)):
+	print(p.map[i])
+# t = p.gen_graph()
+# # diags = p.get_diag_2_you(0, 1)
+# # print(diags)
+# print(t)
 
 #print(p.path_planner())
 
