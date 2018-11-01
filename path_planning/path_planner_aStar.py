@@ -106,39 +106,23 @@ class path_planner(object):
 		return self.heuristics
 
 
-
-	def gen_nearest_decided_neighbors(self, Nquery, which_map=1):
 		# Get the 8 nearest neighbors to NQuery (i,j)
 		# Need each point to be within the boundary
 		# | (i-1, j-1) | (i-1, j,) |  (i-1, j+1) |
 		# | (i, j-1)   |  (i, j,)  |  (i, j+1)   |
 		# | (i+1, j-1) | (i+1, j,) |  (i+1, j+1) |
 
-		if which_map==1:
-			the_map = self.map
-		else:
-			the_map = self.heuristics
 		
-		# for the given nQuery get the 8 neighbors and their corresponding cost.
-		# Send it back in a dictionary maybe with the keys set to the position of the neighbor?
-		list_of_neighbors = [[Nquery[0]-1, Nquery[1]-1], [Nquery[0]-1, Nquery[1]], [Nquery[0]-1, Nquery[1]+1],
-							[Nquery[0], Nquery[1]-1], [Nquery[0], Nquery[1]+1], 
-							[Nquery[0]+1, Nquery[1]-1], [Nquery[0]+1, Nquery[1]], [Nquery[0]+1, Nquery[1]+1]]
-
-		# Loop over all of the neighbors. Check if the neighbor is
-		# 1. Defined! (it's not inf)
-		# 2. Within the boundary of the map
-		nearest_decided_neighbors = []
-
-		for iNeigh in range(len(list_of_neighbors)):
-			# Now check if you're within the boundary (0 < index < size_map)
-			if (list_of_neighbors[iNeigh][0] >= 0 and list_of_neighbors[iNeigh][0] <= len(the_map) and
-			list_of_neighbors[iNeigh][1] >= 0 and list_of_neighbors[iNeigh][1] <= len(the_map[1])):
-				# Check if the value is Decided
-				if the_map[list_of_neighbors[iNeigh][0]][list_of_neighbors[iNeigh][1]]!=m_v:
-					nearest_decided_neighbors.append(list_of_neighbors[iNeigh])
-		
-		return nearest_decided_neighbors
+	def get_next_2_you_neighbors(self, row_val, NQuery_j):
+		next2you = [[row_val, NQuery_j-1], [row_val+1, NQuery_j], [row_val, NQuery_j+1]]
+		count_next2you_obstacles = 0
+		for a_point in range(len(next2you)):
+			# First check if you're within the boundary
+			if (next2you[a_point][0] >= 0 and next2you[a_point][1] >= 0 and
+				next2you[a_point][0] <= self.height and next2you[a_point][1] <= self.width):
+				if self.map[next2you[a_point][0]][next2you[a_point][1]] == 1:
+					count_next2you_obstacles+=1
+		return count_next2you_obstacles
 
 	def gen_graph(self):
 		# Set up the graph 
@@ -162,6 +146,7 @@ class path_planner(object):
 		# for the given pair of rows. Then append this to the start of the graph!
 		for i_row in range(self.height-1):
 			new_layer = []
+			print("The row is: ", i_row)
 			[new_layer.append([m_v]*self.width) for x in range(0,self.width)]
 			for i_col in range(self.width):
 				for j_col in range(self.width):
@@ -169,8 +154,12 @@ class path_planner(object):
 						new_layer[i_col][j_col] = m_v
 					else:
 						diff = abs(j_col-i_col)
+						# next2you_obstacles = self.get_next_2_you_neighbors(i_row+1, j_col)
+						# print(next2you_obstacles)
 						if diff == 0:
-							new_layer[i_col][j_col] = 1
+							# Need to get the number of diag's that are obstacles
+							# and the number of next2you's that are obstacles
+							new_layer[i_col][j_col] = 1 
 						elif diff == 1:
 							new_layer[i_col][j_col] = 2
 						else:
@@ -191,7 +180,7 @@ class path_planner(object):
 			self.path = []
 			return self.path
 		else:
-			# there is a possible path. so go fine it :)
+			# there is a possible path. so go find it :)
 			self.path = [2, 1]
 			return self.path
 
@@ -208,6 +197,11 @@ default_map = [
         [0, 1, 0],
         [1, 1, 0]
     ]
+
+small_map = [
+        [0, 0, 0],
+        [1, 0, 0],
+        [0, 1, 0]]
 
 big_map = [
     [0, 0, 0, 0, 0],
@@ -229,17 +223,19 @@ blocked_map = [
 
 
 # Test the Class
-p = path_planner(big_map, [3,1])
+p = path_planner(small_map, [2,2])
 #print(p.map)
 #print(p.graph)
 #print(p.heuristics)
 # print(p.graph)
 t = p.gen_graph()
+neighs = p.get_next_2_you_neighbors(1, 1)
+print(neighs)
 #print(t)
 
 #print(p.path_planner())
 
-for i in range(len(t)):
-	for j in range(len(t[0])):
-		print(t[i][j])
+# for i in range(len(t)):
+# 	for j in range(len(t[0])):
+# 		print(t[i][j])
 
