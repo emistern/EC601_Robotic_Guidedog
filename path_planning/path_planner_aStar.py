@@ -5,6 +5,7 @@
 #######################################################
 
 # - the starting position is the center position of the map, one layer above.
+# - the A* algorithm starts at the min total cost location in the first row
 # - the first step the person can take is directly in front of them or
 #	the diagonal in front of them 
 # - the first row of the list is the first step someone will take.
@@ -91,11 +92,10 @@ class path_planner(object):
 
 	def gen_heuristics(self, heuristic_function=1):
 		# loop over the heuristics map adding distances to each cell from the goal 
-		# get the list of neighbors that are decided
 		# If the heuristic_function is 1 then use diagonal distance max(abs(x-x_goal), abs(y-y_goal)),
 		# otherwise use the euclidean distance
 		for iHeight in range(len(self.heuristics)):
-			for iWidth in range(len(self.heuristics)):
+			for iWidth in range(len(self.heuristics[0])):
 				# Use the diagonal distance as the heuristic function
 				if heuristic_function==1:
 					self.heuristics[iHeight][iWidth] = max(abs(iHeight-self.goal[0]), abs(iWidth-self.goal[1]))
@@ -157,7 +157,6 @@ class path_planner(object):
 		# for the given pair of rows. Then append this to the start of the graph!
 		for i_row in range(self.height-1):
 			new_layer = []
-			print("The row is: ", i_row)
 			[new_layer.append([m_v]*self.width) for x in range(0,self.width)]
 			for i_col in range(self.width):
 				for j_col in range(self.width):
@@ -186,6 +185,13 @@ class path_planner(object):
 		min_index=graph_vals.index(min(graph_vals))
 		# If the first row is all obstacles then pass back an empty start list, which
 		# should tell the path_planner that there is no start
+
+		# Add in the heuristic for each position and then append it to a total cost list
+		# then get the min value and index for it.
+		for a_pos in graph_vals:
+			if a_pos != m_v:
+				total_cost = []
+
 		if (self.map[0][self.center]==1) and (self.map[0][self.center-1]==1) and (self.map[0][self.center+1]==1):
 			starting_location = []
 			return starting_location
@@ -211,54 +217,56 @@ class path_planner(object):
 			return self.path
 
 
+if __name__ == "__main__":
+	# Testing Here!
+	default_map = [
+	        [0, 0, 0],
+	        [1, 0, 0],
+	        [0, 0, 0],
+	        [0, 1, 0],
+	        [0, 1, 1],
+	        [0, 0, 0],
+	        [0, 1, 0],
+	        [1, 1, 0]
+	    ]
 
-# Testing Here!
-default_map = [
-        [0, 0, 0],
-        [1, 0, 0],
-        [0, 0, 0],
-        [0, 1, 0],
-        [0, 1, 1],
-        [0, 0, 0],
-        [0, 1, 0],
-        [1, 1, 0]
-    ]
+	small_map = [
+	        [0, 0, 0],
+	        [1, 0, 1],
+	        [0, 1, 0]]
 
-small_map = [
-        [0, 0, 0],
-        [1, 0, 1],
-        [0, 1, 0]]
+	big_map = [
+	    [0, 0, 0, 0, 0],
+	    [1, 1, 0, 0, 0],
+	    [0, 0, 0, 1, 1],
+	    [0, 0, 0, 0, 1],
+	    [0, 0, 0, 1, 0]]
 
-big_map = [
-    [0, 0, 0, 0, 0],
-    [1, 1, 0, 0, 0],
-    [0, 0, 0, 1, 1],
-    [0, 0, 0, 0, 1],
-    [0, 0, 0, 1, 0]]
-
-blocked_map = [
-        [1, 1, 1],
-        [1, 0, 0],
-        [0, 0, 0],
-        [0, 1, 0],
-        [0, 1, 1],
-        [0, 0, 0],
-        [0, 1, 0],
-        [1, 1, 0]
-    ]
-
-
-# Test the Class
-p = path_planner(blocked_map, [4,2])
-t = p.gen_graph()
-print(t)
-startpos = p.pick_start_pos()
-print(startpos)
+	blocked_map = [
+	        [1, 1, 1],
+	        [1, 0, 0],
+	        [0, 0, 0],
+	        [0, 1, 0],
+	        [0, 1, 1],
+	        [0, 0, 0],
+	        [0, 1, 0],
+	        [1, 1, 0]
+	    ]
 
 
-print(p.path_planner())
+	# Test the Class
+	p = path_planner(default_map, [4,2])
+	h = p.gen_heuristics(2)
+	t = p.gen_graph()
+	print(p.heuristics)
+	# print(t)
+	# startpos = p.pick_start_pos()
+	# print(startpos)
 
-# for i in range(len(t)):
-# 	for j in range(len(t[0])):
-# 		print(t[i][j])
+
+	print(p.path_planner())
+
+	# for i in range(len(t)):
+	# 	for j in range(len(t[0])):
+	# 		print(t[i][j])
 
