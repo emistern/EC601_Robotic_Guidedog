@@ -14,3 +14,10 @@ at darknet root directory, where x is the number of CPU cores you would like to 
 $ make clean
 ```
 to de-make the files. 
+## Test
+To test you have successfully installed YOLO, you can run the command below at darknet root directory: 
+```
+python darknet.py
+```
+The outputs should be the class name and coordinates of the bounding box. 
+<img src="https://github.com/trashcrash/EC601_Robotic_Guidedog/blob/master/images/Yolo_success.jpeg" height=60></br>
