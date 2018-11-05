@@ -27,6 +27,11 @@ The interaction between the user and the device goes in two directions:
 1. User to Robot: the user will tell the device if they want to walk to an object
 2. Device to User: the device will communicate to the user what path to take via sound. 
 Currently, the team is testing different means of communication between the device and the user.
+
+# Assumptions
+1. The device will be teseted in a small classroom with no windows or objects on the walls. There will only be a door, chairs, and people in the room.
+2. The device will not handle mirrors or glass doors.
+
     
     
 
