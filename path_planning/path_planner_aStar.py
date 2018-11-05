@@ -77,7 +77,7 @@ class path_planner(object):
 
 		# Initialize the openset with a starting location. For us this will be the center point
 		# of the first row.
-		self.openset = [[0,center]]
+		self.openset = {}
 
 		self.closedsed = []
 
@@ -180,6 +180,7 @@ class path_planner(object):
 			self.graph.append(new_layer)
 		return self.graph
 
+	# This function picks the minimum cost index in the first row as the starting position on the map.
 	def pick_start_pos(self):
 		graph_vals = self.graph[0][self.center]
 		min_index=graph_vals.index(min(graph_vals))
@@ -201,19 +202,22 @@ class path_planner(object):
 
 
 	def path_planner(self, starting_location):
-		# The starting location is always from the row beneath, so our first row
-		# will always be the heuristics + cost for the immediate three positions. need to add the 
-		# center position to the open list. 
-
 		# If there is an obstacle in the center, center-1, and center + 1 then 
 		# return self.path as an empty list
 		if len(self.pick_start_pos())==0:
-			# then return self.path = []
 			self.path = []
 			return self.path
 		else:
 			# there is a possible path. so go find it :)
-			self.path= self.path+ starting_location
+
+			# Add the starting node to the openset along with its cost
+			starting_location_cost = self.heuristics[0][starting_location[0]] + self.graph[0][self.center][starting_location[0]]
+			print(starting_location_cost)
+			# Need to figure out how to name each node on the graph
+			# Pick the lowest cost element from the openset
+
+			# test path
+			self.path = self.path + starting_location
 			return self.path
 
 
@@ -259,11 +263,7 @@ if __name__ == "__main__":
 	h = p.gen_heuristics(2)
 	t = p.gen_graph()
 	print(p.heuristics)
-	# print(t)
 	startpos = p.pick_start_pos()
-	# print(startpos)
-
-
 	print(p.path_planner(startpos))
 
 	# for i in range(len(t)):
