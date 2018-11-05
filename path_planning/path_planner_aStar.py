@@ -200,7 +200,7 @@ class path_planner(object):
 		return starting_location
 
 
-	def path_planner(self):
+	def path_planner(self, starting_location):
 		# The starting location is always from the row beneath, so our first row
 		# will always be the heuristics + cost for the immediate three positions. need to add the 
 		# center position to the open list. 
@@ -213,7 +213,7 @@ class path_planner(object):
 			return self.path
 		else:
 			# there is a possible path. so go find it :)
-			self.path = [2, 1]
+			self.path= self.path+ starting_location
 			return self.path
 
 
@@ -260,11 +260,11 @@ if __name__ == "__main__":
 	t = p.gen_graph()
 	print(p.heuristics)
 	# print(t)
-	# startpos = p.pick_start_pos()
+	startpos = p.pick_start_pos()
 	# print(startpos)
 
 
-	print(p.path_planner())
+	print(p.path_planner(startpos))
 
 	# for i in range(len(t)):
 	# 	for j in range(len(t[0])):
