@@ -29,7 +29,12 @@
 #	is behind the row of obstacles then pass back an empty
 #	path or should we pass back a path that gets you closest
 #	to it?
+# - need to add an algorithm for finding the goal location
+#	if it isn't provided by the mapping team. Need to find the
+#	farthest free location.
 
+#######################################################
+#######################################################
 
 
 #Import Libraries
@@ -96,7 +101,7 @@ class path_planner(object):
 		# otherwise use the euclidean distance
 		for iHeight in range(len(self.heuristics)):
 			for iWidth in range(len(self.heuristics[0])):
-				# Use the diagonal distance as the heuristic function
+				# Use the diagonal distance as the heuristics function
 				if heuristic_function==1:
 					self.heuristics[iHeight][iWidth] = max(abs(iHeight-self.goal[0]), abs(iWidth-self.goal[1]))
 				else:
@@ -110,7 +115,9 @@ class path_planner(object):
 		# | (i, j-1)   |  (i, j,)  |  (i, j+1)   |
 		# | (i+1, j-1) | (i+1, j,) |  (i+1, j+1) |
 
-		
+	
+	# This method get's all of the neighbors that are directly next to a given query location
+	# i.e. if the query is (i,j) then it would return (i, j-1), (i-1, j,), (i, j+1)	
 	def get_next_2_you_neighbors(self, row_val, NQuery_j):
 		next2you = [[row_val, NQuery_j-1], [row_val+1, NQuery_j], [row_val, NQuery_j+1]]
 		count_next2you_obstacles = 0
@@ -122,6 +129,8 @@ class path_planner(object):
 					count_next2you_obstacles+=1
 		return count_next2you_obstacles
 
+	# This method get's all of the neighbors that are diagonal to a given query location
+	# i.e. if the query is (i,j) then it would return (i-1, j+1) and (i-1, j-1)	
 	def get_diag_2_you(self, row_val, NQuery_j):
 		diag2you = [[row_val+1, NQuery_j-1], [row_val+1, NQuery_j+1]]
 		count_diag2you_obstacles = 0
@@ -134,6 +143,8 @@ class path_planner(object):
 		return count_diag2you_obstacles
 
 
+	# This method generates the graph of a given map. It calculates the cost to move from every node
+	# to another possible node. It adds extra costs if there are nearby obstacles.
 	def gen_graph(self):
 		# Set up the graph 
 		# if either of the first step positions (first row), center, center-1, or center+1 
@@ -183,21 +194,23 @@ class path_planner(object):
 	# This function picks the minimum cost index in the first row as the starting position on the map.
 	def pick_start_pos(self):
 		graph_vals = self.graph[0][self.center]
-		min_index=graph_vals.index(min(graph_vals))
+		#print(graph_vals)
+
 		# If the first row is all obstacles then pass back an empty start list, which
 		# should tell the path_planner that there is no start
 
-		# Add in the heuristic for each position and then append it to a total cost list
+		# Add in the heuristics for each position and then append it to a total cost list
 		# then get the min value and index for it.
-		for a_pos in graph_vals:
-			if a_pos != m_v:
-				total_cost = []
+		total_cost = []
+		for a_pos in range(len(graph_vals)):
+			if graph_vals[a_pos] != m_v:
+				total_cost = total_cost + [graph_vals[a_pos]+self.heuristics[0][a_pos]]
 
 		if (self.map[0][self.center]==1) and (self.map[0][self.center-1]==1) and (self.map[0][self.center+1]==1):
 			starting_location = []
 			return starting_location
 		else:
-			starting_location = [min_index]
+			starting_location = [total_cost.index(min(total_cost))]
 		return starting_location
 
 
@@ -213,7 +226,8 @@ class path_planner(object):
 			# Add the starting node to the openset along with its cost
 			starting_location_cost = self.heuristics[0][starting_location[0]] + self.graph[0][self.center][starting_location[0]]
 			print(starting_location_cost)
-			# Need to figure out how to name each node on the graph
+			# Need to figure out how to name each node on the graph, create a dictionary with the node
+			# as the key and the coordinates as the data
 			# Pick the lowest cost element from the openset
 
 			# test path
@@ -224,7 +238,7 @@ class path_planner(object):
 if __name__ == "__main__":
 	# Testing Here!
 	default_map = [
-	        [0, 0, 0],
+	        [0, 0, 0], # this is the starting row
 	        [1, 0, 0],
 	        [0, 0, 0],
 	        [0, 1, 0],
