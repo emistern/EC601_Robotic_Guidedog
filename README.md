@@ -68,6 +68,7 @@ Currently, the team is testing different means of communication between the devi
    
     * OpenCV (Only used for drawing planning result) 
 5. For voice interface
+
     * use sox to play audio
 
 6. RealSense camera driver(Ubuntu, ROS)
@@ -81,6 +82,7 @@ Currently, the team is testing different means of communication between the devi
 
     * we are testing with rgbd-odometry node from rtabmap_ros package from ROS community. You can install rtabmap_ros package using the following instruction:
     https://github.com/introlab/rtabmap_ros
+
    * use playsound to output audio. can be installed by command:
    ```
    pip(3) install playsound
