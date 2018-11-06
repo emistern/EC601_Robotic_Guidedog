@@ -23,7 +23,7 @@
 #######################################################
 
 #######################################################
-################ Things to Consider ###################
+################## Things to Add ######################
 #######################################################
 # - if there is a row filled with obstacles and the goal 
 #	is behind the row of obstacles then pass back an empty
@@ -32,6 +32,10 @@
 # - need to add an algorithm for finding the goal location
 #	if it isn't provided by the mapping team. Need to find the
 #	farthest free location.
+# - add error check. If the get_neighbors of idxNBest is
+#	then return the current path. This basically means
+#	there are obstacles preventing you from moving 
+#	forwards
 
 #######################################################
 #######################################################
@@ -80,10 +84,8 @@ class path_planner(object):
 		[one_layer.append([m_v]*width) for x in range(0,width)]
 		self.graph=[one_layer.copy()]
 
-		# Initialize the openset with a starting location. For us this will be the center point
-		# of the first row.
+		# Initialize the open and the closed sets
 		self.openset = []
-
 		self.closedset = []
 
 		# Initialize the path list
@@ -193,14 +195,13 @@ class path_planner(object):
 
 	# This function picks the minimum cost index in the first row as the starting position on the map.
 	def pick_start_pos(self):
-		graph_vals = self.graph[0][self.center]
-		#print(graph_vals)
-
 		# If the first row is all obstacles then pass back an empty start list, which
 		# should tell the path_planner that there is no start
 
 		# Add in the heuristics for each position and then append it to a total cost list
 		# then get the min value and index for it.
+		# the first row of the graph
+		graph_vals = self.graph[0][self.center]
 		total_cost = []
 		for a_pos in range(len(graph_vals)):
 			if graph_vals[a_pos] != m_v:
@@ -229,11 +230,15 @@ class path_planner(object):
 			self.openset.append((starting_location_cost, row, starting_location[0]))
 			self.openset.sort(reverse=False)
 			print(self.openset)
-			#while (len(self.openset)!=0):
+
+
+			
 			# Repeat the following steps until the open set is empty
 			# Get the lowest cost item from the open list and add it to the closed list
+			#while (len(self.openset)!=0):
+			row +=1
 			idxNbest = self.openset.pop()[1:]
-			# idxNbest = [row, col_Nbest]
+			print("the idxBest: ",idxNbest)
 			self.closedset.append(idxNbest)
 			print(self.closedset)
 			
@@ -243,7 +248,19 @@ class path_planner(object):
 				print("break")
 
 			# Get the neighbors of idxNbest
-
+			# get the row on the graph that corresponds to the neighbors of idxNBest
+			graph_vals = self.graph[idxNbest[0]+1][idxNbest[1]]
+			print("Graph_vals: ",graph_vals)
+			available_neighbors = []
+			for a_neighbor in range(len(graph_vals)):
+				# Loop over each neighbor that is not m_v and check if it is in the closed set
+				if graph_vals[a_neighbor]==m_v:
+					pass # We only care about free positions
+				else:
+					# Check if the neighbor is in the closed set
+					if (row, a_neighbor) not in self.closedset:
+						available_neighbors.append([row, a_neighbor])
+			print(available_neighbors)
 
 				
 
@@ -275,7 +292,7 @@ if __name__ == "__main__":
 	        [0, 1, 1],
 	        [0, 0, 0],
 	        [0, 1, 0],
-	        [1, 1, 0]
+	        [1, 0, 0]
 	    ]
 
 	small_map = [
@@ -306,7 +323,7 @@ if __name__ == "__main__":
 	p = path_planner(default_map, [4,2])
 	h = p.gen_heuristics(2)
 	t = p.gen_graph()
-	print(p.heuristics)
+	print(p.graph)
 	startpos = p.pick_start_pos()
 	print(p.path_planner(startpos))
 
