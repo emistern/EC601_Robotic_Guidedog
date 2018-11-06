@@ -24,7 +24,7 @@ class VoiceInterface(object):
     center=width/2-0.5
     if len(pat)==0:
         play(self.noway_file)
-        time.sleep(1)
+        time.sleep(0.7)
         return
     path=[]
     path.append(pat[0]-center)
@@ -43,9 +43,32 @@ class VoiceInterface(object):
         if step == 0 and step!=b:
             play(self.straight_file)
         b=step
-        time.sleep(1)
+        time.sleep(0.7)
     play(self.STOP_file)
-
+  def play1(self, pat, width):
+    center=width/2-0.5
+    if len(pat)==0:
+        play(self.noway_file)
+        time.sleep(0)
+        return
+    path=[]
+    path.append(pat[0]-center)
+    for i in range (1,len(pat)):
+        path.append(pat[i]-pat[i-1])
+    print(path)
+    for step in path:
+        if step == 1:
+            play(self.turnleft_file)
+        if step == 2:
+            play(self.hardleft_file)
+        if step == -1:
+            play(self.turnright_file)
+        if step == -2:
+            play(self.hardright_file)
+        if step == 0:
+            play(self.straight_file)
+    play(self.STOP_file)
+        
 if __name__=="__main__":
 
     interface = VoiceInterface()
