@@ -223,15 +223,17 @@ class path_planner(object):
 			return self.path
 		else:
 			# there is a possible path. so go find it :)
-
+			# initialize the dictionary to hold all of the neighbors, the key is a given location, and 
+			# the values is a list of tuples of all neighbors coordinates
+			all_cost_backpointers = {}
+			all_neighbors = {}
+			
 			# Add the starting node to the openset along with its cost
 			row = 0 # The row that the starting_position is in.
 			starting_location_cost = self.heuristics[0][starting_location[0]] + self.graph[0][self.center][starting_location[0]]
 			self.openset.append((starting_location_cost, row, starting_location[0]))
 			self.openset.sort(reverse=False)
 			print(self.openset)
-
-
 			
 			# Repeat the following steps until the open set is empty
 			# Get the lowest cost item from the open list and add it to the closed list
@@ -241,6 +243,9 @@ class path_planner(object):
 			print("the idxBest: ",idxNbest)
 			self.closedset.append(idxNbest)
 			print(self.closedset)
+
+			# Add the information for the starting_location to the cost/backpointer dictionary
+			all_cost_backpointers[idxNbest]  = [(), ()]
 			
 			# Check if idxNBest is the goal
 			if idxNbest == self.goal:
@@ -257,10 +262,18 @@ class path_planner(object):
 				if graph_vals[a_neighbor]==m_v:
 					pass # We only care about free positions
 				else:
-					# Check if the neighbor is in the closed set
+					# Check if the neighbor is not in the closed set, then do steps 9-16
 					if (row, a_neighbor) not in self.closedset:
-						available_neighbors.append([row, a_neighbor])
-			print(available_neighbors)
+						available_neighbors.append((row, a_neighbor))
+						 
+						# now check if this valid neighbor is already in the open set
+						if (row, a_neighbor) not in self.openset:
+							print(row, a_neighbor)
+						# need to think through if the openset should be a dictionary, with the 
+						# key as the location and the value as the cost.
+						# also maybe need a dictionary to store the backpointers + total cost
+			all_neighbors[idxNbest]= (available_neighbors)			
+			print(all_neighbors)
 
 				
 
