@@ -226,13 +226,26 @@ class path_planner(object):
 			# Add the starting node to the openset along with its cost
 			row = 0 # The row that the starting_position is in.
 			starting_location_cost = self.heuristics[0][starting_location[0]] + self.graph[0][self.center][starting_location[0]]
-			self.openset.append((starting_location_cost, starting_location[0]))
+			self.openset.append((starting_location_cost, row, starting_location[0]))
 			self.openset.sort(reverse=False)
-
+			print(self.openset)
+			#while (len(self.openset)!=0):
+			# Repeat the following steps until the open set is empty
 			# Get the lowest cost item from the open list and add it to the closed list
-			idxNbest = self.openset.pop()[1]
-			self.closedset = [[row, idxNbest]]
+			idxNbest = self.openset.pop()[1:]
+			# idxNbest = [row, col_Nbest]
+			self.closedset.append(idxNbest)
 			print(self.closedset)
+			
+			# Check if idxNBest is the goal
+			if idxNbest == self.goal:
+				#break # uncomment this line when you turn the while loop back on
+				print("break")
+
+			# Get the neighbors of idxNbest
+
+
+				
 
 			# Code for how to use the list for priority queue
 			# self.openset.append((1, 25))
