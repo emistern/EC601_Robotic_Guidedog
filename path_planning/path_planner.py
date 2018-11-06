@@ -79,15 +79,18 @@ class path_planner(object):
         height = len(self.map)
         width = len(self.map[0])
         for i in range(height - 1):
+            # generate the matrxi from ith row to i+1throw
             cur_row = self.map[i]
             nxt_row = self.map[i+1]
             trans_mat = []
             for j in range(len(cur_row)):
+                # generate path weights for each of nodes in this layer
                 if (cur_row[j] == 1):
                     trans = [m_v] * width
                 else:
                     trans = [0] * width
                     for k in range(len(nxt_row)):
+                        # generate path weight to each of nodes in the next layer
                         if nxt_row[k] == 1:
                             trans[k] = m_v
                         else:
@@ -97,6 +100,24 @@ class path_planner(object):
                                 trans[k] = 2
                             else:
                                 trans[k] = m_v
+                            # add obstacle avoiding weights
+                            if (k < width -1):
+                                if (nxt_row[k+1] == 1):
+                                    trans[k] += 15
+                            if (k > 0):
+                                if (nxt_row[k-1] == 1):
+                                    trans[k] += 15
+                            if (i == height - 2): # check last row
+                                continue
+                            fur_row = self.map[i+2]
+                            if (fur_row[k] == 1):
+                                trans[k] += 50
+                            if (k < width -1):
+                                if (fur_row[k+1] == 1):
+                                    trans[k] += 15
+                            if (k > 0):
+                                if (fur_row[k-1] == 1):
+                                    trans[k] += 15
                 trans_mat.append(trans.copy())
             paths.append(trans_mat)
         self.paths = paths
@@ -154,10 +175,11 @@ class path_planner(object):
             if (layer != nodes.shape[0]-1):
                 outs = paths[layer][pos]
                 for i, out in enumerate(outs):
-                    prev_v = nodes[layer+1][i]
+                    prev_v = self.values[layer+1][i]
                     curr_v = val + out
                     if (curr_v < prev_v):
                         nodes[layer+1][i] = curr_v
+                        self.values[layer+1][i] = curr_v
                         self.prevs[layer+1][i] = pos
 
             # Save the optimal path length
@@ -172,6 +194,10 @@ class path_planner(object):
                         finish = False
                         break
         
+            #print(nodes)
+            #print(paths[layer])
+            #input()
+
     def find_optimal_path(self, target):
         # find the optimal path
         
@@ -252,14 +278,14 @@ class path_planner(object):
 
 if __name__ == "__main__":
     default_map = [
-            [0, 0, 0],
+            [0, 0, 1],
             [0, 0, 0],
             [1, 0, 0],
             [0, 1, 0],
             [0, 0, 0],
-            [0, 0, 1],
+            [0, 0, 0],
             [1, 0, 0],
-            [1, 1, 1],
+            [1, 0, 0],
             [0, 0, 0],
             [0, 0, 1],
             [0, 1, 1],
@@ -281,6 +307,10 @@ if __name__ == "__main__":
     p.plan()
     target = p.find_default_target()
     if len(target) > 0:
+        print(p.paths)
+        print(p.values)
         path = p.find_optimal_path(target)
         p.draw_path(path)
+
+        cv2.waitKey(0)
                       
