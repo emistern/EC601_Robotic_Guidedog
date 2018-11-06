@@ -268,7 +268,7 @@ class path_planner(object):
 						 
 						# now check if this valid neighbor is already in the open set
 						if (row, a_neighbor) not in self.openset:
-							print(row, a_neighbor)
+							print("HERE: ", row, a_neighbor)
 						# need to think through if the openset should be a dictionary, with the 
 						# key as the location and the value as the cost.
 						# also maybe need a dictionary to store the backpointers + total cost
