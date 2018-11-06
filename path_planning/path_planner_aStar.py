@@ -269,22 +269,17 @@ class path_planner(object):
 						# now check if this valid neighbor is already in the open set
 						if (row, a_neighbor) not in self.openset:
 							print("HERE: ", row, a_neighbor)
-						# need to think through if the openset should be a dictionary, with the 
-						# key as the location and the value as the cost.
-						# also maybe need a dictionary to store the backpointers + total cost
+							# add the backpointer and the cost to the dictionary
+							# need to fix the cost. def not picking the right graph value
+							cost = self.heuristics[row][a_neighbor] + self.graph[row][idxNbest[1]][a_neighbor]
+							all_cost_backpointers[(row, a_neighbor)] = [idxNbest, cost]
+
 			all_neighbors[idxNbest]= (available_neighbors)			
 			print(all_neighbors)
+			print(all_cost_backpointers)
 
 				
 
-			# Code for how to use the list for priority queue
-			# self.openset.append((1, 25))
-			
-			# print(self.openset)
-			# self.openset.append((2, 5))
-			# self.openset.sort(reverse=True)
-			# print(self.openset)
-			# print(self.openset.pop())
 
 			# Need to figure out how to name each node on the graph, create a dictionary with the node
 			# as the key and the coordinates as the data
@@ -337,6 +332,8 @@ if __name__ == "__main__":
 	h = p.gen_heuristics(2)
 	t = p.gen_graph()
 	print(p.graph)
+	# print("Heuristic")
+	# print(p.heuristics)
 	startpos = p.pick_start_pos()
 	print(p.path_planner(startpos))
 
