@@ -68,7 +68,10 @@ Currently, the team is testing different means of communication between the devi
    
    * OpenCV (Only used for drawing planning result) 
 5. For voice interface
-   * use sox to play audio
+   * use playsound to output audio. can be installed by command:
+   ```
+   pip(3) install playsound
+    ```
 
 ## How things work and Examples
 
