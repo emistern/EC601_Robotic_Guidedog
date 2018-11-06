@@ -85,7 +85,7 @@ class path_planner(object):
 		self.graph=[one_layer.copy()]
 
 		# Initialize the open and the closed sets
-		self.openset = []
+		self.openset = {}
 		self.closedset = []
 
 		# Initialize the path list
@@ -231,15 +231,15 @@ class path_planner(object):
 			# Add the starting node to the openset along with its cost
 			row = 0 # The row that the starting_position is in.
 			starting_location_cost = self.heuristics[0][starting_location[0]] + self.graph[0][self.center][starting_location[0]]
-			self.openset.append((starting_location_cost, row, starting_location[0]))
-			self.openset.sort(reverse=False)
+			self.openset[(row, starting_location[0])] = starting_location_cost
 			print(self.openset)
 			
 			# Repeat the following steps until the open set is empty
 			# Get the lowest cost item from the open list and add it to the closed list
 			#while (len(self.openset)!=0):
 			row +=1
-			idxNbest = self.openset.pop()[1:]
+			idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
+			self.openset.pop(idxNbest, None)
 			print("the idxBest: ",idxNbest)
 			self.closedset.append(idxNbest)
 			print(self.closedset)
