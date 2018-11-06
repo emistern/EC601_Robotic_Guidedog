@@ -82,9 +82,9 @@ class path_planner(object):
 
 		# Initialize the openset with a starting location. For us this will be the center point
 		# of the first row.
-		self.openset = {}
+		self.openset = []
 
-		self.closedsed = []
+		self.closedset = []
 
 		# Initialize the path list
 		self.path = []
@@ -224,8 +224,25 @@ class path_planner(object):
 			# there is a possible path. so go find it :)
 
 			# Add the starting node to the openset along with its cost
+			row = 0 # The row that the starting_position is in.
 			starting_location_cost = self.heuristics[0][starting_location[0]] + self.graph[0][self.center][starting_location[0]]
-			print(starting_location_cost)
+			self.openset.append((starting_location_cost, starting_location[0]))
+			self.openset.sort(reverse=False)
+
+			# Get the lowest cost item from the open list and add it to the closed list
+			idxNbest = self.openset.pop()[1]
+			self.closedset = [[row, idxNbest]]
+			print(self.closedset)
+
+			# Code for how to use the list for priority queue
+			# self.openset.append((1, 25))
+			
+			# print(self.openset)
+			# self.openset.append((2, 5))
+			# self.openset.sort(reverse=True)
+			# print(self.openset)
+			# print(self.openset.pop())
+
 			# Need to figure out how to name each node on the graph, create a dictionary with the node
 			# as the key and the coordinates as the data
 			# Pick the lowest cost element from the openset
