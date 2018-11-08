@@ -215,7 +215,7 @@ class path_planner(object):
 		return starting_location
 
 
-	def path_planner(self, starting_location):
+	def path_search(self, starting_location):
 		# If there is an obstacle in the center, center-1, and center + 1 then 
 		# return self.path as an empty list
 		if len(self.pick_start_pos())==0:
@@ -233,67 +233,75 @@ class path_planner(object):
 			g_x = 0
 			f_x = self.heuristics[0][starting_location[0]] + g_x
 			self.openset[(row, starting_location[0])] = f_x
-			print("open Set: ", self.openset)
+			
 			
 			# Repeat the following steps until the open set is empty
-			# Get the lowest cost item from the open list and add it to the closed list
-			#while (len(self.openset)!=0):
-			row +=1
-			idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
-			self.openset.pop(idxNbest, None)
-			print("the idxBest: ",idxNbest)
-			self.closedset.append(idxNbest)
-			print("Closed Set: ", self.closedset)
+			while (len(self.openset)!=0):
+				row +=1
+				print("open Set: ", self.openset)
+				# Get the lowest cost item from the open list
+				idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
+				self.openset.pop(idxNbest, None)
+				print("the idxBest: ",idxNbest)
+				# and add it to the closed list
+				self.closedset.append(idxNbest)
+				print("Closed Set: ", self.closedset)
 
-			# Add the information for the starting_location to the cost/backpointer dictionary
-			all_cost_backpointers[idxNbest]  = [(), 0]
+				# Add the information for the starting_location to the backpointer/cost dictionary
+				all_cost_backpointers[idxNbest]  = [(), 0]
+				
+				# Check if idxNBest is the goal
+				if idxNbest == (self.goal[0], self.goal[1]):
+					break
+					
+				# Get the neighbors of idxNbest
+				# get the row on the graph that corresponds to the neighbors of idxNBest
+				graph_vals = self.graph[idxNbest[0]+1][idxNbest[1]]
+				# print("Graph_vals: ",graph_vals)
+				available_neighbors = []
+				for a_neighbor in range(len(graph_vals)):
+					# Loop over each neighbor that is not m_v and check if it is in the closed set
+					if graph_vals[a_neighbor]==m_v:
+						pass # We only care about free positions
+					else:
+						# Check if the neighbor is not in the closed set, then do steps 9-16
+						if (row, a_neighbor) not in self.closedset:
+							available_neighbors.append((row, a_neighbor))
+							 
+							# now check if this valid neighbor is already in the open set
+							if (row, a_neighbor) not in self.openset:
+								# print("HERE: ", row, a_neighbor)
+								# Update the g(x) to be g(idxNbest) + c(idxNBest, x) (the cost to move from idxnbest to x)
+								g_x = all_cost_backpointers[idxNbest][1] + self.graph[row][idxNbest[1]][a_neighbor]
+								# Update the backpointer and g(x) into the dictionary
+								all_cost_backpointers[(row, a_neighbor)] = [idxNbest, g_x]
+								# Update the total cost to be h(x)+g(x)
+								f_x = self.heuristics[row][a_neighbor] + g_x
+								# Add x to the openset with f(x)
+								self.openset[(row, a_neighbor)] = f_x
+								# print("Open Set: ", self.openset)
+								# add this neighbor to the openset
+							elif all_cost_backpointers[idxNbest][1] + self.graph[row][idxNbest[1]][a_neighbor] < all_cost_backpointers[(row, a_neighbor)][1]:
+							 	g_x = all_cost_backpointers[idxNbest][1] + self.graph[row][idxNbest[1]][a_neighbor]
+							 	all_cost_backpointers[(row, a_neighbor)] = [idxNbest, g_x]
+
+
+				all_neighbors[idxNbest]= (available_neighbors)			
+				# print("Neighbors so far: ", all_neighbors)
+				print("Cost/bp so far: ", all_cost_backpointers)
+
 			
-			# Check if idxNBest is the goal
-			if idxNbest == self.goal:
-				#break # uncomment this line when you turn the while loop back on
-				print("break")
-
-			# Get the neighbors of idxNbest
-			# get the row on the graph that corresponds to the neighbors of idxNBest
-			graph_vals = self.graph[idxNbest[0]+1][idxNbest[1]]
-			print("Graph_vals: ",graph_vals)
-			available_neighbors = []
-			for a_neighbor in range(len(graph_vals)):
-				# Loop over each neighbor that is not m_v and check if it is in the closed set
-				if graph_vals[a_neighbor]==m_v:
-					pass # We only care about free positions
-				else:
-					# Check if the neighbor is not in the closed set, then do steps 9-16
-					if (row, a_neighbor) not in self.closedset:
-						available_neighbors.append((row, a_neighbor))
-						 
-						# now check if this valid neighbor is already in the open set
-						if (row, a_neighbor) not in self.openset:
-							print("HERE: ", row, a_neighbor)
-							# add the backpointer and the cost to the dictionary
-							g_x = all_cost_backpointers[idxNbest][1] + self.graph[row][idxNbest[1]][a_neighbor]
-							all_cost_backpointers[(row, a_neighbor)] = [idxNbest, g_x]
-							f_x = self.heuristics[row][a_neighbor] + g_x
-							self.openset[(row, a_neighbor)] = f_x
-							print("Open Set: ", self.openset)
-							# add this neighbor to the openset
-					#elif : check the costs
-
-
-
-			all_neighbors[idxNbest]= (available_neighbors)			
-			print("Neighbors so far: ", all_neighbors)
-			print("Cost/bp so far: ", all_cost_backpointers)
-
+			print("Cost/bp so far: ", all_cost_backpointers)	
+			# Now loop through all of the backpointers starting from the goal location and add that to the path
+			backpointer = (self.goal[0], self.goal[1])
+			print("BP: ", all_cost_backpointers[(4,2)][0])
+			# while (backpointer != (0, starting_location)):
+			# 	self.path.append(backpointer)
+			# 	backpointer = all_cost_backpointers[backpointer][1]
 				
 
-
-			# Need to figure out how to name each node on the graph, create a dictionary with the node
-			# as the key and the coordinates as the data
-			# Pick the lowest cost element from the openset
-
 			# test path
-			self.path = self.path + starting_location
+			
 			return self.path
 
 
@@ -342,7 +350,7 @@ if __name__ == "__main__":
 	# print("Heuristic")
 	# print(p.heuristics)
 	startpos = p.pick_start_pos()
-	print(p.path_planner(startpos))
+	print(p.path_search(startpos))
 
 	# for i in range(len(t)):
 	# 	for j in range(len(t[0])):
