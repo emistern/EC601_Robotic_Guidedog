@@ -27,11 +27,16 @@ The interaction between the user and the device goes in two directions:
 1. User to Robot: the user will tell the device if they want to walk to an object
 2. Device to User: the device will communicate to the user what path to take via sound. 
 Currently, the team is testing different means of communication between the device and the user.
-    
-    
+
 
 [1] Kathy Austin. White cane vs. guide dog: Why or why not? @ONLINE, September 2016. 
 [2] Colby Morita. How much does a guide dog cost? @ONLINE, September 2017.
+
+### Assumptions
+1. The device will be teseted in a small classroom with no windows or objects on the walls. There will only be a door, chairs, and people in the room.
+2. The device will not handle mirrors or glass doors.
+3. The device will only detect door frames for the purpose of the semester long project
+
 
 ## Contents
 
@@ -61,9 +66,27 @@ Currently, the team is testing different means of communication between the devi
     * librealsense (Intel RealSense camera driver, build and test with python wrapper called pyrealsense2. Only needed when you want to read from .bag file)
 4. For using path planning:
    
-   * OpenCV (Only used for drawing planning result) 
+    * OpenCV (Only used for drawing planning result) 
 5. For voice interface
-   * use sox to play audio
+
+    * use sox to play audio
+
+6. RealSense camera driver(Ubuntu, ROS)
+
+    * There are 2 parts in our camera driver: 1) librealsense (official camera driver from intel); 2) realsense2_camera(a ROS wrapper for using camera driver in ROS). Following instructions is based on Ubuntu 16.04. 
+    * Follow this page to install official realsense driver on you Ubuntu machine: https://github.com/IntelRealSense/librealsense/blob/master/doc/installation.md
+    * Follow this page to install ROS wrapper for librealsense on your Ubuntu machine:
+    https://github.com/intel-ros/realsense
+
+7. Visual Odometry from rtabmap_ros
+
+    * we are testing with rgbd-odometry node from rtabmap_ros package from ROS community. You can install rtabmap_ros package using the following instruction:
+    https://github.com/introlab/rtabmap_ros
+
+   * use playsound to output audio. can be installed by command:
+   ```
+   pip(3) install playsound
+    ```
 
 ## How things work and Examples
 
