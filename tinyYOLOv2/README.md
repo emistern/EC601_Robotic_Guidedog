@@ -1,5 +1,7 @@
 # TinyYOLOv2 in Tensorflow made easier
 
+* this code is taken from simo23/tinyYOLOv2 on Github
+
 ### What you can do with this code
 Extract weights from binary file of the original yolo-v2, assign them to a TF network, save ckpt, perform detection on an input image or webcam
 ### What you CANNOT do with this code
