@@ -25,6 +25,10 @@ Remember first to put code and sample to a directory that is visible to MATLAB.
 
 2. crop the point cloud with a ROI(region of interest):
 
-    pipline_crop()s
+    pipline_crop()
 
 <img src="../images/pointcloud_crop.jpg" height=250>
+
+#### Use Python to perform simple point cloud processing
+
+1. Use Open3D to denoise and  display point cloud
