@@ -230,9 +230,10 @@ class path_planner(object):
 			
 			# Add the starting node to the openset along with its cost
 			row = 0 # The row that the starting_position is in.
-			starting_location_cost = self.heuristics[0][starting_location[0]] + self.graph[0][self.center][starting_location[0]]
-			self.openset[(row, starting_location[0])] = starting_location_cost
-			print(self.openset)
+			g_x = 0
+			f_x = self.heuristics[0][starting_location[0]] + g_x
+			self.openset[(row, starting_location[0])] = f_x
+			print("open Set: ", self.openset)
 			
 			# Repeat the following steps until the open set is empty
 			# Get the lowest cost item from the open list and add it to the closed list
@@ -242,10 +243,10 @@ class path_planner(object):
 			self.openset.pop(idxNbest, None)
 			print("the idxBest: ",idxNbest)
 			self.closedset.append(idxNbest)
-			print(self.closedset)
+			print("Closed Set: ", self.closedset)
 
 			# Add the information for the starting_location to the cost/backpointer dictionary
-			all_cost_backpointers[idxNbest]  = [(), ()]
+			all_cost_backpointers[idxNbest]  = [(), 0]
 			
 			# Check if idxNBest is the goal
 			if idxNbest == self.goal:
@@ -270,16 +271,19 @@ class path_planner(object):
 						if (row, a_neighbor) not in self.openset:
 							print("HERE: ", row, a_neighbor)
 							# add the backpointer and the cost to the dictionary
-							cost = self.heuristics[row][a_neighbor] + self.graph[row][idxNbest[1]][a_neighbor]
-							all_cost_backpointers[(row, a_neighbor)] = [idxNbest, cost]
+							g_x = all_cost_backpointers[idxNbest][1] + self.graph[row][idxNbest[1]][a_neighbor]
+							all_cost_backpointers[(row, a_neighbor)] = [idxNbest, g_x]
+							f_x = self.heuristics[row][a_neighbor] + g_x
+							self.openset[(row, a_neighbor)] = f_x
+							print("Open Set: ", self.openset)
 							# add this neighbor to the openset
 					#elif : check the costs
 
 
 
 			all_neighbors[idxNbest]= (available_neighbors)			
-			print(all_neighbors)
-			print(all_cost_backpointers)
+			print("Neighbors so far: ", all_neighbors)
+			print("Cost/bp so far: ", all_cost_backpointers)
 
 				
 
