@@ -270,9 +270,12 @@ class path_planner(object):
 						if (row, a_neighbor) not in self.openset:
 							print("HERE: ", row, a_neighbor)
 							# add the backpointer and the cost to the dictionary
-							# need to fix the cost. def not picking the right graph value
 							cost = self.heuristics[row][a_neighbor] + self.graph[row][idxNbest[1]][a_neighbor]
 							all_cost_backpointers[(row, a_neighbor)] = [idxNbest, cost]
+							# add this neighbor to the openset
+					#elif : check the costs
+
+
 
 			all_neighbors[idxNbest]= (available_neighbors)			
 			print(all_neighbors)
