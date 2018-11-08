@@ -302,13 +302,62 @@ class path_planner(object):
 			backpointer = (self.goal[0], self.goal[1])
 			# print("BP: ", backpointer, " next item ", all_cost_backpointers[backpointer][0])
 			while (backpointer != (0, starting_location[0])):
-				self.path.append(backpointer)
+				# print("testing: ", starting_location)
+				self.path.append(backpointer[1])
 				backpointer = all_cost_backpointers[backpointer][0]
-			self.path.append((0, starting_location[0]))	
+			self.path.append(starting_location[0])
 
 			# test path
 			
 			return self.path
+
+	def draw_path(self, path):
+
+		unit_size = 60
+		height = len(self.map)
+		width = len(self.map[0])
+		t_h = unit_size * height
+		t_w = unit_size * width
+		world = np.array([[[240] * 3] * (t_w)] * (t_h)).astype(np.uint8)
+
+		for x in range(0, t_w, unit_size):
+			pt1 = (x, 0)
+			pt2 = (x, t_h)
+			world = cv2.line(world, pt1, pt2, (255, 0, 0))
+        
+		for y in range(0, t_h, unit_size):
+			pt1 = (0, y)
+			pt2 = (t_w, y)
+			world = cv2.line(world, pt1, pt2, (255, 0, 0))
+
+        # Draw Obstacles
+		ofs = int(unit_size / 5)
+		for i, row in enumerate(self.map):
+			for j, e in enumerate(row):
+				if (e == 1):
+					# Draw an obstacle in world
+					pt1 = (j * unit_size + ofs, i * unit_size + ofs)
+					pt2 = ((j+1) * unit_size - ofs, (i+1) * unit_size - ofs)
+					cv2.rectangle(world, pt1, pt2, (0, 0, 255), 5)
+
+		# Draw Optimal Path 
+		x_ofs = int(unit_size / 2)
+		y_ofs = int(unit_size / 2)
+		for i in range(len(path)-1):
+
+			f_p = path[i]
+			t_p = path[i+1]
+
+			pt1 = (f_p * unit_size + x_ofs, i * unit_size + y_ofs)
+			pt2 = (t_p * unit_size + x_ofs, (i+1) * unit_size + y_ofs)
+
+			world = cv2.line(world, pt1, pt2, (0, 255, 0), 5)
+
+			if i == len(path) - 2:
+				# draw target
+				world = cv2.circle(world, pt2, int(unit_size / 3), (255, 0, 255), 10)
+
+		cv2.imshow("path", world)
 
 
 if __name__ == "__main__":
@@ -320,7 +369,7 @@ if __name__ == "__main__":
 	        [0, 1, 0],
 	        [0, 1, 1],
 	        [0, 0, 0],
-	        [0, 1, 0],
+	        [1, 1, 0],
 	        [1, 0, 0]
 	    ]
 
@@ -350,7 +399,7 @@ if __name__ == "__main__":
 
 
 	# Test the Class
-	p = path_planner(big_map, [3,3])
+	p = path_planner(default_map, [7,1])
 	h = p.gen_heuristics(2)
 	# print("Heuristics:")
 	# for j in range(len(h)):
@@ -360,6 +409,9 @@ if __name__ == "__main__":
 	# for i in range(len(p.graph)):
 	# 	print(p.graph[i])
 	startpos = p.pick_start_pos()
-	print(p.path_search(startpos))
+	path = p.path_search(startpos)
+	print(path)
+	p.draw_path(path)
+	cv2.waitKey(0)
 
 
