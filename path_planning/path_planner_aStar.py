@@ -233,6 +233,8 @@ class path_planner(object):
 			g_x = 0
 			f_x = self.heuristics[0][starting_location[0]] + g_x
 			self.openset[(row, starting_location[0])] = f_x
+			# Add the information for the starting_location to the backpointer/cost dictionary
+			all_cost_backpointers[(row, starting_location[0])]  = [(), 0]
 			
 			
 			# Repeat the following steps until the open set is empty
@@ -246,9 +248,6 @@ class path_planner(object):
 				# and add it to the closed list
 				self.closedset.append(idxNbest)
 				print("Closed Set: ", self.closedset)
-
-				# Add the information for the starting_location to the backpointer/cost dictionary
-				all_cost_backpointers[idxNbest]  = [(), 0]
 				
 				# Check if idxNBest is the goal
 				if idxNbest == (self.goal[0], self.goal[1]):
@@ -270,7 +269,7 @@ class path_planner(object):
 							 
 							# now check if this valid neighbor is already in the open set
 							if (row, a_neighbor) not in self.openset:
-								# print("HERE: ", row, a_neighbor)
+								print("Adding to openset: ", row, a_neighbor)
 								# Update the g(x) to be g(idxNbest) + c(idxNBest, x) (the cost to move from idxnbest to x)
 								g_x = all_cost_backpointers[idxNbest][1] + self.graph[row][idxNbest[1]][a_neighbor]
 								# Update the backpointer and g(x) into the dictionary
@@ -294,11 +293,11 @@ class path_planner(object):
 			print("Cost/bp so far: ", all_cost_backpointers)	
 			# Now loop through all of the backpointers starting from the goal location and add that to the path
 			backpointer = (self.goal[0], self.goal[1])
-			print("BP: ", all_cost_backpointers[(4,2)][0])
-			# while (backpointer != (0, starting_location)):
-			# 	self.path.append(backpointer)
-			# 	backpointer = all_cost_backpointers[backpointer][1]
-				
+			print("BP: ", backpointer, " next item ", all_cost_backpointers[backpointer][0])
+			while (backpointer != (0, starting_location[0])):
+				self.path.append(backpointer)
+				backpointer = all_cost_backpointers[backpointer][0]
+			self.path.append((0, starting_location[0]))	
 
 			# test path
 			
@@ -320,8 +319,9 @@ if __name__ == "__main__":
 
 	small_map = [
 	        [0, 0, 0],
-	        [1, 0, 1],
-	        [0, 1, 0]]
+	        [0, 0, 1],
+	        [0, 0, 0],
+	        [1, 0, 0],]
 
 	big_map = [
 	    [0, 0, 0, 0, 0],
@@ -343,16 +343,16 @@ if __name__ == "__main__":
 
 
 	# Test the Class
-	p = path_planner(default_map, [4,2])
+	p = path_planner(default_map, [3,2])
 	h = p.gen_heuristics(2)
+	print("Heuristics:")
+	for j in range(len(h)):
+		print(h[j])
 	t = p.gen_graph()
-	print(p.graph)
-	# print("Heuristic")
-	# print(p.heuristics)
+	print("Graph:")
+	for i in range(len(p.graph)):
+		print(p.graph[i])
 	startpos = p.pick_start_pos()
 	print(p.path_search(startpos))
 
-	# for i in range(len(t)):
-	# 	for j in range(len(t[0])):
-	# 		print(t[i][j])
 
