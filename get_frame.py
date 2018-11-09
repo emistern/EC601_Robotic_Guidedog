@@ -32,6 +32,13 @@ def get_frame():
     align = rs.align(align_to)
 
     while True:
+
+        # Declare pointcloud object, for calculating pointclouds and texture mappings
+        pc = rs.pointcloud()
+
+        # We want the points object to be persistent so we can display the last cloud when a frame drops
+        points = rs.points()
+
         # Get frameset of color and depth
         frames = pipeline.wait_for_frames()
         # frames.get_depth_frame() is a 640x360 depth image
@@ -43,6 +50,14 @@ def get_frame():
         aligned_depth_frame = aligned_frames.get_depth_frame() # aligned_depth_frame is a 640x480 depth image
         color_frame = aligned_frames.get_color_frame()
         
+        # Tell pointcloud object to map to this color frame
+        pc.map_to(color_frame)
+
+        # Generate the pointcloud and texture mappings
+        points = pc.calculate(aligned_depth_frame)
+
+        points_array = np.asanyarray(points.get_vertices())
+
         # Validate that both frames are valid
         if not aligned_depth_frame or not color_frame:
             continue
@@ -59,4 +74,4 @@ def get_frame():
         depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
         #images = np.hstack((bg_removed, depth_colormap))
 
-        yield np.asanyarray(aligned_depth_frame.get_data())
+        yield np.asanyarray(aligned_depth_frame.get_data()), points_array

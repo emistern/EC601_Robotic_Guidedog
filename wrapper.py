@@ -27,7 +27,8 @@ class ModuleWrapper(object):
         #dw.show_depth_matrix(dep_mat_fn)
 
         # initialize the camera frame iterator
-        img_gen = get_pointcloud_frame("./realsense/20181011_223353.bag")
+        #img_gen = get_pointcloud_frame("./realsense/20181011_223353.bag")
+        img_gen = get_frame()
 
         # instantiate an interface
         interface = voice_class.VoiceInterface(straight_file='voice/straight.mp3',
@@ -40,7 +41,7 @@ class ModuleWrapper(object):
 
         while(True):
             # fetch an image from camera
-            dep_mat = next(img_gen)
+            dep_mat, pointcloud = next(img_gen)
 
             t_map_s = time.time()
 
@@ -54,7 +55,7 @@ class ModuleWrapper(object):
                 map_depth = self.squeeze.quantilize(squeezed_matrix, n_sec=nun_section, max_per_occ=max_per_occ)
             else:
 
-                map_depth = pipeline(dep_mat)
+                map_depth = pipeline(pointcloud, show=True)
 
             t_map_e = time.time()
 
@@ -71,6 +72,7 @@ class ModuleWrapper(object):
                 path = p.find_optimal_path(target)
                 t_plan_e = time.time()
                 p.draw_path(path)
+                dw.show_depth_matrix("", dep_mat)
                 print("map time  " + str(t_map_e - t_map_s))
                 print("plan time " + str(t_plan_e - t_plan_s))
                 print("total time" + str(t_plan_e - t_map_s))

@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 def downsample(pc_raw):
 
     points = np.zeros((len(pc_raw), 3))
-    for i in range(0, len(pc_raw), 50):
+    for i in range(0, len(pc_raw), 30):
         p = pc_raw[i]
-        points[i, 0] = -p[0]
+        points[i, 0] = p[0]
         points[i, 1] = p[2]
         points[i, 2] = -p[1]
         #print (dir(p))
@@ -67,7 +67,7 @@ def show_pointcloud(cropped_points):
     pc_cropped.points = open3d.Vector3dVector(np.asanyarray(cropped_points))
     open3d.draw_geometries([pc_cropped])
 
-def decomposite(obstacle_points, col = 7, row = 10, thresh = 2, show = True):
+def decomposite(obstacle_points, col = 7, row = 10, thresh = 2, col_size = 5, row_size = 5, show = True):
 
     # decomposite points into grid
     grid = np.zeros((row, col))
@@ -81,7 +81,7 @@ def decomposite(obstacle_points, col = 7, row = 10, thresh = 2, show = True):
     print("point cloud range from", row_min, " ", col_min, " to ", row_max, " ", col_max)
 
     points_row = obstacle_points[:, 0] + abs(row_min) + 0.0001
-    points_col = obstacle_points[:, 1] - col_min + 0.0001
+    points_col = obstacle_points[:, 1] + 0.0001
 
     if show:
         plt.scatter(points_row, points_col)
@@ -91,6 +91,9 @@ def decomposite(obstacle_points, col = 7, row = 10, thresh = 2, show = True):
     row_max = max(points_row)
     col_max = max(points_col)
 
+    #points_row = points_row * (row_size / row_max)
+    #points_col = points_col * (col_size / col_max)
+
     print ("append offset")
     print("point cloud range from", row_min, " ", col_min, " to ", row_max, " ", col_max)
 
@@ -98,17 +101,17 @@ def decomposite(obstacle_points, col = 7, row = 10, thresh = 2, show = True):
     h = col_max
 
     mask_row = 1 / np.array(range(col))
-    mask_row = mask_row * col / w
+    mask_row = mask_row * col / col_size
 
     mask_col = 1 / np.array(range(row))
-    mask_col = mask_row * row / w
+    mask_col = mask_col * row / row_size
 
     print ("with row mask: ", mask_row)
     print ("with column mask: ", mask_col)
 
     st_time = time.time()
     # loop through the obstacle points
-    for i in range(0, len(obstacle_points), 4):
+    for i in range(0, len(obstacle_points), 2):
         x_f = points_row[i]
         y_f = points_col[i]
         _x = x_f * mask_row
@@ -120,6 +123,7 @@ def decomposite(obstacle_points, col = 7, row = 10, thresh = 2, show = True):
         #print(x_f, y_f)
         #print(x_i, y_i)
         #quit()
+    print(grid)
 
     for i in range(row):
         for j in range(col):
@@ -129,7 +133,7 @@ def decomposite(obstacle_points, col = 7, row = 10, thresh = 2, show = True):
                 grid[i, j] = 0
     ed_time = time.time()
     print("in ", ed_time - st_time, " second, the map: ")
-    #print(grid)
+    print(grid)
     if show:
         plt.show()
 
@@ -143,7 +147,7 @@ def pipeline(pc_raw, show=False):
 
     cropped_points = crop(filtered_points, max_z, min_z)
 
-    obstacle_points = cast(cropped_points, show=show)
+    obstacle_points = cast(cropped_points, show=False)
 
     grid = decomposite(obstacle_points, show=show)
     if show:
@@ -165,7 +169,7 @@ if __name__ == "__main__":
     st_time = time.time()
     pc_raw = next(pc_gen)
 
-    pipeline(pc_raw, show=False)
+    pipeline(pc_raw, show=True)
     quit()
 
     points = np.zeros((len(pc_raw), 3))

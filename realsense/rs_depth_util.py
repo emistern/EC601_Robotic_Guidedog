@@ -37,11 +37,11 @@ class depth_worker():
 
         return np.asanyarray(mat / np.amax(mat) * 255.0).astype(np.uint8)
 
-    def show_depth_matrix(self, path):
+    def show_depth_matrix(self, path, raw=[]):
 
         # show the depth matrix given path with OpenCV
-
-        raw = np.load(path)
+        if raw == []:
+            raw = np.load(path)
 
         normalized = self.normalize_matrix(raw)
 
