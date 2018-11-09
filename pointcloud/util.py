@@ -1,7 +1,6 @@
 import time
 import numpy as np
 from open3d import *
-from get_pointcloud import *
 import matplotlib.pyplot as plt
 
 def downsample(pc_raw):
@@ -18,7 +17,7 @@ def downsample(pc_raw):
 
     return downsampled_points
 
-def denoise(downsampled_points):
+def denoise(downsampled_points, t=0.3):
 
     # construct a point cloud object in open3d
     pc = open3d.PointCloud()
@@ -68,6 +67,74 @@ def show_pointcloud(cropped_points):
     pc_cropped.points = open3d.Vector3dVector(np.asanyarray(cropped_points))
     open3d.draw_geometries([pc_cropped])
 
+def decomposite(obstacle_points, col = 7, row = 10, thresh = 2, show = True):
+
+    # decomposite points into grid
+    grid = np.zeros((row, col))
+
+    # some constants
+    row_min = min(obstacle_points[:, 0])
+    col_min = min(obstacle_points[:, 1])
+    row_max = max(obstacle_points[:, 0])
+    col_max = max(obstacle_points[:, 1])
+
+    print("point cloud range from", row_min, " ", col_min, " to ", row_max, " ", col_max)
+
+    points_row = obstacle_points[:, 0] + abs(row_min) + 0.0001
+    points_col = obstacle_points[:, 1] - col_min + 0.0001
+
+    if show:
+        plt.scatter(points_row, points_col)
+    
+    row_min = min(points_row)
+    col_min = min(points_col)
+    row_max = max(points_row)
+    col_max = max(points_col)
+
+    print ("append offset")
+    print("point cloud range from", row_min, " ", col_min, " to ", row_max, " ", col_max)
+
+    w = row_max
+    h = col_max
+
+    mask_row = 1 / np.array(range(col))
+    mask_row = mask_row * col / w
+
+    mask_col = 1 / np.array(range(row))
+    mask_col = mask_row * row / w
+
+    print ("with row mask: ", mask_row)
+    print ("with column mask: ", mask_col)
+
+    st_time = time.time()
+    # loop through the obstacle points
+    for i in range(0, len(obstacle_points), 4):
+        x_f = points_row[i]
+        y_f = points_col[i]
+        _x = x_f * mask_row
+        x_i = np.max(np.where( _x > 1 ))
+        _y = y_f * mask_col
+        y_i = np.max(np.where( _y > 1 ))
+        
+        grid[y_i, x_i]  += 1
+        #print(x_f, y_f)
+        #print(x_i, y_i)
+        #quit()
+
+    for i in range(row):
+        for j in range(col):
+            if (grid[i, j] > thresh):
+                grid[i, j] = 1
+            else:
+                grid[i, j] = 0
+    ed_time = time.time()
+    print("in ", ed_time - st_time, " second, the map: ")
+    #print(grid)
+    if show:
+        plt.show()
+
+    return grid  
+
 def pipeline(pc_raw, show=False):
 
     downsampled_points = downsample(pc_raw)
@@ -78,12 +145,15 @@ def pipeline(pc_raw, show=False):
 
     obstacle_points = cast(cropped_points, show=show)
 
+    grid = decomposite(obstacle_points, show=show)
     if show:
+        #print(obstacle_points)
         show_pointcloud(cropped_points)
 
-    return obstacle_points
+    return grid
 
 if __name__ == "__main__":
+    from get_pointcloud import *
 
     # define a tolerance for cropping
     t = 0.3
@@ -95,10 +165,8 @@ if __name__ == "__main__":
     st_time = time.time()
     pc_raw = next(pc_gen)
 
-    pipeline(pc_raw, show=True)
-    input()
-
-
+    pipeline(pc_raw, show=False)
+    quit()
 
     points = np.zeros((len(pc_raw), 3))
     for i in range(0, len(pc_raw), 50):

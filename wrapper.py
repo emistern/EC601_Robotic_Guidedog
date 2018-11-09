@@ -5,7 +5,8 @@ import time
 import numpy as np
 from realsense.rs_depth_util import *
 from get_frame import *
-
+from pointcloud.get_pointcloud import *
+from pointcloud.util import *
 class ModuleWrapper(object):
 
     def __init__(self):
@@ -15,16 +16,18 @@ class ModuleWrapper(object):
         nun_section = 7   # how many section to quantilize
         max_per_occ = 0.3 # percentage of 1s in a section to judge as occupied
 
+        use_pointcloud = True
+
         # Specify the depth matrix you want to use
-        #dep_mat_fn = 'wall_detection/samples/depth0009.npy'
-        #dep_mat = np.load(dep_mat_fn)
+        dep_mat_fn = 'wall_detection/samples/depth0009.npy'
+        dep_mat_static = np.load(dep_mat_fn)
 
         # Instantiate a depth worker object to display depth matrix
-        #dw = depth_worker()
+        dw = depth_worker()
         #dw.show_depth_matrix(dep_mat_fn)
 
         # initialize the camera frame iterator
-        img_gen = get_frame()
+        img_gen = get_pointcloud_frame("./realsense/20181011_223353.bag")
 
         # instantiate an interface
         interface = voice_class.VoiceInterface(straight_file='voice/straight.mp3',
@@ -38,16 +41,22 @@ class ModuleWrapper(object):
         while(True):
             # fetch an image from camera
             dep_mat = next(img_gen)
+
+            t_map_s = time.time()
+
             # slice and quantilize the depth matrix
             self.squeeze = image2birdview.depth_bird_view()
 
-            t_sq_s = time.time()
-            squeezed_matrix = self.squeeze.squeeze_matrix(dep_mat, num_slice=num_slice)
-            t_sq_e = time.time()
+            if not use_pointcloud:
 
-            t_qu_s = time.time()
-            map_depth = self.squeeze.quantilize(squeezed_matrix, n_sec=nun_section, max_per_occ=max_per_occ)
-            t_qu_e = time.time()
+                squeezed_matrix = self.squeeze.squeeze_matrix(dep_mat, num_slice=num_slice)
+
+                map_depth = self.squeeze.quantilize(squeezed_matrix, n_sec=nun_section, max_per_occ=max_per_occ)
+            else:
+
+                map_depth = pipeline(dep_mat)
+
+            t_map_e = time.time()
 
             # perform path planning on the map
             t_plan_s = time.time()
@@ -62,10 +71,9 @@ class ModuleWrapper(object):
                 path = p.find_optimal_path(target)
                 t_plan_e = time.time()
                 p.draw_path(path)
-                print("squeeze time " + str(t_sq_e - t_sq_s))
-                print("quantilize time " + str(t_qu_e - t_qu_s))
-                print("plan time" + str(t_plan_e - t_plan_s))
-
+                print("map time  " + str(t_map_e - t_map_s))
+                print("plan time " + str(t_plan_e - t_plan_s))
+                print("total time" + str(t_plan_e - t_map_s))
                 cv2.waitKey(200)
                 
                 #interface.play1(path,nun_section)
