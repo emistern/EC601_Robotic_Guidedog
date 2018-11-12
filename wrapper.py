@@ -13,7 +13,7 @@ class ModuleWrapper(object):
         # Parameters used by map builder
         num_slice = 10    # how many slices of the depth matrix
         nun_section = 7   # how many section to quantilize
-        max_per_occ = 0.3 # percentage of 1s in a section to judge as occupied
+        max_per_occ = 0.4 # percentage of 1s in a section to judge as occupied
 
         # Specify the depth matrix you want to use
         #dep_mat_fn = 'wall_detection/samples/depth0009.npy'
@@ -68,9 +68,9 @@ class ModuleWrapper(object):
 
                 cv2.waitKey(200)
                 
-                #interface.play1(path,nun_section)
+                interface.play2(path,nun_section)
             else:
-                #interface.play1([],nun_section)
+                interface.play2([],nun_section)
                 print("no path")
             input()
 
