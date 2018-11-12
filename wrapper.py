@@ -70,8 +70,6 @@ class ModuleWrapper(object):
             if(len(coord)!=0):
                 target_door = find_door( dep_mat, coord, 500 , nun_section)
                 print(target_door)
-                if(target_door[0]>9):
-                    target_door[0]=9
                 map_depth[target_door[0], target_door[1]] = 0
 
             # perform path planning on the map

@@ -50,5 +50,7 @@ def find_door( view_in_3D_after_filter, coord, slice_distance = 500, numsec = 7)
     ret_coor[1] = int((orig_x*numsec)/width)
 
     ret_coor[0] = layer
+    if(ret_coor[0]>9):
+        ret_coor[0]=9
 
     return ret_coor
