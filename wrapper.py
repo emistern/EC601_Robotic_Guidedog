@@ -6,6 +6,13 @@ import numpy as np
 from realsense.rs_depth_util import *
 from get_frame import *
 
+use_darknet = True
+
+if use_darknet:
+    import sys
+    sys.path.append("/home/yly/darknet")
+    from darknet_interface import *
+
 class ModuleWrapper(object):
 
     def __init__(self):
@@ -23,6 +30,12 @@ class ModuleWrapper(object):
         #dw = depth_worker()
         #dw.show_depth_matrix(dep_mat_fn)
 
+        if use_darknet:
+            # init darknet
+            darknet = DarknetInterface()
+            net = darknet.load_net(b"/home/yly/darknet/cfg/yolo-obj.cfg", b"/home/yly/darknet/yolo-door_frame.weights", 0)
+            meta = darknet.load_meta(b"/home/yly/darknet/data/obj.data")
+
         # initialize the camera frame iterator
         img_gen = get_frame()
 
@@ -37,7 +50,7 @@ class ModuleWrapper(object):
 
         while(True):
             # fetch an image from camera
-            dep_mat = next(img_gen)
+            dep_mat, color_mat = next(img_gen)
             # slice and quantilize the depth matrix
             self.squeeze = image2birdview.depth_bird_view()
 
@@ -49,6 +62,18 @@ class ModuleWrapper(object):
             map_depth = self.squeeze.quantilize(squeezed_matrix, n_sec=nun_section, max_per_occ=max_per_occ)
             t_qu_e = time.time()
 
+            # Use YOLO to detect the color image.
+            coord = darknet.detect(net, meta, color_mat) 
+            
+            target_door = []
+            # find the coordinate in map with depth matrix and bounding box
+            if(len(coord)!=0):
+                target_door = find_door( dep_mat, coord, 500 , nun_section)
+                print(target_door)
+                if(target_door[0]>9):
+                    target_door[0]=9
+                map_depth[target_door[0], target_door[1]] = 0
+
             # perform path planning on the map
             t_plan_s = time.time()
             print(map_depth)
@@ -57,7 +82,12 @@ class ModuleWrapper(object):
             p.gen_paths()
             p.gen_buffer_mats()
             p.plan()
-            target = p.find_default_target()
+
+            if target_door is not None:
+                target = target_door
+            else:
+                target = p.find_default_target()
+
             if len(target) > 0:
                 path = p.find_optimal_path(target)
                 t_plan_e = time.time()
@@ -68,9 +98,9 @@ class ModuleWrapper(object):
 
                 cv2.waitKey(200)
                 
-                interface.play2(path,nun_section)
+                #interface.play1(path,nun_section)
             else:
-                interface.play2([],nun_section)
+                #interface.play1([],nun_section)
                 print("no path")
             input()
 
