@@ -144,6 +144,21 @@ class path_planner(object):
 					count_diag2you_obstacles+=1
 		return count_diag2you_obstacles
 
+	def get_diag_and_next(self, row_val, NQuery_i, diff):
+		# if diff is less than zero then check the diag [row_val, NQuery_i-1] and 
+		#[row_val+1, NQuery_i] for obstacles
+		if diff < 0:
+			if row_val >=0 and row_val <= self.height-1 and NQuery_i-1>=0 and NQuery_i-1<=self.width-1:
+				print('here')
+				if self.map[row_val][NQuery_i-1] ==1 and self.map[row_val+1][NQuery_i]==1:
+					return True
+		elif diff > 0:
+			if row_val >=0 and row_val <= self.height-1 and NQuery_i+1>=0 and NQuery_i+1<=self.width-1:
+				if self.map[row_val][NQuery_i+1] ==1 and self.map[row_val+1][NQuery_i]==1:
+					return True
+		else:
+			return False
+				# now that we checked the boundaries, check if the two positions are obstacles 
 
 	# This method generates the graph of a given map. It calculates the cost to move from every node
 	# to another possible node. It adds extra costs if there are nearby obstacles.
@@ -159,10 +174,9 @@ class path_planner(object):
 			next2you_obstacles = self.get_next_2_you_neighbors(0, self.center+a_point)
 			diag2you_obstacles = self.get_diag_2_you(0, self.center+a_point)
 			# Add boundary cost
+			boundary_cost = 0
 			if self.center+a_point == 0 or self.center+a_point == self.width:
 				boundary_cost = 15
-			else:
-				boundary_cost = 0
 			obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost
 			
 			if a_point != 0:
@@ -182,26 +196,32 @@ class path_planner(object):
 					if self.map[i_row+1][j_col] == 1: #is this location on the map an obstacle?
 						new_layer[i_col][j_col] = m_v
 					else:
-						diff = abs(j_col-i_col)
+						diff = j_col-i_col
 						# Add extra costs if you are near an obstacle. 15 if the point has
 						# diagonal with obstacle, and 25 if the obstacle is next to you.
 						next2you_obstacles = self.get_next_2_you_neighbors(i_row+1, j_col)
 						diag2you_obstacles = self.get_diag_2_you(i_row+1, j_col)
+						# Add boundary cost as well
+						boundary_cost = 0
 						if self.center+a_point == 0 or self.center+a_point == self.width:
 							boundary_cost = 15
-						else:
-							boundary_cost = 0
 						obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost
-						if diff == 0:
+						if abs(diff) == 0:
 							# Need to get the number of diag's that are obstacles
 							# and the number of next2you's that are obstacles
 							new_layer[i_col][j_col] = 1 + obstacles_cost 
-						elif diff == 1:
-							new_layer[i_col][j_col] = 2 + obstacles_cost
+						elif abs(diff) == 1:
+							# add a check here if the position directly underneath the diagonal
+							# and right next to the diagonal (same row) then set 
+							if self.get_diag_and_next(i_row, i_col, diff): #is this location on the map an obstacle?
+							 	new_layer[i_col][j_col] = m_v
+							else:
+								new_layer[i_col][j_col] = 2 + obstacles_cost
 						else:
 							new_layer[i_col][j_col] = m_v
 			self.graph.append(new_layer)
 		return self.graph
+
 
 	# This function picks the minimum cost index in the first row as the starting position on the map.
 	def pick_start_pos(self):
@@ -245,7 +265,6 @@ class path_planner(object):
 			# Add the information for the starting_location to the backpointer/cost dictionary
 			all_cost_backpointers[(row, starting_location[0])]  = [(), 0]
 			
-			
 			# Repeat the following steps until the open set is empty
 			while (len(self.openset)!=0):
 				# print("open Set: ", self.openset)
@@ -256,12 +275,9 @@ class path_planner(object):
 				# and add it to the closed list
 				self.closedset.append(idxNbest)
 				# print("Closed Set: ", self.closedset)
-				# print("idxNbset: ", idxNbest)
+				print("idxNbset: ", idxNbest)
 				# Pick a new idxNbest if it's in the last row and it's not the goal location
-				if idxNbest[0] == self.height-1 and idxNbest[1]!=self.goal[1]:
-					idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
-					self.openset.pop(idxNbest, None)
-					self.closedset.append(idxNbest)
+
 				# Check if idxNBest is the goal
 				if idxNbest == (self.goal[0], self.goal[1]):
 					break
@@ -301,13 +317,18 @@ class path_planner(object):
 
 			
 			# Now loop through all of the backpointers starting from the goal location and add that to the path
-			backpointer = (self.goal[0], self.goal[1])
-			while (backpointer != (0, starting_location[0])):
-				self.path.append(backpointer[1])
-				backpointer = all_cost_backpointers[backpointer][0]
-			self.path.append(starting_location[0])
-			
-			return self.path[::-1]
+			try:
+				backpointer = (self.goal[0], self.goal[1])
+				while (backpointer != (0, starting_location[0])):
+					self.path.append(backpointer[1])
+					backpointer = all_cost_backpointers[backpointer][0]
+				self.path.append(starting_location[0])
+				
+				return self.path[::-1]
+			# If the goal location has no backpointers then there is likely obstacles all the way through
+			except:
+				return []
+
 
 	def draw_path(self, path):
 
@@ -362,13 +383,13 @@ if __name__ == "__main__":
 	# Testing Here!
 	default_map = [
 	        [0, 0, 0], # this is the starting row
-	        [1, 0, 0],
+	        [1, 0, 1],
 	        [0, 0, 0],
 	        [0, 1, 0],
-	        [0, 1, 1],
-	        [0, 0, 0],
+	        [0, 0, 1],
 	        [1, 0, 1],
-	        [0, 0, 0]
+	        [1, 0, 0],
+	        [0, 0, 1]
 	    ]
 
 	small_map = [
