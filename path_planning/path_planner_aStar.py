@@ -250,6 +250,12 @@ class path_planner(object):
 		except:
 			return []
 
+	def priority_queue(self):
+		idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
+		self.openset.pop(idxNbest, None)
+		self.closedset.append(idxNbest)
+		return idxNbest
+
 
 	def path_search(self, starting_location):
 		# If there is an obstacle in the center, center-1, and center + 1 then 
@@ -277,11 +283,8 @@ class path_planner(object):
 			while (len(self.openset)!=0 and flag==True):
 				# print("open Set: ", self.openset)
 				# Get the lowest cost item from the open list
-				idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
-				self.openset.pop(idxNbest, None)
-				# print("the idxBest: ",idxNbest)
-				# and add it to the closed list
-				self.closedset.append(idxNbest)
+				idxNbest=self.priority_queue()
+				
 				# print("Closed Set: ", self.closedset)
 				# print("idxNbset: ", idxNbest)
 				# Pick a new idxNbest if it's in the last row and it's not the goal location
@@ -295,9 +298,7 @@ class path_planner(object):
 				# Do error checking, if the row == self.height -1 then skip 
 				# also check if you're at the goal
 				while row == self.height:
-					idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
-					self.openset.pop(idxNbest, None)
-					self.closedset.append(idxNbest)
+					idxNbest=self.priority_queue()
 					# Update the row
 					row = idxNbest[0] + 1
 					# If you're at the goal location then run through the backpointers
@@ -430,7 +431,7 @@ if __name__ == "__main__":
 
 
 	# Test the Class
-	p = path_planner(default_map, [7,1])
+	p = path_planner(big_map, [4,2])
 	h = p.gen_heuristics(2)
 	# print("Heuristics:")
 	# for j in range(len(h)):
