@@ -158,7 +158,13 @@ class path_planner(object):
 		for a_point in first_row:
 			next2you_obstacles = self.get_next_2_you_neighbors(0, self.center+a_point)
 			diag2you_obstacles = self.get_diag_2_you(0, self.center+a_point)
-			obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15
+			# Add boundary cost
+			if self.center+a_point == 0 or self.center+a_point == self.width:
+				boundary_cost = 15
+			else:
+				boundary_cost = 0
+			obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost
+			
 			if a_point != 0:
 				cost = 2
 			else:
@@ -181,7 +187,11 @@ class path_planner(object):
 						# diagonal with obstacle, and 25 if the obstacle is next to you.
 						next2you_obstacles = self.get_next_2_you_neighbors(i_row+1, j_col)
 						diag2you_obstacles = self.get_diag_2_you(i_row+1, j_col)
-						obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15
+						if self.center+a_point == 0 or self.center+a_point == self.width:
+							boundary_cost = 15
+						else:
+							boundary_cost = 0
+						obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost
 						if diff == 0:
 							# Need to get the number of diag's that are obstacles
 							# and the number of next2you's that are obstacles
@@ -296,8 +306,6 @@ class path_planner(object):
 				self.path.append(backpointer[1])
 				backpointer = all_cost_backpointers[backpointer][0]
 			self.path.append(starting_location[0])
-
-			# test path
 			
 			return self.path[::-1]
 
