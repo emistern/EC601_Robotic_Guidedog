@@ -265,9 +265,10 @@ class path_planner(object):
 			# Add the information for the starting_location to the backpointer/cost dictionary
 			all_cost_backpointers[(row, starting_location[0])]  = [(), 0]
 			
+			flag = True
 			# Repeat the following steps until the open set is empty
-			while (len(self.openset)!=0):
-				# print("open Set: ", self.openset)
+			while (len(self.openset)!=0 and flag==True):
+				print("open Set: ", self.openset)
 				# Get the lowest cost item from the open list
 				idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
 				self.openset.pop(idxNbest, None)
@@ -283,6 +284,29 @@ class path_planner(object):
 					break
 				# Update the row
 				row = idxNbest[0] + 1
+
+				# Do error checking, if the row == self.height -1 then skip
+				while row == self.height:
+					idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
+					self.openset.pop(idxNbest, None)
+					self.closedset.append(idxNbest)
+					# Update the row
+					row = idxNbest[0] + 1
+					print(idxNbest)
+					if idxNbest == (self.goal[0], self.goal[1]):
+						try:
+							backpointer = (self.goal[0], self.goal[1])
+							while (backpointer != (0, starting_location[0])):
+								self.path.append(backpointer[1])
+								backpointer = all_cost_backpointers[backpointer][0]
+							self.path.append(starting_location[0])
+							
+							return self.path[::-1]
+						# If the goal location has no backpointers then there is likely obstacles all the way through
+						except:
+							return []
+
+
 				# Get the neighbors of idxNbest
 				# get the row on the graph that corresponds to the neighbors of idxNBest
 				graph_vals = self.graph[row][idxNbest[1]]
