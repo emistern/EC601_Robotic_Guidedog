@@ -18,6 +18,8 @@
 # - the planner also needs to return the size of the map (just width)
 # - the graph generator adds additional costs if there are obstacles
 #	near the position you are calculating the cost for.
+# - If there is an obstacle directly infront of you and next to you
+#	you cannot pass through diagonally between the two obstacles
 
 #######################################################
 #######################################################
@@ -36,6 +38,8 @@
 #	then return the current path. This basically means
 #	there are obstacles preventing you from moving 
 #	forwards
+# - need to go through and check why the cost for boundary 
+#	isn't changing anything
 
 #######################################################
 #######################################################
@@ -56,12 +60,9 @@ class path_planner(object):
 	def __init__(self, map, goal=None):
 		self.map = map
 
-		height = len(map)
-		width = len(map[1])
-		center = int(int(width) / int(2))
-		self.center = center
-		self.height = height
-		self.width = width
+		self.center = int(int(len(map[1])) / int(2))
+		self.height = len(map)
+		self.width = len(map[1])
 
 		# If no goal provided, then assume the goal is the center position
 		# at the end of the map.
@@ -75,13 +76,13 @@ class path_planner(object):
 
 		# Initialize the heuristics map
 		m_v_map = []
-		[m_v_map.append([m_v]*width) for x in range(0,height)]
+		[m_v_map.append([m_v]*self.width) for x in range(0,self.height)]
 		self.heuristics = m_v_map.copy()
 		self.heuristics[goal[0]][goal[1]] = 0 
 
 		# Initialize the graph map with infs, the same size as the given map
 		one_layer = []
-		[one_layer.append([m_v]*width) for x in range(0,width)]
+		[one_layer.append([m_v]*self.width) for x in range(0,self.width)]
 		self.graph=[one_layer.copy()]
 
 		# Initialize the open and the closed sets
@@ -109,13 +110,6 @@ class path_planner(object):
 				else:
 					self.heuristics[iHeight][iWidth] = math.sqrt((iHeight-self.goal[0])**2 + (iWidth-self.goal[1])**2)
 		return self.heuristics
-
-
-		# Get the 8 nearest neighbors to NQuery (i,j)
-		# Need each point to be within the boundary
-		# | (i-1, j-1) | (i-1, j,) |  (i-1, j+1) |
-		# | (i, j-1)   |  (i, j,)  |  (i, j+1)   |
-		# | (i+1, j-1) | (i+1, j,) |  (i+1, j+1) |
 
 	
 	# This method get's all of the neighbors that are directly next to a given query location
@@ -149,7 +143,6 @@ class path_planner(object):
 		#[row_val+1, NQuery_i] for obstacles
 		if diff < 0:
 			if row_val >=0 and row_val <= self.height-1 and NQuery_i-1>=0 and NQuery_i-1<=self.width-1:
-				print('here')
 				if self.map[row_val][NQuery_i-1] ==1 and self.map[row_val+1][NQuery_i]==1:
 					return True
 		elif diff > 0:
@@ -175,8 +168,8 @@ class path_planner(object):
 			diag2you_obstacles = self.get_diag_2_you(0, self.center+a_point)
 			# Add boundary cost
 			boundary_cost = 0
-			if self.center+a_point == 0 or self.center+a_point == self.width:
-				boundary_cost = 15
+			if self.center+a_point == 0 or self.center+a_point == self.width-1:
+				boundary_cost = 500
 			obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost
 			
 			if a_point != 0:
@@ -203,8 +196,8 @@ class path_planner(object):
 						diag2you_obstacles = self.get_diag_2_you(i_row+1, j_col)
 						# Add boundary cost as well
 						boundary_cost = 0
-						if self.center+a_point == 0 or self.center+a_point == self.width:
-							boundary_cost = 15
+						if j_col == 0 or j_col == self.width-1:
+							boundary_cost = 50000
 						obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost
 						if abs(diff) == 0:
 							# Need to get the number of diag's that are obstacles
@@ -225,9 +218,6 @@ class path_planner(object):
 
 	# This function picks the minimum cost index in the first row as the starting position on the map.
 	def pick_start_pos(self):
-		# If the first row is all obstacles then pass back an empty start list, which
-		# should tell the path_planner that there is no start
-
 		# Add in the heuristics for each position and then append it to a total cost list
 		# then get the min value and index for it.
 		# the first row of the graph
@@ -236,6 +226,8 @@ class path_planner(object):
 		for a_pos in range(len(graph_vals)):
 			if graph_vals[a_pos] != m_v:
 				total_cost = total_cost + [graph_vals[a_pos]+self.heuristics[0][a_pos]]
+		# If the first row is all obstacles then pass back an empty start list, which
+		# should tell the path_planner that there is no start
 		if (self.map[0][self.center]==1) and (self.map[0][self.center-1]==1) and (self.map[0][self.center+1]==1):
 			starting_location = []
 			return starting_location
@@ -243,7 +235,8 @@ class path_planner(object):
 			starting_location = [total_cost.index(min(total_cost))]
 		return starting_location
 
-	def get_path(self, starting_location, all_cost_backpointers):
+	# this function moves through the backpointers of the map and creates a path
+	def get_path_from_backpointers(self, starting_location, all_cost_backpointers):
 	# Now loop through all of the backpointers starting from the goal location and add that to the path
 		try:
 			backpointer = (self.goal[0], self.goal[1])
@@ -299,27 +292,17 @@ class path_planner(object):
 				# Update the row
 				row = idxNbest[0] + 1
 
-				# Do error checking, if the row == self.height -1 then skip
+				# Do error checking, if the row == self.height -1 then skip 
+				# also check if you're at the goal
 				while row == self.height:
 					idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
 					self.openset.pop(idxNbest, None)
 					self.closedset.append(idxNbest)
 					# Update the row
 					row = idxNbest[0] + 1
-					print(idxNbest)
+					# If you're at the goal location then run through the backpointers
 					if idxNbest == (self.goal[0], self.goal[1]):
-						# try:
-						# 	backpointer = (self.goal[0], self.goal[1])
-						# 	while (backpointer != (0, starting_location[0])):
-						# 		self.path.append(backpointer[1])
-						# 		backpointer = all_cost_backpointers[backpointer][0]
-						# 	self.path.append(starting_location[0])
-							
-						# 	return self.path[::-1]
-						# # If the goal location has no backpointers then there is likely obstacles all the way through
-						# except:
-						# 	return []
-						return self.get_path(starting_location, all_cost_backpointers)
+						return self.get_path_from_backpointers(starting_location, all_cost_backpointers)
 
 
 				# Get the neighbors of idxNbest
@@ -356,7 +339,7 @@ class path_planner(object):
 
 			
 			# Now loop through all of the backpointers starting from the goal location and add that to the path
-			return self.get_path(starting_location, all_cost_backpointers)
+			return self.get_path_from_backpointers(starting_location, all_cost_backpointers)
 
 
 	def draw_path(self, path):
@@ -417,7 +400,7 @@ if __name__ == "__main__":
 	        [0, 1, 0],
 	        [0, 0, 1],
 	        [1, 0, 1],
-	        [1, 0, 0],
+	        [0, 0, 0],
 	        [0, 0, 1]
 	    ]
 
@@ -453,9 +436,9 @@ if __name__ == "__main__":
 	# for j in range(len(h)):
 	# 	print(h[j])
 	t = p.gen_graph()
-	# print("Graph:")
-	# for i in range(len(p.graph)):
-	# 	print(p.graph[i])
+	print("Graph:")
+	for i in range(len(p.graph)):
+		print(p.graph[i])
 	startpos = p.pick_start_pos()
 	path = p.path_search(startpos)
 	print(path)
