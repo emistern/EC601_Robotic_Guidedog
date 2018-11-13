@@ -243,6 +243,20 @@ class path_planner(object):
 			starting_location = [total_cost.index(min(total_cost))]
 		return starting_location
 
+	def get_path(self, starting_location, all_cost_backpointers):
+	# Now loop through all of the backpointers starting from the goal location and add that to the path
+		try:
+			backpointer = (self.goal[0], self.goal[1])
+			while (backpointer != (0, starting_location[0])):
+				self.path.append(backpointer[1])
+				backpointer = all_cost_backpointers[backpointer][0]
+			self.path.append(starting_location[0])
+			
+			return self.path[::-1]
+		# If the goal location has no backpointers then there is likely obstacles all the way through
+		except:
+			return []
+
 
 	def path_search(self, starting_location):
 		# If there is an obstacle in the center, center-1, and center + 1 then 
@@ -268,7 +282,7 @@ class path_planner(object):
 			flag = True
 			# Repeat the following steps until the open set is empty
 			while (len(self.openset)!=0 and flag==True):
-				print("open Set: ", self.openset)
+				# print("open Set: ", self.openset)
 				# Get the lowest cost item from the open list
 				idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
 				self.openset.pop(idxNbest, None)
@@ -276,7 +290,7 @@ class path_planner(object):
 				# and add it to the closed list
 				self.closedset.append(idxNbest)
 				# print("Closed Set: ", self.closedset)
-				print("idxNbset: ", idxNbest)
+				# print("idxNbset: ", idxNbest)
 				# Pick a new idxNbest if it's in the last row and it's not the goal location
 
 				# Check if idxNBest is the goal
@@ -294,17 +308,18 @@ class path_planner(object):
 					row = idxNbest[0] + 1
 					print(idxNbest)
 					if idxNbest == (self.goal[0], self.goal[1]):
-						try:
-							backpointer = (self.goal[0], self.goal[1])
-							while (backpointer != (0, starting_location[0])):
-								self.path.append(backpointer[1])
-								backpointer = all_cost_backpointers[backpointer][0]
-							self.path.append(starting_location[0])
+						# try:
+						# 	backpointer = (self.goal[0], self.goal[1])
+						# 	while (backpointer != (0, starting_location[0])):
+						# 		self.path.append(backpointer[1])
+						# 		backpointer = all_cost_backpointers[backpointer][0]
+						# 	self.path.append(starting_location[0])
 							
-							return self.path[::-1]
-						# If the goal location has no backpointers then there is likely obstacles all the way through
-						except:
-							return []
+						# 	return self.path[::-1]
+						# # If the goal location has no backpointers then there is likely obstacles all the way through
+						# except:
+						# 	return []
+						return self.get_path(starting_location, all_cost_backpointers)
 
 
 				# Get the neighbors of idxNbest
@@ -341,17 +356,7 @@ class path_planner(object):
 
 			
 			# Now loop through all of the backpointers starting from the goal location and add that to the path
-			try:
-				backpointer = (self.goal[0], self.goal[1])
-				while (backpointer != (0, starting_location[0])):
-					self.path.append(backpointer[1])
-					backpointer = all_cost_backpointers[backpointer][0]
-				self.path.append(starting_location[0])
-				
-				return self.path[::-1]
-			# If the goal location has no backpointers then there is likely obstacles all the way through
-			except:
-				return []
+			return self.get_path(starting_location, all_cost_backpointers)
 
 
 	def draw_path(self, path):
