@@ -169,7 +169,7 @@ class path_planner(object):
 			# Add boundary cost
 			boundary_cost = 0
 			if self.center+a_point == 0 or self.center+a_point == self.width-1:
-				boundary_cost = 500
+				boundary_cost = 200
 			obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost
 			
 			if a_point != 0:
@@ -197,7 +197,7 @@ class path_planner(object):
 						# Add boundary cost as well
 						boundary_cost = 0
 						if j_col == 0 or j_col == self.width-1:
-							boundary_cost = 50000
+							boundary_cost = 200
 						obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost
 						if abs(diff) == 0:
 							# Need to get the number of diag's that are obstacles
@@ -436,9 +436,9 @@ if __name__ == "__main__":
 	# for j in range(len(h)):
 	# 	print(h[j])
 	t = p.gen_graph()
-	print("Graph:")
-	for i in range(len(p.graph)):
-		print(p.graph[i])
+	# print("Graph:")
+	# for i in range(len(p.graph)):
+	# 	print(p.graph[i])
 	startpos = p.pick_start_pos()
 	path = p.path_search(startpos)
 	print(path)
