@@ -96,8 +96,8 @@ class path_planner(object):
                         else:
                             if k == j:
                                 trans[k] = 1
-                            elif (abs(k - j) == 1 and cur_row[j + (k-j)] == 0):
-                                trans[k] = 2
+                            elif (abs(k - j) == 1 and (cur_row[k] == 0 or nxt_row[j] == 0)):
+                                trans[k] = 20
                             else:
                                 trans[k] = m_v
                             # add obstacle avoiding weights
@@ -144,7 +144,7 @@ class path_planner(object):
                         if j == center:
                             new_row[j] = 1
                         elif (abs(j - center) == 1):
-                            new_row[j] = 2
+                            new_row[j] = 20
                         else:
                             new_row[j] = m_v
                     else:
@@ -227,6 +227,9 @@ class path_planner(object):
 
         return []
 
+    def check_target_valid(self, target):
+        # check if the target is valid in current map
+        return (not self.values[target[0]][target[1]] == m_v)
 
     def draw_path(self, path):
 
@@ -274,6 +277,7 @@ class path_planner(object):
                 # draw target
                 world = cv2.circle(world, pt2, int(unit_size / 3), (255, 0, 255), 10)
 
+        world = np.flip(np.array(world), 0)
         cv2.imshow("path", world)
 
 if __name__ == "__main__":
@@ -299,9 +303,25 @@ if __name__ == "__main__":
         [0, 0, 0, 0, 1, 0, 0, 0, 0],
         [0, 0, 0, 1, 0, 0, 0, 0, 0]
     ]
-    p = path_planner(default_map)
+
+    debug_map = [
+        [0., 0., 0., 0., 0., 0., 0., 0., 0.],
+        [0., 0., 0., 1., 1., 0., 0., 0., 0.],
+        [0., 0., 1., 1., 1., 0., 0., 0., 0.],
+        [0., 0., 1., 1., 0., 0., 1., 0., 0.],
+        [0., 1., 1., 1., 1., 1., 1., 0., 0.],
+        [0., 1., 1., 1., 1., 1., 0., 0., 0.],
+        [0., 1., 1., 1., 1., 0., 0., 0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0.]
+        ]
+    p = path_planner(debug_map)
 
     p.gen_nodes()
+    print(p.nodes)
     p.gen_paths()
     p.gen_buffer_mats()
     p.plan()
@@ -309,7 +329,8 @@ if __name__ == "__main__":
     if len(target) > 0:
         print(p.paths)
         print(p.values)
-        path = p.find_optimal_path(target)
+        print(p.prevs)
+        path = p.find_optimal_path([3,4])
         p.draw_path(path)
 
         cv2.waitKey(0)
