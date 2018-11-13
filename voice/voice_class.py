@@ -20,6 +20,10 @@ class VoiceInterface(object):
     self.noway_file=noway_file
 
     self.prev_path = None
+<<<<<<< HEAD
+=======
+    self.count=0
+>>>>>>> emistern-master
 
   def play(self, pat, width):
     b=10
@@ -96,7 +100,38 @@ class VoiceInterface(object):
 
     self.prev_path = step
 
+  def play3(self, pat, width):
+    center=width/2-0.5
+    if len(pat)==0:
+        play(self.noway_file)
+        self.prev_path=10
+        return
+    path=[]
+    path.append(pat[0]-center)
+    for i in range (1,len(pat)):
+        path.append(pat[i]-pat[i-1])
+    print(path)
+    step=path[0]
+    if step == -1 and (step!=self.prev_path or self.count>=5):
+        play(self.turnleft_file)
+        self.count=0
+    if step == -2 and (step!=self.prev_path or self.count>=5):
+        play(self.hardleft_file)
+        self.count=0
+    if step == 1 and (step!=self.prev_path or self.count>=5):
+        play(self.turnright_file)
+        self.count=0
+    if step == 2 and (step!=self.prev_path or self.count>=5):
+        play(self.hardright_file)
+        self.count=0
+    if step == 0 and (step!=self.prev_path or self.count>=5):
+        play(self.straight_file)
+        self.count=0
+    if step == self.prev_path:
+        self.count+=1
+    self.prev_path = step
+
 if __name__=="__main__":
 
     interface = VoiceInterface()
-    interface.play([2,1,2,3,2],5)
+    interface.play3([2,2,2,2,2,2,2],5)

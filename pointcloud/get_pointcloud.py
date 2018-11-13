@@ -79,7 +79,7 @@ def get_pointcloud_frame(bagfile_dir, filter = False):
             # yield
             points_array = np.asanyarray(points.get_vertices())
             
-            yield points_array
+            yield np.asanyarray(depth_frame.get_data()), points_array
                 
     finally:
         pass
