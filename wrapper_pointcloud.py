@@ -91,9 +91,9 @@ class ModuleWrapper(object):
                 print("total time" + str(t_plan_e - t_map_s))
                 cv2.waitKey(200)
                 
-                interface.play2(path,num_section)
+                interface.play3(path,nun_section)
             else:
-                interface.play2([],num_section)
+                interface.play3([],nun_section)
                 print("no path")
             #input()
 
