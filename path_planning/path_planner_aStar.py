@@ -38,8 +38,9 @@
 #	then return the current path. This basically means
 #	there are obstacles preventing you from moving 
 #	forwards
-# - need to go through and check why the cost for boundary 
-#	isn't changing anything
+# - Add the get starting location algorithm
+# - Figure out why on the big_map[4.4] is failing
+# - do a few more tests and then add the planner into a try block
 
 #######################################################
 #######################################################
@@ -66,14 +67,8 @@ class path_planner(object):
 
 		# If no goal provided, then assume the goal is the center position
 		# at the end of the map.
-		if goal == None:
-			goal = [height-1, center]
-		else:
-			self.goal = goal
-
-		# Set the goal location on the map equal to a free space
-		self.map[goal[0]][goal[1]] = 0
-
+		self.get_goal_location(goal)
+		
 		# Initialize the heuristics map
 		m_v_map = []
 		[m_v_map.append([m_v]*self.width) for x in range(0,self.height)]
@@ -97,6 +92,18 @@ class path_planner(object):
 
 	def __repr__(self):
 		return str(self.map)
+
+	def get_goal_location(self, goal):
+		if len(goal) == 0:
+			self.goal = [1,1]
+			# run an algorithm to find a good goal location starting from the end
+			print("Going for Goal")
+		else:
+			# The goal was provided by the object detection algorithm
+			self.goal = goal
+			# Set the goal location on the map equal to a free space
+			self.map[goal[0]][goal[1]] = 0
+
 
 	def gen_heuristics(self, heuristic_function=1):
 		# loop over the heuristics map adding distances to each cell from the goal 
@@ -143,6 +150,7 @@ class path_planner(object):
 		#[row_val+1, NQuery_i] for obstacles
 		if diff < 0:
 			if row_val >=0 and row_val <= self.height-1 and NQuery_i-1>=0 and NQuery_i-1<=self.width-1:
+				# now that we checked the boundaries, check if the two positions are obstacles 
 				if self.map[row_val][NQuery_i-1] ==1 and self.map[row_val+1][NQuery_i]==1:
 					return True
 		elif diff > 0:
@@ -151,7 +159,7 @@ class path_planner(object):
 					return True
 		else:
 			return False
-				# now that we checked the boundaries, check if the two positions are obstacles 
+				
 
 	# This method generates the graph of a given map. It calculates the cost to move from every node
 	# to another possible node. It adds extra costs if there are nearby obstacles.
@@ -278,17 +286,13 @@ class path_planner(object):
 			# Add the information for the starting_location to the backpointer/cost dictionary
 			all_cost_backpointers[(row, starting_location[0])]  = [(), 0]
 			
-			flag = True
+
 			# Repeat the following steps until the open set is empty
-			while (len(self.openset)!=0 and flag==True):
+			while (len(self.openset)!=0):
 				# print("open Set: ", self.openset)
 				# Get the lowest cost item from the open list
 				idxNbest=self.priority_queue()
 				
-				# print("Closed Set: ", self.closedset)
-				# print("idxNbset: ", idxNbest)
-				# Pick a new idxNbest if it's in the last row and it's not the goal location
-
 				# Check if idxNBest is the goal
 				if idxNbest == (self.goal[0], self.goal[1]):
 					break
@@ -389,6 +393,7 @@ class path_planner(object):
 				# draw target
 				world = cv2.circle(world, pt2, int(unit_size / 3), (255, 0, 255), 10)
 
+		world = np.flip(np.array(world), 0)
 		cv2.imshow("path", world)
 
 
@@ -401,8 +406,8 @@ if __name__ == "__main__":
 	        [0, 1, 0],
 	        [0, 0, 1],
 	        [1, 0, 1],
-	        [0, 0, 0],
-	        [0, 0, 1]
+	        [1, 0, 0],
+	        [0, 1, 1]
 	    ]
 
 	small_map = [
@@ -431,7 +436,9 @@ if __name__ == "__main__":
 
 
 	# Test the Class
-	p = path_planner(big_map, [4,2])
+	goal = []
+	p = path_planner(big_map, goal)
+	quit()
 	h = p.gen_heuristics(2)
 	# print("Heuristics:")
 	# for j in range(len(h)):
