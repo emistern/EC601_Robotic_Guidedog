@@ -38,7 +38,9 @@
 #	then return the current path. This basically means
 #	there are obstacles preventing you from moving 
 #	forwards
-# - Add the get starting location algorithm
+# - Add the get starting location algorithm (randomly sample 5 positions in
+#	the last two rows and pick one that has the fewest 
+#	obstacles as neighbors?)
 # - Figure out why on the big_map[4.4] is failing
 # - do a few more tests and then add the planner into a try block
 
@@ -47,10 +49,8 @@
 
 
 #Import Libraries
-import sys
 import cv2
 import numpy as np
-import math
 m_v = float("inf")
 
 #######################################################
@@ -73,7 +73,7 @@ class path_planner(object):
 		m_v_map = []
 		[m_v_map.append([m_v]*self.width) for x in range(0,self.height)]
 		self.heuristics = m_v_map.copy()
-		self.heuristics[goal[0]][goal[1]] = 0 
+		self.heuristics[self.goal[0]][self.goal[1]] = 0 
 
 		# Initialize the graph map with infs, the same size as the given map
 		one_layer = []
@@ -95,14 +95,41 @@ class path_planner(object):
 
 	def get_goal_location(self, goal):
 		if len(goal) == 0:
-			self.goal = [1,1]
 			# run an algorithm to find a good goal location starting from the end
-			print("Going for Goal")
+			# Generate samples around the center line.
+			samples = [self.center-1, self.center, self.center+1]
+			
+			# Now check these samples in the last row and check if their
+			# neighbors and diag-neighbors are obstacles
+			goal_flag = False
+			row = self.height
+			while goal_flag==False:
+				row -=1
+				for a_sample in samples:
+					coord = (self.height-1, a_sample)
+					if self.map[self.height-1][a_sample-1]==1 and self.map[self.height-2][a_sample]==1:
+						pass
+					if self.map[self.height-2][a_sample-1]==1 and self.map[self.height-2][a_sample]==1:
+						pass
+					if self.map[self.height-2][a_sample]==1 and self.map[self.height-1][a_sample+1]==1:
+						pass
+					if self.map[self.height-2][a_sample]==1 and self.map[self.height-2][a_sample+1]==1:
+						pass
+					goal_flag  = True
+					break
+				# Now count the obstacles nearby, check for the specific situations
+			#### LEFT OFF HERE ###
+			if goal_flag == True:
+				goal = [row, a_sample]
+			else:
+				goal =[]
 		else:
 			# The goal was provided by the object detection algorithm
 			self.goal = goal
-			# Set the goal location on the map equal to a free space
-			self.map[goal[0]][goal[1]] = 0
+		self.goal = goal
+		self.map[goal[0]][goal[1]]=0
+			# need to update this with what happens if the goal does not exist
+		return self
 
 
 	def gen_heuristics(self, heuristic_function=1):
@@ -115,7 +142,7 @@ class path_planner(object):
 				if heuristic_function==1:
 					self.heuristics[iHeight][iWidth] = max(abs(iHeight-self.goal[0]), abs(iWidth-self.goal[1]))
 				else:
-					self.heuristics[iHeight][iWidth] = math.sqrt((iHeight-self.goal[0])**2 + (iWidth-self.goal[1])**2)
+					self.heuristics[iHeight][iWidth] = np.sqrt((iHeight-self.goal[0])**2 + (iWidth-self.goal[1])**2)
 		return self.heuristics
 
 	
@@ -302,6 +329,7 @@ class path_planner(object):
 				# Do error checking, if the row == self.height -1 then skip 
 				# also check if you're at the goal
 				while row == self.height:
+					print(idxNbest)
 					idxNbest=self.priority_queue()
 					# Update the row
 					row = idxNbest[0] + 1
@@ -418,10 +446,10 @@ if __name__ == "__main__":
 
 	big_map = [
 	    [0, 0, 0, 0, 0],
-	    [1, 1, 0, 0, 0],
+	    [1, 0, 0, 0, 0],
 	    [0, 0, 0, 1, 1],
 	    [0, 0, 0, 0, 1],
-	    [0, 0, 0, 1, 0]]
+	    [0, 1, 0, 1, 0]]
 
 	blocked_map = [
 	        [1, 1, 1],
@@ -437,8 +465,9 @@ if __name__ == "__main__":
 
 	# Test the Class
 	goal = []
+	# goal = [4,2]
 	p = path_planner(big_map, goal)
-	quit()
+	# quit()
 	h = p.gen_heuristics(2)
 	# print("Heuristics:")
 	# for j in range(len(h)):
