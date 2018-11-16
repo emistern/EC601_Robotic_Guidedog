@@ -161,7 +161,7 @@ def decomposite(obstacle_points, center,
 
     return grid, target
 
-def cheb(points):
+def cheb(points, show=False):
 
     # preprocessing points
     y = points[:, 1]
@@ -179,7 +179,7 @@ def cheb(points):
 
     #c.showPolygon()
 
-    center = c.solve(show=False)
+    center = c.solve(show=show)
     center[1] += mean_y
     points[:, 1] = points[:, 1] + mean_y
 
@@ -205,7 +205,7 @@ def pipeline(pc_raw, row = 14, col = 11, row_size = 6, col_size = 10, show=False
     obstacle_points = add_fake(obstacle_points)
 
     if debug:
-        center = cheb(obstacle_points)
+        center = cheb(obstacle_points, show=show)
         print(center)
 
     grid, target = decomposite(obstacle_points, center, row = row, col = col, 
