@@ -231,24 +231,25 @@ class path_planner(object):
         # check if the target is valid in current map
         return (not self.values[target[0]][target[1]] == m_v)
 
-    def draw_path(self, path):
+    def draw_path(self, path, lines=False):
 
-        unit_size = 60
+        unit_size = 50
         height = len(self.map)
         width = len(self.map[0])
         t_h = unit_size * height
         t_w = unit_size * width
         world = np.array([[[240] * 3] * (t_w)] * (t_h)).astype(np.uint8)
 
-        for x in range(0, t_w, unit_size):
-            pt1 = (x, 0)
-            pt2 = (x, t_h)
-            world = cv2.line(world, pt1, pt2, (255, 0, 0))
-        
-        for y in range(0, t_h, unit_size):
-            pt1 = (0, y)
-            pt2 = (t_w, y)
-            world = cv2.line(world, pt1, pt2, (255, 0, 0))
+        if lines:
+            for x in range(0, t_w, unit_size):
+                pt1 = (x, 0)
+                pt2 = (x, t_h)
+                world = cv2.line(world, pt1, pt2, (255, 0, 0))
+            
+            for y in range(0, t_h, unit_size):
+                pt1 = (0, y)
+                pt2 = (t_w, y)
+                world = cv2.line(world, pt1, pt2, (255, 0, 0))
 
         # Draw Obstacles
         ofs = int(unit_size / 5)

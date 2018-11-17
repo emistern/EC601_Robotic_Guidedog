@@ -36,7 +36,7 @@ def decomp(points_row, points_col, row_num, col_num, mask_row, mask_col):
 
     return grid
 
-def thresholding(grid, thresh=20):
+def thresholding(grid, thresh=5):
 
     row_num = grid.shape[0]
     col_num = grid.shape[1]

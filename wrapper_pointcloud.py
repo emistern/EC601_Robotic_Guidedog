@@ -23,6 +23,7 @@ def ModuleWrapper(args):
     use_pointcloud = args.pointcloud
     use_bag = args.bagfile
     use_chebyshev = args.chebyshev
+    use_voice = args.voice
     show = args.verbose
     timing = args.time
 
@@ -72,7 +73,7 @@ def ModuleWrapper(args):
             map_depth, target, facing_wall = pointcloud_pipeline(pointcloud, 
                                                             row_num = num_row, col_num = num_col, 
                                                             row_size = 6, col_size = 6, 
-                                                            show=show, cheb=use_chebyshev)
+                                                            show=show, cheb=use_chebyshev, timing=timing)
 
         t_map_e = time.time()
 
@@ -95,33 +96,47 @@ def ModuleWrapper(args):
             else:
                 path = []
 
+            t_ds_st = time.time()
             djikstra_planner.draw_path(path)
-            dw.show_depth_matrix("", dep_mat)
+            #dw.show_depth_matrix("", dep_mat)
+            t_ds_ed = time.time()
 
             if timing:
-                print("map time  " + str(t_map_e - t_map_s))
-                print("plan time " + str(t_plan_e - t_plan_s))
+                print("map  time  " + str(t_map_e - t_map_s))
+                print("plan time  " + str(t_plan_e - t_plan_s))
+                print("disp time  " + str(t_ds_ed - t_ds_st))
                 print("total time" + str(t_plan_e - t_map_s))
 
             cv2.waitKey(20)
             
-            interface.play3(path,num_col)
+            if use_voice:
+                interface.play3(path,num_col)
         else:
-            interface.play3([],num_col)
+            if use_voice:
+                interface.play3([],num_col)
+            djikstra_planner.draw_path([])
             print("no path")
-        #quit()
-        #input()
+        
+        if(args.oneshot):
+            quit()
+
+        if(args.input):
+            input()
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-b", "--bagfile", help="if use bagfile", default=False)
+    parser.add_argument("-b", "--bagfile", help="if use bagfile", default=True)
     parser.add_argument("-p", "--pointcloud", help="if use pointcloud", default=True)
-    parser.add_argument("-v", "--verbose", help="display the points", default=False)
-    parser.add_argument("-t", "--time", help="if timing the progra", default=False)
+    parser.add_argument("-verb", "--verbose", help="display the points", default=False)
+    parser.add_argument("-t", "--time", help="if timing the program", default=False)
     parser.add_argument("-c", "--chebyshev", help="whteter use chebyshev", default=False)
+    parser.add_argument("-v", "--voice", help="if output voice", default=False)
+    parser.add_argument("-o", "--oneshot", help="one shot for testing", default=False)
+    parser.add_argument("-i", "--input", help="press enter for each frame", default=False)
     parser.add_argument("--row", help="number of rows in map", default=10)
     parser.add_argument("--col", help="number of columns in map", default=11)
     args = parser.parse_args()
-    print(args.pointcloud)
+    print("Using Bag Fiel:    ", args.bagfile)
+    print("Using Point Cloud: ", args.pointcloud)
     ModuleWrapper(args)
