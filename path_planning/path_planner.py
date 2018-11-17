@@ -225,7 +225,7 @@ class path_planner(object):
             if (self.values[i][center] != m_v):
                 return [i, center]
 
-        return []
+        return None
 
     def check_target_valid(self, target):
         # check if the target is valid in current map

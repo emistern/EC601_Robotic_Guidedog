@@ -9,7 +9,7 @@ def pointcloud_pipeline(pc_raw,
                         row_num = 14, col_num = 11, 
                         row_size = 6, col_size = 10, 
                         ds_rate = 50,
-                        show=True):
+                        show=True, cheb=True):
     
     """
     The Point Cloud Map Builder Pipeline
@@ -36,7 +36,8 @@ def pointcloud_pipeline(pc_raw,
 
     obs_pts = cast_points(crop_pts)       # Cast 3D points onto 2D plane
 
-    center = cheb(obs_pts, show=show)     # find the Chebyshev center of obstacle points in 2D
+    if cheb:
+        center = cheb(obs_pts, show=show)     # find the Chebyshev center of obstacle points in 2D
 
     pts_row, pts_col = append_offset(obs_pts, row_size)  # prepare for decomposite
 
@@ -44,17 +45,23 @@ def pointcloud_pipeline(pc_raw,
 
     grid = decomp(pts_row, pts_col, row_num, col_num, mask_row, mask_col)   # build the grid occupency map
 
-    target = find_target(center, row_size, mask_row, mask_col)  # find the corresponding suqare in grid map with chebyshev center
+    if cheb:
+        target = find_target(center, row_size, mask_row, mask_col)  # find the corresponding suqare in grid map with chebyshev center
 
-    facing_wall = (target[0] < 2)  # check whether you are too close to the wall
+        facing_wall = (target[0] < 2)  # check whether you are too close to the wall
 
     grid = thresholding(grid)      # thresholding the grid map(turn into bit map)
 
     grid_mask = gen_mask(row_num, col_num)
 
     grid = grid + grid_mask
-    grid[target[0], target[1]] = 0
+
+    if cheb:
+        grid[target[0], target[1]] = 0
     
     print(grid)
+    if not cheb:
+        target = None
+        facing_wall = False
 
     return grid, target, facing_wall

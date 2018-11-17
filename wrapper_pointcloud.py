@@ -10,17 +10,18 @@ sys.path.append("./pointcloud/")
 from pointcloud.get_pointcloud import *
 from pointcloud.util import *
 from pointcloud.pipeline_pc import pointcloud_pipeline
+import argparse
 
 
-def ModuleWrapper():
+def ModuleWrapper(args):
     
     # Parameters used by map builder
-    num_slice = 14    # how many slices of the depth matrix
+    num_slice = 10    # how many slices of the depth matrix
     num_section = 11   # how many section to quantilize
     max_per_occ = 0.3 # percentage of 1s in a section to judge as occupied
 
-    use_pointcloud = True
-    use_bag = True
+    use_pointcloud = args.pointcloud
+    use_bag = args.bagfile
 
     # Specify the depth matrix you want to use
     dep_mat_fn = 'wall_detection/samples/depth0009.npy'
@@ -47,6 +48,7 @@ def ModuleWrapper():
 
     while(True):
         facing_wall = False
+        target = None
 
         # fetch an image from camera
         dep_mat, pointcloud = next(img_gen)
@@ -64,40 +66,50 @@ def ModuleWrapper():
         else:
 
             #map_depth, target, facing_wall = pipeline(pointcloud, row = num_slice, col = num_section, row_size = 6, col_size = 10, show=True)
-            map_depth, target, facing_wall = pointcloud_pipeline(pointcloud, row_num = num_slice, col_num = num_section, row_size = 6, col_size = 6, show=True)
+            map_depth, target, facing_wall = pointcloud_pipeline(pointcloud, 
+                                                            row_num = num_slice, col_num = num_section, 
+                                                            row_size = 6, col_size = 6, 
+                                                            show=False, cheb=False)
 
         t_map_e = time.time()
 
         # perform path planning on the map
         t_plan_s = time.time()
         #print(map_depth)
-        p = path_planner.path_planner(map_depth)
-        p.gen_nodes()
-        p.gen_paths()
-        p.gen_buffer_mats()
-        p.plan()
+        djikstra_planner = path_planner.path_planner(map_depth)
+        djikstra_planner.gen_nodes()
+        djikstra_planner.gen_paths()
+        djikstra_planner.gen_buffer_mats()
+        djikstra_planner.plan()
         if target is None:
-            target = p.find_default_target()
-        if not facing_wall:
-            if (p.check_target_valid(target)):
-                path = p.find_optimal_path(target)
+            target = djikstra_planner.find_default_target()
+        if not facing_wall and target != None:
+            if (djikstra_planner.check_target_valid(target)):
+                path = djikstra_planner.find_optimal_path(target)
             else:
                 path = []
             t_plan_e = time.time()
-            p.draw_path(path)
+            djikstra_planner.draw_path(path)
             dw.show_depth_matrix("", dep_mat)
             print("map time  " + str(t_map_e - t_map_s))
             print("plan time " + str(t_plan_e - t_plan_s))
             print("total time" + str(t_plan_e - t_map_s))
-            cv2.waitKey(200)
+            cv2.waitKey(20)
             
-            #interface.play3(path,num_section)
+            interface.play3(path,num_section)
         else:
-            #interface.play3([],num_section)
+            interface.play3([],num_section)
             print("no path")
         #quit()
         #input()
 
 if __name__ == "__main__":
 
-    ModuleWrapper()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-b", "--bagfile", help="if use bagfile", default=False)
+    parser.add_argument("-p", "--pointcloud", help="if use pointcloud", default=True)
+
+    args = parser.parse_args()
+
+    print(args.bagfile)
+    ModuleWrapper(args)
