@@ -7,6 +7,7 @@ from realsense.rs_depth_util import *
 from get_frame import *
 from door_coord import find_door
 
+import argparse
 use_darknet = True
 
 if use_darknet:
