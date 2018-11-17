@@ -20,10 +20,7 @@ class VoiceInterface(object):
     self.noway_file=noway_file
 
     self.prev_path = None
-<<<<<<< HEAD
-=======
     self.count=0
->>>>>>> emistern-master
 
   def play(self, pat, width):
     b=10
