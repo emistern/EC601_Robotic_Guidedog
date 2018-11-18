@@ -1,5 +1,5 @@
 from wall_detection import image2birdview
-from path_planning import path_planner
+from path_planning import path_planner, path_filter
 from voice import voice_class
 import time
 import cv2
@@ -26,6 +26,11 @@ def ModuleWrapper(args):
     use_voice = args.voice
     show = args.verbose
     timing = args.time
+
+    # arrow images
+    arrow_f = cv2.imread("./images/arrow_f.png")
+    arrow_l = cv2.imread("./images/arrow_l.png")
+    arrow_r = cv2.imread("./images/arrow_r.png")
 
     # Specify the depth matrix you want to use
     dep_mat_fn = 'wall_detection/samples/depth0009.npy'
@@ -71,7 +76,7 @@ def ModuleWrapper(args):
             #map_depth, target, facing_wall = pipeline(pointcloud, row = num_row, col = num_col, row_size = 6, col_size = 10, show=True)
             map_depth, target, facing_wall = pointcloud_pipeline(pointcloud, 
                                                             row_num = num_row, col_num = num_col, 
-                                                            row_size = 6, col_size = 6, 
+                                                            row_size = 6, col_size = 4, 
                                                             show=show, cheb=use_chebyshev, timing=timing)
 
         t_map_e = time.time()
@@ -97,9 +102,18 @@ def ModuleWrapper(args):
 
             t_ds_st = time.time()
             djikstra_planner.draw_path(path)
-            dw.show_depth_matrix("", dep_mat)
+            #dw.show_depth_matrix("", dep_mat)
 
             t_ds_ed = time.time()
+
+            direc = path_filter.compute_weighted_average(path, num_row, num_col)
+
+            if (direc == 0):
+                cv2.imshow("direction", arrow_f)
+            elif (direc == 1):
+                cv2.imshow("direction", arrow_r)
+            else:
+                cv2.imshow("direction", arrow_l)
 
             if timing:
                 print("map  time  " + str(t_map_e - t_map_s))
@@ -113,17 +127,17 @@ def ModuleWrapper(args):
             if use_voice:
                 interface.play3([],num_col)
             djikstra_planner.draw_path([])
-            dw.show_depth_matrix("", dep_mat)
+            #dw.show_depth_matrix("", dep_mat)
 
             print("no path")
         
         cv2.waitKey(20)
 
-        if(args.oneshot):
-            quit()
-
         if(args.input):
             input()
+
+        if(args.oneshot):
+            quit()
 
 if __name__ == "__main__":
 
@@ -136,8 +150,8 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--voice", help="if output voice", default=False, type=bool)
     parser.add_argument("-o", "--oneshot", help="one shot for testing", default=False, type=bool)
     parser.add_argument("-i", "--input", help="press enter for each frame", default=False, type=bool)
-    parser.add_argument("--row", help="number of rows in map", default=10, type=int)
-    parser.add_argument("--col", help="number of columns in map", default=11, type=int)
+    parser.add_argument("--row", help="number of rows in map", default=20, type=int)
+    parser.add_argument("--col", help="number of columns in map", default=29, type=int)
     args = parser.parse_args()
     print("Using Bag File:    ", args.bagfile)
     print("Using Point Cloud: ", args.pointcloud)

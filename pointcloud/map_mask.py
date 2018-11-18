@@ -7,7 +7,7 @@ def gen_mask(row_num, col_num):
     """
 
     mask = np.zeros((row_num, col_num))
-    bound1 = min([row_num, col_num]) / 2 
+    bound1 = col_num / 2 #min([row_num, col_num]) / 2 
     t = 1.0
     slope = 2.0
     for i in range(row_num):

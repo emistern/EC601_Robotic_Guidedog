@@ -233,7 +233,7 @@ class path_planner(object):
 
     def draw_path(self, path, lines=False):
 
-        unit_size = 50
+        unit_size = 10
         height = len(self.map)
         width = len(self.map[0])
         t_h = unit_size * height
@@ -259,7 +259,7 @@ class path_planner(object):
                     # Draw an obstacle in world
                     pt1 = (j * unit_size + ofs, i * unit_size + ofs)
                     pt2 = ((j+1) * unit_size - ofs, (i+1) * unit_size - ofs)
-                    cv2.rectangle(world, pt1, pt2, (0, 0, 255), 5)
+                    cv2.rectangle(world, pt1, pt2, (0, 0, 200), 3)
 
         # Draw Optimal Path 
         x_ofs = int(unit_size / 2)

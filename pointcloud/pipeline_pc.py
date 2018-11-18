@@ -2,7 +2,7 @@ from processing_pc import construct_pointcloud, filt_pointcloud, get_bound, get_
 from downsample_pc import downsample, downsample_vector
 from find_target import cheb, find_target
 from decomposite_pc import append_offset, compute_mask, decomp, thresholding
-from decomposite_pc import append_offset2D, compute_mask2D, decomp_np, thresholding
+from decomposite_pc import append_offset2D, compute_mask2D, decomp_np, thresholding_np
 from display_pc import show_pointcloud, show_points2D
 from map_mask import gen_mask
 import time
@@ -81,16 +81,23 @@ def pointcloud_pipeline(pc_raw,
 
         facing_wall = (target[0] < 2)  # check whether you are too close to the wall
 
-    grid = thresholding(grid)      # thresholding the grid map(turn into bit map)
+    t_ths_st = time.time()
 
+    grid = thresholding_np(grid)      # thresholding the grid map(turn into bit map)
+
+    t_ths_ed = time.time()
+    if timing:
+        print("Thresholding in time: ", t_ths_ed - t_ths_st, " seconds")
     grid_mask = gen_mask(row_num, col_num)
 
-    grid = np.remainder(grid + grid_mask, 2)
+    grid = grid + grid_mask
+    ovlp_x, ovlp_y = np.where(grid > 1)
+    for i in range(len(ovlp_x)):
+        grid[ovlp_x[i], ovlp_y[i]] = 1
 
     if cheb:
         grid[target[0], target[1]] = 0
     
-    print(grid)
     if not cheb:
         target = None
         facing_wall = False
