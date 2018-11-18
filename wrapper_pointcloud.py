@@ -33,7 +33,6 @@ def ModuleWrapper(args):
 
     # Instantiate a depth worker object to display depth matrix
     dw = depth_worker()
-    #dw.show_depth_matrix(dep_mat_fn)
 
     # initialize the camera frame iterator
     if use_bag:
@@ -81,10 +80,10 @@ def ModuleWrapper(args):
         t_plan_s = time.time()
         
         djikstra_planner = path_planner.path_planner(map_depth)
-        djikstra_planner.gen_nodes()
-        djikstra_planner.gen_paths()
-        djikstra_planner.gen_buffer_mats()
-        djikstra_planner.plan()
+        djikstra_planner.gen_nodes()   # path planner initializetion
+        djikstra_planner.gen_paths()   # path planner initializetion
+        djikstra_planner.gen_buffer_mats() # path planner initializetion
+        djikstra_planner.plan()        # path planner planning
 
         t_plan_e = time.time()
 
@@ -98,7 +97,8 @@ def ModuleWrapper(args):
 
             t_ds_st = time.time()
             djikstra_planner.draw_path(path)
-            #dw.show_depth_matrix("", dep_mat)
+            dw.show_depth_matrix("", dep_mat)
+
             t_ds_ed = time.time()
 
             if timing:
@@ -106,8 +106,6 @@ def ModuleWrapper(args):
                 print("plan time  " + str(t_plan_e - t_plan_s))
                 print("disp time  " + str(t_ds_ed - t_ds_st))
                 print("total time" + str(t_plan_e - t_map_s))
-
-            cv2.waitKey(20)
             
             if use_voice:
                 interface.play3(path,num_col)
@@ -115,8 +113,12 @@ def ModuleWrapper(args):
             if use_voice:
                 interface.play3([],num_col)
             djikstra_planner.draw_path([])
+            dw.show_depth_matrix("", dep_mat)
+
             print("no path")
         
+        cv2.waitKey(20)
+
         if(args.oneshot):
             quit()
 
@@ -126,17 +128,19 @@ def ModuleWrapper(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-b", "--bagfile", help="if use bagfile", default=True)
-    parser.add_argument("-p", "--pointcloud", help="if use pointcloud", default=True)
-    parser.add_argument("-verb", "--verbose", help="display the points", default=False)
-    parser.add_argument("-t", "--time", help="if timing the program", default=False)
-    parser.add_argument("-c", "--chebyshev", help="whteter use chebyshev", default=False)
-    parser.add_argument("-v", "--voice", help="if output voice", default=False)
-    parser.add_argument("-o", "--oneshot", help="one shot for testing", default=False)
-    parser.add_argument("-i", "--input", help="press enter for each frame", default=False)
-    parser.add_argument("--row", help="number of rows in map", default=10)
-    parser.add_argument("--col", help="number of columns in map", default=11)
+    parser.add_argument("-b", "--bagfile", help="if use bagfile", default=False, type=bool)
+    parser.add_argument("-p", "--pointcloud", help="if use pointcloud", default=True, type=bool)
+    parser.add_argument("-verb", "--verbose", help="display the points", default=False, type=bool)
+    parser.add_argument("-t", "--time", help="if timing the program", default=False, type=bool)
+    parser.add_argument("-c", "--chebyshev", help="whteter use chebyshev", default=False, type=bool)
+    parser.add_argument("-v", "--voice", help="if output voice", default=False, type=bool)
+    parser.add_argument("-o", "--oneshot", help="one shot for testing", default=False, type=bool)
+    parser.add_argument("-i", "--input", help="press enter for each frame", default=False, type=bool)
+    parser.add_argument("--row", help="number of rows in map", default=10, type=int)
+    parser.add_argument("--col", help="number of columns in map", default=11, type=int)
     args = parser.parse_args()
-    print("Using Bag Fiel:    ", args.bagfile)
+    print("Using Bag File:    ", args.bagfile)
     print("Using Point Cloud: ", args.pointcloud)
+    print("Timing:            ", args.time)
+    #quit()
     ModuleWrapper(args)

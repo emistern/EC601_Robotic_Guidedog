@@ -1,11 +1,16 @@
 import numpy as np
 
-def append_offset(points, row_size):
+def append_offset(points, row_size, col_size):
 
-    points_row = points[:, 0] + abs(row_size/2) 
-    points_col = points[:, 1] 
+    points[:, 0] += abs(row_size/2) 
+    inlier_row_idx = np.where((points[:, 0] > 0) & (points[:, 0] < row_size))
+    points = np.squeeze(np.take(points, inlier_row_idx, axis=0))
+    inlier_col_idx = np.where((points[:, 1] > 0) & (points[:, 1] < col_size))
+    points = np.squeeze(np.take(points, inlier_col_idx, axis=0))
+    pts_row = points[:, 0]
+    pts_col = points[:, 1]
 
-    return points_row, points_col
+    return pts_row, pts_col
 
 def compute_mask(row_num, col_num, row_size, col_size):
 
@@ -36,7 +41,7 @@ def decomp(points_row, points_col, row_num, col_num, mask_row, mask_col):
 
     return grid
 
-def thresholding(grid, thresh=5):
+def thresholding(grid, thresh=10):
 
     row_num = grid.shape[0]
     col_num = grid.shape[1]
@@ -50,88 +55,57 @@ def thresholding(grid, thresh=5):
     
     return grid
 
-def decomposite(obstacle_points, center,
-                row = 10, col = 7, 
-                col_size = 5, row_size = 5,
-                thresh = 20,  show = True):
+def append_offset2D(points, row_size):
 
-    # decomposite points into grid
-    grid = np.zeros((row, col))
+    points[:, 0] = points[:, 0] + abs(row_size/2) 
 
-    # some constants
-    row_min = min(obstacle_points[:, 0])
-    col_min = min(obstacle_points[:, 1])
-    row_max = max(obstacle_points[:, 0])
-    col_max = max(obstacle_points[:, 1])
+    return points
 
-    print("point cloud range from", row_min, " ", col_min, " to ", row_max, " ", col_max)
+def compute_mask2D(row_num, col_num, row_size, col_size):
 
-    points_row = obstacle_points[:, 0] + abs(row_size/2) + 0.0001
-    points_col = obstacle_points[:, 1] + 0.0001
+    return
 
-    if show:
-        plt.scatter(points_row, points_col)
+def select_points(pts_row, pts_col, row_size, col_size):
+
+    return
+
+def decomp_np(points_row, points_col, row_num, col_num, mask_row, mask_col):
+
+    grid = np.zeros((row_num, col_num))
+    mask_row = np.array(mask_row)
+    points_row = np.array(points_row)
+    mask_col = np.array(mask_col)
+    points_col = np.array(points_col) + 0.01
+
+    outer_row = np.matmul(np.expand_dims(points_row, axis=1), 
+                      np.expand_dims(mask_row, axis=0))
+    outer_col = np.matmul(np.expand_dims(points_col, axis=1), 
+                      np.expand_dims(mask_col, axis=0))
+
+    id_p_row, id_m_row = np.where((outer_row > 1))
+    id_p_col, id_m_col = np.where((outer_col > 1))
     
-    row_min = min(points_row)
-    col_min = min(points_col)
-    row_max = max(points_row)
-    col_max = max(points_col)
+    idx_row = []
+    for i in range(len(id_p_row)):
+        if(i == len(id_p_row) - 1):
+            idx_row.append(i)
+        elif(id_p_row[i+1] > id_p_row[i]):
+            idx_row.append(i)
+    idx_row = np.array(idx_row, dtype=np.int32)
+    cor_row = np.take(id_m_row, idx_row)
 
-    print ("append offset")
-    print("point cloud range from", row_min, " ", col_min, " to ", row_max, " ", col_max)
+    idx_col = []
+    for i in range(len(id_p_col)):
+        if(i == len(id_p_col) - 1):
+            idx_col.append(i)
+        elif(id_p_col[i+1] > id_p_col[i]):
+            idx_col.append(i)
+    idx_col = np.array(idx_col, dtype=np.int32)
+    cor_col = np.take(id_m_col, idx_col)
 
-    w = row_max
-    h = col_max
+    assert len(cor_col) == len(cor_row)
 
-    mask_row = 1 / np.array(range(col))
-    mask_row = mask_row * col / row_size
+    for i in range(len(cor_row)):
+        grid[cor_col[i], cor_row[i]] += 1
 
-    mask_col = 1 / np.array(range(row))
-    mask_col = mask_col * row / col_size
-
-    print ("with row mask: ", mask_row)
-    print ("with column mask: ", mask_col)
-
-    st_time = time.time()
-    # loop through the obstacle points
-    for i in range(0, len(obstacle_points), 2):
-        x_f = points_row[i]
-        y_f = points_col[i]
-        try:
-            _x = x_f * mask_row
-            x_i = np.max(np.where( _x > 1 ))
-            _y = y_f * mask_col
-            y_i = np.max(np.where( _y > 1 ))
-        
-            grid[y_i, x_i]  += 1
-        except:
-            pass
-        #print(x_f, y_f)
-        #print(x_i, y_i)
-        #quit()
-    print(grid)
-
-    # find the target
-    x_f = center[0] + abs(row_size/2)
-    y_f = center[1]
-    _x = x_f * mask_row
-    x_i = np.max(np.where( _x > 1 ))
-    _y = y_f * mask_col
-    y_i = np.max(np.where( _y > 1 ))
-    target = [y_i, x_i]
-
-    grid[y_i, x_i] = 0
-
-    for i in range(row):
-        for j in range(col):
-            if (grid[i, j] > thresh):
-                grid[i, j] = 1
-            else:
-                grid[i, j] = 0
-    ed_time = time.time()
-    print("in ", ed_time - st_time, " second, the map: ")
-    print(grid)
-    if show:
-        plt.show()
-
-    return grid, target
+    return grid

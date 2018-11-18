@@ -27,7 +27,7 @@ def filt_pointcloud(pc):
 
     # remove radius outliers
     pc_filtered, _ = radius_outlier_removal(pc,
-            nb_points=5, radius=0.1)
+            nb_points=5, radius=0.07)
 
     return pc_filtered
 
@@ -85,9 +85,8 @@ def crop_points_np(points, max_z, min_z):
     z = points[:, 2]
     idx = np.where((z > min_z) & (z < max_z))
     idx = np.array(idx)
-    idx = np.ndarray((idx.shape[1]), dtype=np.int32, buffer=idx)
-    crop_pts = np.take(points, idx, axis=0)
-
+    crop_pts = np.squeeze(np.take(points, idx, axis=0))
+    
     return crop_pts
 
 def cast_points(points):

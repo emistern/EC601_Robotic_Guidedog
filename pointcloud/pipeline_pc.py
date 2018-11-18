@@ -2,14 +2,16 @@ from processing_pc import construct_pointcloud, filt_pointcloud, get_bound, get_
 from downsample_pc import downsample, downsample_vector
 from find_target import cheb, find_target
 from decomposite_pc import append_offset, compute_mask, decomp, thresholding
+from decomposite_pc import append_offset2D, compute_mask2D, decomp_np, thresholding
 from display_pc import show_pointcloud, show_points2D
 from map_mask import gen_mask
 import time
+import numpy as np
 
 def pointcloud_pipeline(pc_raw, 
                         row_num = 14, col_num = 11, 
                         row_size = 6, col_size = 10, 
-                        ds_rate = 50,
+                        ds_rate = 60,
                         show=True, cheb=True, timing=True):
     
     """
@@ -58,11 +60,21 @@ def pointcloud_pipeline(pc_raw,
     if cheb:
         center = cheb(obs_pts, show=show)     # find the Chebyshev center of obstacle points in 2D
 
-    pts_row, pts_col = append_offset(obs_pts, row_size)  # prepare for decomposite
+    t_dcp_st = time.time()
+
+    pts_row, pts_col = append_offset(obs_pts, row_size, col_size)  # prepare for decomposite
 
     mask_row, mask_col = compute_mask(row_num, col_num, row_size, col_size)  # prepare for decomposite
 
-    grid = decomp(pts_row, pts_col, row_num, col_num, mask_row, mask_col)   # build the grid occupency map
+    grid = decomp_np(pts_row, pts_col, row_num, col_num, mask_row, mask_col) # build the grid occupency map
+    #grid_ = decomp(pts_row, pts_col, row_num, col_num, mask_row, mask_col) # build the grid occupency map
+
+    t_dcp_ed = time.time()
+    if timing:
+        print("Decomposition in: ", t_dcp_ed - t_dcp_st, " seconds")
+        #print(grid)
+        #print(grid_)
+        #assert grid.any() == grid_.any()
 
     if cheb:
         target = find_target(center, row_size, mask_row, mask_col)  # find the corresponding suqare in grid map with chebyshev center
@@ -73,7 +85,7 @@ def pointcloud_pipeline(pc_raw,
 
     grid_mask = gen_mask(row_num, col_num)
 
-    grid = grid + grid_mask
+    grid = np.remainder(grid + grid_mask, 2)
 
     if cheb:
         grid[target[0], target[1]] = 0
