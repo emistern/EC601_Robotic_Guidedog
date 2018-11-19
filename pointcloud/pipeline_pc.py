@@ -8,10 +8,10 @@ from map_mask import gen_mask
 import time
 import numpy as np
 
-def pointcloud_pipeline(pc_raw, 
+def pointcloud_pipeline(pc_raw,
+                        ds_rate = 60,
                         row_num = 14, col_num = 11, 
                         row_size = 6, col_size = 10, 
-                        ds_rate = 60,
                         show=True, cheb=True, timing=True):
     
     """

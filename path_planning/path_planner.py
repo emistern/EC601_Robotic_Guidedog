@@ -1,5 +1,6 @@
 import sys
 import cv2
+import time
 import numpy as np
 m_v = float("inf")
 
@@ -215,13 +216,13 @@ class path_planner(object):
             opt_path.insert(0, prev_pos)
         return opt_path
 
-    def find_default_target(self):
+    def find_default_target(self, min_row):
         # find the default target based on minimal distances
         height = np.array(self.values).shape[0]
         width = np.array(self.values).shape[1]
 
         center = int((width - 1) / 2)
-        for i in range(height-1, 0, -1):
+        for i in range(height-1, min_row, -1):
             if (self.values[i][center] != m_v):
                 return [i, center]
 
