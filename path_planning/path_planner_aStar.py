@@ -96,7 +96,7 @@ class path_planner(object):
 		if len(goal) == 0:
 			# run an algorithm to find a good goal location starting from the end
 			# Generate samples around the center line.
-			samples = [self.center-1, self.center, self.center+1]
+			samples = [self.center, self.center-1, self.center+1]
 			
 			# Now check these samples in the last row and check if their
 			# neighbors and diag-neighbors are obstacles
@@ -109,10 +109,10 @@ class path_planner(object):
 					return self
 				
 				for a_sample in samples:
-					print(row, a_sample)
+					# print(row, a_sample)
 					if self.map[row-1][a_sample]==0 and self.map[row-2][a_sample]==0:
 						goal_flag  = True
-						print("here")
+						
 						break
 					# Now count the obstacles nearby, check for the specific situations
 					if self.map[row][a_sample-1]==1 and self.map[row-1][a_sample]==1:
@@ -128,12 +128,14 @@ class path_planner(object):
 			#### LEFT OFF HERE ###
 			if goal_flag == True:
 				goal = [row, a_sample]
+
 			else:
 				goal =[]
 		else:
 			# The goal was provided by the object detection algorithm
 			self.goal = goal
 		self.goal = goal
+		# print("Self.goal", self.goal)
 		self.map[goal[0]][goal[1]]=0
 			# need to update this with what happens if the goal does not exist
 		return self
@@ -239,7 +241,7 @@ class path_planner(object):
 						# Add boundary cost as well
 						boundary_cost = 0
 						if j_col == 0 or j_col == self.width-1:
-							boundary_cost = 200
+							boundary_cost = 50
 						obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost
 						if abs(diff) == 0:
 							# Need to get the number of diag's that are obstacles
@@ -264,7 +266,6 @@ class path_planner(object):
 		# then get the min value and index for it.
 		# the first row of the graph
 		graph_vals = self.graph[0][self.center]
-		print(graph_vals)
 		total_cost = []
 		for a_pos in range(len(graph_vals)):
 			if graph_vals[a_pos] != m_v:
@@ -273,12 +274,8 @@ class path_planner(object):
 		# should tell the path_planner that there is no start
 		if (self.map[0][self.center]==1) and (self.map[0][self.center-1]==1) and (self.map[0][self.center+1]==1):
 			starting_location = []
-			return starting_location
 		else:
-			if self.width ==3:
-				starting_location = [total_cost.index(min(total_cost))]
-			else:
-				starting_location = [self.center + total_cost.index(min(total_cost))]
+			starting_location = [total_cost.index(min(total_cost))]
 		return starting_location
 
 	# this function moves through the backpointers of the map and creates a path
@@ -340,7 +337,7 @@ class path_planner(object):
 				# Do error checking, if the row == self.height -1 then skip 
 				# also check if you're at the goal
 				while row == self.height:
-					print(idxNbest)
+					# print(idxNbest)
 					idxNbest=self.priority_queue()
 					# Update the row
 					row = idxNbest[0] + 1
@@ -444,8 +441,8 @@ if __name__ == "__main__":
 	        [0, 0, 0],
 	        [0, 1, 0],
 	        [0, 0, 1],
-	        [1, 0, 1],
-	        [1, 0, 0],
+	        [0, 1, 1],
+	        [0, 0, 0],
 	        [0, 1, 1]
 	    ]
 
@@ -457,9 +454,9 @@ if __name__ == "__main__":
 
 	big_map = [
 	    [0, 0, 0, 0, 0],
-	    [1, 0, 0, 0, 0],
+	    [1, 0, 1, 0, 0],
 	    [0, 0, 0, 1, 1],
-	    [1, 1, 1, 1, 1],
+	    [1, 0, 0, 1, 1],
 	    [0, 1, 0, 0, 0]]
 
 	big_blocked_map = [
@@ -472,8 +469,8 @@ if __name__ == "__main__":
 	blocked_map = [
 	        [1, 1, 1],
 	        [1, 0, 0],
+	        [1, 0, 0],
 	        [0, 0, 0],
-	        [0, 1, 0],
 	        [0, 1, 1],
 	        [0, 0, 0],
 	        [0, 1, 0],
@@ -493,11 +490,11 @@ if __name__ == "__main__":
 		# for j in range(len(h)):
 		# 	print(h[j])
 		t = p.gen_graph()
-		print("Graph:")
-		print("WIDTH", p.width)
-		for i in range(len(p.graph)):
-			print(p.graph[i])
+		# print("Graph:")
+		# for i in range(len(p.graph)):
+		# 	print(p.graph[i])
 		startpos = p.pick_start_pos()
+		# print(startpos)
 		path = p.path_search(startpos)
 	print(path)
 	p.draw_path(path)
