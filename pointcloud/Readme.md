@@ -31,4 +31,29 @@ Remember first to put code and sample to a directory that is visible to MATLAB.
 
 #### Use Python to perform simple point cloud processing
 
-1. Use Open3D to denoise and  display point cloud
+list of python modules useful to process point cloud
+
+1. pipeline_pc.py
+   
+   A top level wrapper for all the modules
+2. downsample_pc.py
+   
+   Downsamplgin function
+3. processing_pc.py
+   
+   Filting, Cropping, Casting point cloud
+4. find_target.py
+   
+   Find a target position (using linear programming to solve Chebyshev Center)
+5. decomposite.py
+
+   transform the points into a grid of occupency
+
+utilities
+
+1. display_pc.py
+
+    display point cloud and 2D obstacle points
+2. get_pointcloud.py
+
+    generate points from bag file

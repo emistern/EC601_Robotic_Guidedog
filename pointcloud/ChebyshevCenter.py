@@ -95,7 +95,7 @@ class ChebyshevCenter(object):
         A = np.array(A)
         B = np.array(B)
         c = np.array(c)
-        print(A, B)
+
         return A, B, c
 
     def solve(self, show=False):
@@ -106,7 +106,7 @@ class ChebyshevCenter(object):
         x1_bounds = (None, None)
         x2_bounds = (0, None)
 
-        res = linprog([0, 0, -1], A_ub=A, b_ub=b, bounds=(x0_bounds, x1_bounds, x2_bounds), options={"disp": True})
+        res = linprog([0, 0, -1], A_ub=A, b_ub=b, bounds=(x0_bounds, x1_bounds, x2_bounds), options={"disp": False})
 
         #print(res)
         if show:
