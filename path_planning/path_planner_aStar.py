@@ -20,6 +20,10 @@
 #	near the position you are calculating the cost for.
 # - If there is an obstacle directly infront of you and next to you
 #	you cannot pass through diagonally between the two obstacles
+# - the define goal location algorithm looks at the three points surrounding the
+#	center of the last row. If there is two free spaces ahead of it
+#	and no obstacles blocking a path to it, it chooses that as the 
+#	location for the goal. If not, it drops to the next row.
 
 #######################################################
 #######################################################
@@ -27,29 +31,17 @@
 #######################################################
 ################## Things to Add ######################
 #######################################################
-# - if there is a row filled with obstacles and the goal 
-#	is behind the row of obstacles then pass back an empty
-#	path or should we pass back a path that gets you closest
-#	to it?
-# - need to add an algorithm for finding the goal location
-#	if it isn't provided by the mapping team. Need to find the
-#	farthest free location.
-# - add error check. If the get_neighbors of idxNBest is []
-#	then return the current path. This basically means
-#	there are obstacles preventing you from moving 
-#	forwards
-# - need to go through and check why the cost for boundary 
-#	isn't changing anything
+# - nothing left to add at the moment
+
+
 
 #######################################################
 #######################################################
 
 
 #Import Libraries
-import sys
 import cv2
 import numpy as np
-import math
 m_v = float("inf")
 
 #######################################################
@@ -66,19 +58,13 @@ class path_planner(object):
 
 		# If no goal provided, then assume the goal is the center position
 		# at the end of the map.
-		if goal == None:
-			goal = [height-1, center]
-		else:
-			self.goal = goal
-
-		# Set the goal location on the map equal to a free space
-		self.map[goal[0]][goal[1]] = 0
-
-		# Initialize the heuristics map
-		m_v_map = []
-		[m_v_map.append([m_v]*self.width) for x in range(0,self.height)]
-		self.heuristics = m_v_map.copy()
-		self.heuristics[goal[0]][goal[1]] = 0 
+		self.get_goal_location(goal)
+		if len(self.goal) != 0:
+			# Initialize the heuristics map
+			m_v_map = []
+			[m_v_map.append([m_v]*self.width) for x in range(0,self.height)]
+			self.heuristics = m_v_map.copy()
+			self.heuristics[self.goal[0]][self.goal[1]] = 0 
 
 		# Initialize the graph map with infs, the same size as the given map
 		one_layer = []
@@ -98,6 +84,57 @@ class path_planner(object):
 	def __repr__(self):
 		return str(self.map)
 
+	def get_goal_location(self, goal):
+		if len(goal) == 0:
+			# run an algorithm to find a good goal location starting from the end
+			# Generate samples around the center line.
+			samples = [self.center, self.center-1, self.center+1]
+			
+			# Now check these samples in the last row and check if their
+			# neighbors and diag-neighbors are obstacles
+			goal_flag = False
+			row = self.height
+			while goal_flag==False:
+				row -=1
+				if row == 0:
+					self.goal = []
+					return self
+				
+				for a_sample in samples:
+					# print(row, a_sample)
+					if self.map[row-1][a_sample]==0 and self.map[row-2][a_sample]==0:
+						goal_flag  = True
+						
+						break
+					# Now count the obstacles nearby, check for the specific situations
+					if a_sample-1>=0:
+						if self.map[row][a_sample-1]==1 and self.map[row-1][a_sample]==1:
+							pass
+						if self.map[row-1][a_sample-1]==1 and self.map[row-1][a_sample]==1:
+							pass
+					if a_sample+1 <= self.width-1:
+						if self.map[row-1][a_sample]==1 and self.map[row][a_sample+1]==1:
+							pass
+						if self.map[row-1][a_sample]==1 and self.map[row-1][a_sample+1]==1:
+							pass
+
+				
+			#### LEFT OFF HERE ###
+			if goal_flag == True:
+				goal = [row, a_sample]
+
+			else:
+				goal =[]
+		else:
+			# The goal was provided by the object detection algorithm
+			self.goal = goal
+		self.goal = goal
+		# print("Self.goal", self.goal)
+		self.map[goal[0]][goal[1]]=0
+			# need to update this with what happens if the goal does not exist
+		return self
+
+
 	def gen_heuristics(self, heuristic_function=1):
 		# loop over the heuristics map adding distances to each cell from the goal 
 		# If the heuristic_function is 1 then use diagonal distance max(abs(x-x_goal), abs(y-y_goal)),
@@ -108,7 +145,7 @@ class path_planner(object):
 				if heuristic_function==1:
 					self.heuristics[iHeight][iWidth] = max(abs(iHeight-self.goal[0]), abs(iWidth-self.goal[1]))
 				else:
-					self.heuristics[iHeight][iWidth] = math.sqrt((iHeight-self.goal[0])**2 + (iWidth-self.goal[1])**2)
+					self.heuristics[iHeight][iWidth] = np.sqrt((iHeight-self.goal[0])**2 + (iWidth-self.goal[1])**2)
 		return self.heuristics
 
 	
@@ -143,6 +180,7 @@ class path_planner(object):
 		#[row_val+1, NQuery_i] for obstacles
 		if diff < 0:
 			if row_val >=0 and row_val <= self.height-1 and NQuery_i-1>=0 and NQuery_i-1<=self.width-1:
+				# now that we checked the boundaries, check if the two positions are obstacles 
 				if self.map[row_val][NQuery_i-1] ==1 and self.map[row_val+1][NQuery_i]==1:
 					return True
 		elif diff > 0:
@@ -151,7 +189,7 @@ class path_planner(object):
 					return True
 		else:
 			return False
-				# now that we checked the boundaries, check if the two positions are obstacles 
+				
 
 	# This method generates the graph of a given map. It calculates the cost to move from every node
 	# to another possible node. It adds extra costs if there are nearby obstacles.
@@ -197,7 +235,7 @@ class path_planner(object):
 						# Add boundary cost as well
 						boundary_cost = 0
 						if j_col == 0 or j_col == self.width-1:
-							boundary_cost = 200
+							boundary_cost = 50
 						obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost
 						if abs(diff) == 0:
 							# Need to get the number of diag's that are obstacles
@@ -230,7 +268,6 @@ class path_planner(object):
 		# should tell the path_planner that there is no start
 		if (self.map[0][self.center]==1) and (self.map[0][self.center-1]==1) and (self.map[0][self.center+1]==1):
 			starting_location = []
-			return starting_location
 		else:
 			starting_location = [total_cost.index(min(total_cost))]
 		return starting_location
@@ -249,6 +286,12 @@ class path_planner(object):
 		# If the goal location has no backpointers then there is likely obstacles all the way through
 		except:
 			return []
+
+	def priority_queue(self):
+		idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
+		self.openset.pop(idxNbest, None)
+		self.closedset.append(idxNbest)
+		return idxNbest
 
 
 	def path_search(self, starting_location):
@@ -272,20 +315,13 @@ class path_planner(object):
 			# Add the information for the starting_location to the backpointer/cost dictionary
 			all_cost_backpointers[(row, starting_location[0])]  = [(), 0]
 			
-			flag = True
+
 			# Repeat the following steps until the open set is empty
-			while (len(self.openset)!=0 and flag==True):
+			while (len(self.openset)!=0):
 				# print("open Set: ", self.openset)
 				# Get the lowest cost item from the open list
-				idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
-				self.openset.pop(idxNbest, None)
-				# print("the idxBest: ",idxNbest)
-				# and add it to the closed list
-				self.closedset.append(idxNbest)
-				# print("Closed Set: ", self.closedset)
-				# print("idxNbset: ", idxNbest)
-				# Pick a new idxNbest if it's in the last row and it's not the goal location
-
+				idxNbest=self.priority_queue()
+				
 				# Check if idxNBest is the goal
 				if idxNbest == (self.goal[0], self.goal[1]):
 					break
@@ -295,9 +331,8 @@ class path_planner(object):
 				# Do error checking, if the row == self.height -1 then skip 
 				# also check if you're at the goal
 				while row == self.height:
-					idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
-					self.openset.pop(idxNbest, None)
-					self.closedset.append(idxNbest)
+					# print(idxNbest)
+					idxNbest=self.priority_queue()
 					# Update the row
 					row = idxNbest[0] + 1
 					# If you're at the goal location then run through the backpointers
@@ -388,6 +423,7 @@ class path_planner(object):
 				# draw target
 				world = cv2.circle(world, pt2, int(unit_size / 3), (255, 0, 255), 10)
 
+		world = np.flip(np.array(world), 0)
 		cv2.imshow("path", world)
 
 
@@ -397,11 +433,11 @@ if __name__ == "__main__":
 	        [0, 0, 0], # this is the starting row
 	        [1, 0, 1],
 	        [0, 0, 0],
-	        [0, 1, 0],
+	        [0, 0, 0],
 	        [0, 0, 1],
 	        [1, 0, 1],
-	        [0, 0, 0],
-	        [0, 0, 1]
+	        [0, 0, 1],
+	        [1, 1, 1]
 	    ]
 
 	small_map = [
@@ -412,16 +448,23 @@ if __name__ == "__main__":
 
 	big_map = [
 	    [0, 0, 0, 0, 0],
-	    [1, 1, 0, 0, 0],
-	    [0, 0, 0, 1, 1],
-	    [0, 0, 0, 0, 1],
-	    [0, 0, 0, 1, 0]]
+	    [1, 0, 0, 0, 0],
+	    [0, 0, 1, 1, 1],
+	    [1, 0, 0, 1, 1],
+	    [0, 1, 1, 0, 0]]
+
+	big_blocked_map = [
+	    [1, 1, 1, 1, 1],
+	    [1, 1, 1, 1, 1],
+	    [1, 1, 1, 1, 1],
+	    [1, 1, 1, 1, 1],
+	    [0, 1, 0, 0, 0]]
 
 	blocked_map = [
 	        [1, 1, 1],
 	        [1, 0, 0],
+	        [1, 0, 0],
 	        [0, 0, 0],
-	        [0, 1, 0],
 	        [0, 1, 1],
 	        [0, 0, 0],
 	        [0, 1, 0],
@@ -430,17 +473,23 @@ if __name__ == "__main__":
 
 
 	# Test the Class
-	p = path_planner(default_map, [7,1])
-	h = p.gen_heuristics(2)
-	# print("Heuristics:")
-	# for j in range(len(h)):
-	# 	print(h[j])
-	t = p.gen_graph()
-	# print("Graph:")
-	# for i in range(len(p.graph)):
-	# 	print(p.graph[i])
-	startpos = p.pick_start_pos()
-	path = p.path_search(startpos)
+	goal = []
+	goal = [4,4]	
+	p = path_planner(big_map, goal)
+	if len(p.goal)==0:
+		path = []
+	else:
+		h = p.gen_heuristics(2)
+		# print("Heuristics:")
+		# for j in range(len(h)):
+		# 	print(h[j])
+		t = p.gen_graph()
+		# print("Graph:")
+		# for i in range(len(p.graph)):
+		# 	print(p.graph[i])
+		startpos = p.pick_start_pos()
+		# print(startpos)
+		path = p.path_search(startpos)
 	print(path)
 	p.draw_path(path)
 	cv2.waitKey(0)
