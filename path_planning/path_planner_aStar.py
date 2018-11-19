@@ -20,6 +20,10 @@
 #	near the position you are calculating the cost for.
 # - If there is an obstacle directly infront of you and next to you
 #	you cannot pass through diagonally between the two obstacles
+# - the define goal location algorithm looks at the three points surrounding the
+#	center of the last row. If there is two free spaces ahead of it
+#	and no obstacles blocking a path to it, it chooses that as the 
+#	location for the goal. If not, it drops to the next row.
 
 #######################################################
 #######################################################
@@ -27,20 +31,8 @@
 #######################################################
 ################## Things to Add ######################
 #######################################################
-# - if there is a row filled with obstacles and the goal 
-#	is behind the row of obstacles then pass back an empty
-#	path or should we pass back a path that gets you closest
-#	to it?
-# - add error check. If the get_neighbors of idxNBest is []
-#	then return the current path. This basically means
-#	there are obstacles preventing you from moving 
-#	forwards
-# - Figure out why on the big_map[4.4] is failing
-# - run this same example. It should find a goal location
-#	maybe change the if statements to look for where each
-#	pattern is free rather than an obstacle. (if directly
-#	underneath you and two underneath you are both free
-#	then set that as the goal)
+# - nothing left to add at the moment
+
 
 
 #######################################################
@@ -482,7 +474,7 @@ if __name__ == "__main__":
 
 	# Test the Class
 	goal = []
-	# goal = [3,2]	
+	goal = [4,4]	
 	p = path_planner(big_map, goal)
 	if len(p.goal)==0:
 		path = []
