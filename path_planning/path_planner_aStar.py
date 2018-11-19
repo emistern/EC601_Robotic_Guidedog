@@ -42,7 +42,7 @@
 #	the last two rows and pick one that has the fewest 
 #	obstacles as neighbors?)
 # - Figure out why on the big_map[4.4] is failing
-# - do a few more tests and then add the planner into a try block
+
 
 #######################################################
 #######################################################
@@ -107,16 +107,17 @@ class path_planner(object):
 				row -=1
 				for a_sample in samples:
 					coord = (self.height-1, a_sample)
-					if self.map[self.height-1][a_sample-1]==1 and self.map[self.height-2][a_sample]==1:
+					if self.map[row][a_sample-1]==1 and self.map[row-1][a_sample]==1:
 						pass
-					if self.map[self.height-2][a_sample-1]==1 and self.map[self.height-2][a_sample]==1:
+					if self.map[row-1][a_sample-1]==1 and self.map[row-1][a_sample]==1:
 						pass
-					if self.map[self.height-2][a_sample]==1 and self.map[self.height-1][a_sample+1]==1:
+					if self.map[row-1][a_sample]==1 and self.map[row][a_sample+1]==1:
 						pass
-					if self.map[self.height-2][a_sample]==1 and self.map[self.height-2][a_sample+1]==1:
+					if self.map[row-1][a_sample]==1 and self.map[row-1][a_sample+1]==1:
 						pass
-					goal_flag  = True
-					break
+					else: 
+						goal_flag  = True
+						break
 				# Now count the obstacles nearby, check for the specific situations
 			#### LEFT OFF HERE ###
 			if goal_flag == True:
@@ -448,8 +449,8 @@ if __name__ == "__main__":
 	    [0, 0, 0, 0, 0],
 	    [1, 0, 0, 0, 0],
 	    [0, 0, 0, 1, 1],
-	    [0, 0, 0, 0, 1],
-	    [0, 1, 0, 1, 0]]
+	    [1, 1, 1, 1, 1],
+	    [0, 1, 0, 0, 0]]
 
 	blocked_map = [
 	        [1, 1, 1],
