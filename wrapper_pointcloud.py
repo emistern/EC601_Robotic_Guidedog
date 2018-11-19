@@ -133,10 +133,10 @@ def ModuleWrapper(args):
                 print("total time" + str(t_plan_e - t_map_s))
             
             if use_voice:
-                interface.play3(path,num_col)
+                interface.play2([direc])
         else:  # there is not valid target
             if use_voice:
-                interface.play3([],num_col)
+                interface.play2([])
             djikstra_planner.draw_path([])
             cv2.imshow("direction", stop_sn)
             #dw.show_depth_matrix("", dep_mat)
