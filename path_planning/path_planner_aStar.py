@@ -31,17 +31,16 @@
 #	is behind the row of obstacles then pass back an empty
 #	path or should we pass back a path that gets you closest
 #	to it?
-# - need to add an algorithm for finding the goal location
-#	if it isn't provided by the mapping team. Need to find the
-#	farthest free location.
 # - add error check. If the get_neighbors of idxNBest is []
 #	then return the current path. This basically means
 #	there are obstacles preventing you from moving 
 #	forwards
-# - Add the get starting location algorithm (randomly sample 5 positions in
-#	the last two rows and pick one that has the fewest 
-#	obstacles as neighbors?)
 # - Figure out why on the big_map[4.4] is failing
+# - run this same example. It should find a goal location
+#	maybe change the if statements to look for where each
+#	pattern is free rather than an obstacle. (if directly
+#	underneath you and two underneath you are both free
+#	then set that as the goal)
 
 
 #######################################################
@@ -105,12 +104,16 @@ class path_planner(object):
 			row = self.height
 			while goal_flag==False:
 				row -=1
-				print(row)
 				if row == 0:
 					self.goal = []
 					return self
-					break
+				
 				for a_sample in samples:
+					print(row, a_sample)
+					if self.map[row-1][a_sample]==0 and self.map[row-2][a_sample]==0:
+						goal_flag  = True
+						print("here")
+						break
 					# Now count the obstacles nearby, check for the specific situations
 					if self.map[row][a_sample-1]==1 and self.map[row-1][a_sample]==1:
 						pass
@@ -120,9 +123,7 @@ class path_planner(object):
 						pass
 					if self.map[row-1][a_sample]==1 and self.map[row-1][a_sample+1]==1:
 						pass
-					else: 
-						goal_flag  = True
-						break
+
 				
 			#### LEFT OFF HERE ###
 			if goal_flag == True:
@@ -263,6 +264,7 @@ class path_planner(object):
 		# then get the min value and index for it.
 		# the first row of the graph
 		graph_vals = self.graph[0][self.center]
+		print(graph_vals)
 		total_cost = []
 		for a_pos in range(len(graph_vals)):
 			if graph_vals[a_pos] != m_v:
@@ -273,7 +275,10 @@ class path_planner(object):
 			starting_location = []
 			return starting_location
 		else:
-			starting_location = [self.center + total_cost.index(min(total_cost))]
+			if self.width ==3:
+				starting_location = [total_cost.index(min(total_cost))]
+			else:
+				starting_location = [self.center + total_cost.index(min(total_cost))]
 		return starting_location
 
 	# this function moves through the backpointers of the map and creates a path
@@ -478,8 +483,8 @@ if __name__ == "__main__":
 
 	# Test the Class
 	goal = []
-	# goal = [4,2]
-	p = path_planner(big_blocked_map, goal)
+	# goal = [4,2]	
+	p = path_planner(default_map, goal)
 	if len(p.goal)==0:
 		path = []
 	else:
@@ -488,11 +493,11 @@ if __name__ == "__main__":
 		# for j in range(len(h)):
 		# 	print(h[j])
 		t = p.gen_graph()
-		# print("Graph:")
-		# for i in range(len(p.graph)):
-		# 	print(p.graph[i])
+		print("Graph:")
+		print("WIDTH", p.width)
+		for i in range(len(p.graph)):
+			print(p.graph[i])
 		startpos = p.pick_start_pos()
-		print(startpos)
 		path = p.path_search(startpos)
 	print(path)
 	p.draw_path(path)
