@@ -68,12 +68,12 @@ class path_planner(object):
 		# If no goal provided, then assume the goal is the center position
 		# at the end of the map.
 		self.get_goal_location(goal)
-		
-		# Initialize the heuristics map
-		m_v_map = []
-		[m_v_map.append([m_v]*self.width) for x in range(0,self.height)]
-		self.heuristics = m_v_map.copy()
-		self.heuristics[self.goal[0]][self.goal[1]] = 0 
+		if len(self.goal) != 0:
+			# Initialize the heuristics map
+			m_v_map = []
+			[m_v_map.append([m_v]*self.width) for x in range(0,self.height)]
+			self.heuristics = m_v_map.copy()
+			self.heuristics[self.goal[0]][self.goal[1]] = 0 
 
 		# Initialize the graph map with infs, the same size as the given map
 		one_layer = []
@@ -109,6 +109,7 @@ class path_planner(object):
 				if row == 0:
 					self.goal = []
 					return self
+					break
 				for a_sample in samples:
 					# Now count the obstacles nearby, check for the specific situations
 					if self.map[row][a_sample-1]==1 and self.map[row-1][a_sample]==1:
@@ -457,7 +458,7 @@ if __name__ == "__main__":
 	    [0, 1, 0, 0, 0]]
 
 	big_blocked_map = [
-	    [0, 0, 0, 0, 1],
+	    [1, 1, 1, 1, 1],
 	    [1, 1, 1, 1, 1],
 	    [1, 1, 1, 1, 1],
 	    [1, 1, 1, 1, 1],
@@ -479,18 +480,20 @@ if __name__ == "__main__":
 	goal = []
 	# goal = [4,2]
 	p = path_planner(big_blocked_map, goal)
-	# quit()
-	h = p.gen_heuristics(2)
-	# print("Heuristics:")
-	# for j in range(len(h)):
-	# 	print(h[j])
-	t = p.gen_graph()
-	# print("Graph:")
-	# for i in range(len(p.graph)):
-	# 	print(p.graph[i])
-	startpos = p.pick_start_pos()
-	print(startpos)
-	path = p.path_search(startpos)
+	if len(p.goal)==0:
+		path = []
+	else:
+		h = p.gen_heuristics(2)
+		# print("Heuristics:")
+		# for j in range(len(h)):
+		# 	print(h[j])
+		t = p.gen_graph()
+		# print("Graph:")
+		# for i in range(len(p.graph)):
+		# 	print(p.graph[i])
+		startpos = p.pick_start_pos()
+		print(startpos)
+		path = p.path_search(startpos)
 	print(path)
 	p.draw_path(path)
 	cv2.waitKey(0)
