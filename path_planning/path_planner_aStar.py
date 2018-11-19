@@ -115,14 +115,16 @@ class path_planner(object):
 						
 						break
 					# Now count the obstacles nearby, check for the specific situations
-					if self.map[row][a_sample-1]==1 and self.map[row-1][a_sample]==1:
-						pass
-					if self.map[row-1][a_sample-1]==1 and self.map[row-1][a_sample]==1:
-						pass
-					if self.map[row-1][a_sample]==1 and self.map[row][a_sample+1]==1:
-						pass
-					if self.map[row-1][a_sample]==1 and self.map[row-1][a_sample+1]==1:
-						pass
+					if a_sample-1>=0:
+						if self.map[row][a_sample-1]==1 and self.map[row-1][a_sample]==1:
+							pass
+						if self.map[row-1][a_sample-1]==1 and self.map[row-1][a_sample]==1:
+							pass
+					if a_sample+1 <= self.width-1:
+						if self.map[row-1][a_sample]==1 and self.map[row][a_sample+1]==1:
+							pass
+						if self.map[row-1][a_sample]==1 and self.map[row-1][a_sample+1]==1:
+							pass
 
 				
 			#### LEFT OFF HERE ###
@@ -441,9 +443,9 @@ if __name__ == "__main__":
 	        [0, 0, 0],
 	        [0, 1, 0],
 	        [0, 0, 1],
+	        [1, 0, 1],
 	        [0, 1, 1],
-	        [0, 0, 0],
-	        [0, 1, 1]
+	        [1, 1, 1]
 	    ]
 
 	small_map = [
@@ -481,7 +483,7 @@ if __name__ == "__main__":
 	# Test the Class
 	goal = []
 	# goal = [4,2]	
-	p = path_planner(default_map, goal)
+	p = path_planner(big_map, goal)
 	if len(p.goal)==0:
 		path = []
 	else:
