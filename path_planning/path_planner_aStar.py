@@ -440,11 +440,11 @@ if __name__ == "__main__":
 	default_map = [
 	        [0, 0, 0], # this is the starting row
 	        [1, 0, 1],
-	        [0, 1, 0],
-	        [0, 1, 0],
+	        [0, 0, 0],
+	        [0, 0, 0],
 	        [0, 0, 1],
 	        [1, 0, 1],
-	        [0, 1, 1],
+	        [0, 0, 1],
 	        [1, 1, 1]
 	    ]
 
@@ -482,7 +482,7 @@ if __name__ == "__main__":
 
 	# Test the Class
 	goal = []
-	# goal = [4,2]	
+	# goal = [3,2]	
 	p = path_planner(big_map, goal)
 	if len(p.goal)==0:
 		path = []
