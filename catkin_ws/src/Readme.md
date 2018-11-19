@@ -22,3 +22,23 @@ We are trying to use Robotic Operating System to wrap all our modules into an in
         ```
             export RTABMap_DIR=~/rtabmap/build    # assuming you install the standalone version rtabmap in your root directory.
         ```
+
+## Work notes for wrapping python library into ros node
+
+* nodes we need to wrap for first demo:
+
+    1. camera driver with pyrealsense2(or we can use the driver node from community)
+  
+    2. map builder node
+        
+        * wall_detection/image2birdview
+    3. path planner node
+
+        * path_planning/(path_planner/plath_planner_aStar)
+    4. interface node(both input and output)
+
+        * voice/voice-class
+
+* nodes we need to wrap for second demo:
+  
+    1. neural network

@@ -15,3 +15,6 @@ graph
 */build/*
 */devel/*
 /.vs/EC601_Robotic_Guidedog/v15/Browse.VC.opendb
+*__pycache__*
+*.ipynb_checkpoints*
+*.vs*

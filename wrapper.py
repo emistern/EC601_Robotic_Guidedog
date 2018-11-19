@@ -5,6 +5,15 @@ import time
 import numpy as np
 from realsense.rs_depth_util import *
 from get_frame import *
+from door_coord import find_door
+
+import argparse
+use_darknet = True
+
+if use_darknet:
+    import sys
+    sys.path.append("/home/yly/darknet")
+    from darknet_interface import *
 
 class ModuleWrapper(object):
 
@@ -13,7 +22,7 @@ class ModuleWrapper(object):
         # Parameters used by map builder
         num_slice = 10    # how many slices of the depth matrix
         nun_section = 7   # how many section to quantilize
-        max_per_occ = 0.4 # percentage of 1s in a section to judge as occupied
+        max_per_occ = 0.3 # percentage of 1s in a section to judge as occupied
 
         # Specify the depth matrix you want to use
         #dep_mat_fn = 'wall_detection/samples/depth0009.npy'
@@ -22,6 +31,12 @@ class ModuleWrapper(object):
         # Instantiate a depth worker object to display depth matrix
         #dw = depth_worker()
         #dw.show_depth_matrix(dep_mat_fn)
+
+        if use_darknet:
+            # init darknet
+            darknet = DarknetInterface()
+            net = darknet.load_net(b"/home/yly/darknet/cfg/yolov3.cfg", b"/home/yly/darknet/yolov3.weights", 0)
+            meta = darknet.load_meta(b"/home/yly/darknet/data/coco.data")
 
         # initialize the camera frame iterator
         img_gen = get_frame()
@@ -37,7 +52,8 @@ class ModuleWrapper(object):
 
         while(True):
             # fetch an image from camera
-            dep_mat = next(img_gen)
+            dep_mat, color_mat = next(img_gen)
+
             # slice and quantilize the depth matrix
             self.squeeze = image2birdview.depth_bird_view()
 
@@ -49,6 +65,20 @@ class ModuleWrapper(object):
             map_depth = self.squeeze.quantilize(squeezed_matrix, n_sec=nun_section, max_per_occ=max_per_occ)
             t_qu_e = time.time()
 
+            # Use YOLO to detect the color image.
+            coord = darknet.detect(net, meta, color_mat)
+            print('length is ',len(coord))
+            print(coord) 
+            
+            target_door = []
+            # find the coordinate in map with depth matrix and bounding box
+            if(len(coord)!=0):
+                target_door = find_door( dep_mat, coord, 500 , nun_section)
+                print(target_door)
+                if(target_door[0]>9):
+                    target_door[0]=9
+                map_depth[target_door[0], target_door[1]] = 0
+            
             # perform path planning on the map
             t_plan_s = time.time()
             print(map_depth)
@@ -57,7 +87,12 @@ class ModuleWrapper(object):
             p.gen_paths()
             p.gen_buffer_mats()
             p.plan()
-            target = p.find_default_target()
+
+            if target_door is not None:
+                target = target_door
+            else:
+                target = p.find_default_target()
+
             if len(target) > 0:
                 path = p.find_optimal_path(target)
                 t_plan_e = time.time()
@@ -68,9 +103,9 @@ class ModuleWrapper(object):
 
                 cv2.waitKey(200)
                 
-                interface.play3(path,nun_section)
+                #interface.play1(path,nun_section)
             else:
-                interface.play3([],nun_section)
+                #interface.play1([],nun_section)
                 print("no path")
             input()
 
