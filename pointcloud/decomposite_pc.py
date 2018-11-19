@@ -55,6 +55,14 @@ def thresholding(grid, thresh=10):
     
     return grid
 
+def thresholding_np(grid, thresh=10):
+
+    idx_row, idx_col = np.where((grid > thresh))
+    bit_grid = np.zeros(grid.shape, dtype=np.int16)
+    for i in range(len(idx_row)):
+        bit_grid[idx_row[i], idx_col[i]] = 1
+    return bit_grid
+
 def append_offset2D(points, row_size):
 
     points[:, 0] = points[:, 0] + abs(row_size/2) 
