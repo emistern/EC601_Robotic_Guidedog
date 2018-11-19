@@ -105,8 +105,12 @@ class path_planner(object):
 			row = self.height
 			while goal_flag==False:
 				row -=1
+				print(row)
+				if row == 0:
+					self.goal = []
+					return self
 				for a_sample in samples:
-					coord = (self.height-1, a_sample)
+					# Now count the obstacles nearby, check for the specific situations
 					if self.map[row][a_sample-1]==1 and self.map[row-1][a_sample]==1:
 						pass
 					if self.map[row-1][a_sample-1]==1 and self.map[row-1][a_sample]==1:
@@ -118,7 +122,7 @@ class path_planner(object):
 					else: 
 						goal_flag  = True
 						break
-				# Now count the obstacles nearby, check for the specific situations
+				
 			#### LEFT OFF HERE ###
 			if goal_flag == True:
 				goal = [row, a_sample]
@@ -268,7 +272,7 @@ class path_planner(object):
 			starting_location = []
 			return starting_location
 		else:
-			starting_location = [total_cost.index(min(total_cost))]
+			starting_location = [self.center + total_cost.index(min(total_cost))]
 		return starting_location
 
 	# this function moves through the backpointers of the map and creates a path
@@ -452,6 +456,13 @@ if __name__ == "__main__":
 	    [1, 1, 1, 1, 1],
 	    [0, 1, 0, 0, 0]]
 
+	big_blocked_map = [
+	    [0, 0, 0, 0, 1],
+	    [1, 1, 1, 1, 1],
+	    [1, 1, 1, 1, 1],
+	    [1, 1, 1, 1, 1],
+	    [0, 1, 0, 0, 0]]
+
 	blocked_map = [
 	        [1, 1, 1],
 	        [1, 0, 0],
@@ -467,7 +478,7 @@ if __name__ == "__main__":
 	# Test the Class
 	goal = []
 	# goal = [4,2]
-	p = path_planner(big_map, goal)
+	p = path_planner(big_blocked_map, goal)
 	# quit()
 	h = p.gen_heuristics(2)
 	# print("Heuristics:")
@@ -478,6 +489,7 @@ if __name__ == "__main__":
 	# for i in range(len(p.graph)):
 	# 	print(p.graph[i])
 	startpos = p.pick_start_pos()
+	print(startpos)
 	path = p.path_search(startpos)
 	print(path)
 	p.draw_path(path)
