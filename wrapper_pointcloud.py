@@ -65,7 +65,8 @@ def ModuleWrapper(args):
     squeeze = image2birdview.depth_bird_view()
 
     while(True):
-        print("------ new frame ------")
+        if timing:
+            print("------ new frame ------")
         facing_wall = False
         target = None
 
@@ -174,7 +175,7 @@ if __name__ == "__main__":
     parser.add_argument("--col", help="number of columns in map", default=29, type=int)
     parser.add_argument("--row_size", help="size of each row in meters", default=6, type=int)
     parser.add_argument("--col_size", help="size of each column in meters", default=4, type=int)
-    parser.add_argument("--roi", help="region of interest in meters", default=1.0, type=float)
+    parser.add_argument("--roi", help="region of interest in meters", default=1.5, type=float)
     args = parser.parse_args()
     print("Using Bag File:    ", args.bagfile)
     print("Using Point Cloud: ", args.pointcloud)

@@ -46,6 +46,12 @@ Currently, the team is testing different means of communication between the devi
 4. Implementation of Djikstra Algorithm for path planning using depth data
 5. Voice user interface.
 
+## Latest Updates
+
+(11/19/2018) Add demo of point cloud mapping method 
+
+https://drive.google.com/file/d/1b3FGtx0sY1LxHujLU3Z5INn5FbynNigf/view?usp=sharing
+
 ## Get Started
 
 ### Reference Repos: 
@@ -83,6 +89,8 @@ Currently, the team is testing different means of communication between the devi
     * we are testing with rgbd-odometry node from rtabmap_ros package from ROS community. You can install rtabmap_ros package using the following instruction:
     https://github.com/introlab/rtabmap_ros
 
+8. Audio output
+   
    * use playsound to output audio. can be installed by command:
    ```
    pip(3) install playsound
@@ -90,7 +98,7 @@ Currently, the team is testing different means of communication between the devi
 
 ## How things work and Examples
 
-0. System Block Diagram
+1. System Block Diagram
    
    Three main modules in our system:
    
@@ -99,7 +107,7 @@ Currently, the team is testing different means of communication between the devi
    * User Interface Module 
 
     <img src="images/block_diagram.png" height=200>
-1. Object Detection and Decision Algorithm(Baseline)
+2. Object Detection and Decision Algorithm(Baseline)
    
     The Object Detection module(TinyYOLO Neural Network) find the obstacles in scene, and pass obstacle information to decision algorithm. The decision algorithm generate resonable instruction based on finding the maximum free space in scene.
 
@@ -110,7 +118,7 @@ Currently, the team is testing different means of communication between the devi
     python decisionTestbench.py
     ```
 
-2. Intel RealSense depth data post-processing
+3. Intel RealSense depth data post-processing
 
     We are trying to use depth data from Intel RealSense RGB-D camera to imporve the capability of obstacle detection.
 
@@ -129,7 +137,7 @@ Currently, the team is testing different means of communication between the devi
     python image2birdview.py
     ```
     
-3. Path Planning on Depth Data(Develop)
+4. Path Planning on Depth Data(Develop)
    
    Performing path planning on depth data. You can change the **dep_mat_fn** variable in **wrapper.py** to test on different depth images.
 
@@ -154,10 +162,14 @@ Currently, the team is testing different means of communication between the devi
 
    Path planning to let you walk straight in freespace.
 
-4. Voice-based User Interface
+5. Voice-based User Interface
    
    ```
     cd [EC601_ROBOTIC_GUIDEDOG]/voice
     python voice_class.py
     ```
     The voice interface requires python playsound module. You can install this by pip(3) install playsound.
+
+6. Point Cloud Map Builder
+
+    Using Point Cloud data to build map. 
