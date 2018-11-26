@@ -15,7 +15,10 @@
 # - in the path planner, the cost given to a 
 #	straight motion is 1 and the cost given to diagonal motions is 2
 # - if there is no path available, the planner will return []
-# - the planner also needs to return the size of the map (just width)
+# - In the graph development there is an additional cost 
+#	added to positions next to a boundary or a position near 
+#	obstacles (more costly for being directly next to it
+#	and costly for being diagonal to position)
 # - the graph generator adds additional costs if there are obstacles
 #	near the position you are calculating the cost for.
 # - If there is an obstacle directly infront of you and next to you
@@ -24,15 +27,6 @@
 #	center of the last row. If there is two free spaces ahead of it
 #	and no obstacles blocking a path to it, it chooses that as the 
 #	location for the goal. If not, it drops to the next row.
-
-#######################################################
-#######################################################
-
-#######################################################
-################## Things to Add ######################
-#######################################################
-# - nothing left to add at the moment
-
 
 
 #######################################################
@@ -260,16 +254,20 @@ class path_planner(object):
 		# then get the min value and index for it.
 		# the first row of the graph
 		graph_vals = self.graph[0][self.center]
+		# print(graph_vals)
 		total_cost = []
 		for a_pos in range(len(graph_vals)):
 			if graph_vals[a_pos] != m_v:
 				total_cost = total_cost + [graph_vals[a_pos]+self.heuristics[0][a_pos]]
+			else:
+				total_cost = total_cost + [m_v]
 		# If the first row is all obstacles then pass back an empty start list, which
 		# should tell the path_planner that there is no start
 		if (self.map[0][self.center]==1) and (self.map[0][self.center-1]==1) and (self.map[0][self.center+1]==1):
 			starting_location = []
 		else:
 			starting_location = [total_cost.index(min(total_cost))]
+			# print("Starting: ", starting_location)
 		return starting_location
 
 	# this function moves through the backpointers of the map and creates a path
@@ -288,9 +286,12 @@ class path_planner(object):
 			return []
 
 	def priority_queue(self):
-		idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
-		self.openset.pop(idxNbest, None)
-		self.closedset.append(idxNbest)
+		if len(self.openset)==0:
+			return []
+		else:
+			idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
+			self.openset.pop(idxNbest, None)
+			self.closedset.append(idxNbest)
 		return idxNbest
 
 
@@ -333,11 +334,14 @@ class path_planner(object):
 				while row == self.height:
 					# print(idxNbest)
 					idxNbest=self.priority_queue()
-					# Update the row
-					row = idxNbest[0] + 1
-					# If you're at the goal location then run through the backpointers
-					if idxNbest == (self.goal[0], self.goal[1]):
-						return self.get_path_from_backpointers(starting_location, all_cost_backpointers)
+					if len(idxNbest)==0:
+						return []
+					else:
+						# Update the row
+						row = idxNbest[0] + 1
+						# If you're at the goal location then run through the backpointers
+						if idxNbest == (self.goal[0], self.goal[1]):
+							return self.get_path_from_backpointers(starting_location, all_cost_backpointers)
 
 
 				# Get the neighbors of idxNbest
@@ -454,7 +458,7 @@ if __name__ == "__main__":
 	    [0, 1, 1, 0, 0]]
 
 	big_blocked_map = [
-	    [1, 1, 1, 1, 1],
+	    [0, 0, 0, 0, 0],
 	    [1, 1, 1, 1, 1],
 	    [1, 1, 1, 1, 1],
 	    [1, 1, 1, 1, 1],
@@ -474,8 +478,8 @@ if __name__ == "__main__":
 
 	# Test the Class
 	goal = []
-	goal = [4,4]	
-	p = path_planner(big_map, goal)
+	# goal = [4,4]	
+	p = path_planner(big_blocked_map, goal)
 	if len(p.goal)==0:
 		path = []
 	else:
