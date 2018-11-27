@@ -286,7 +286,7 @@ class path_planner(object):
 			return []
 
 	def priority_queue(self):
-		if len(self.openset)==0:
+		if len(self.openset) == 0:
 			return []
 		else:
 			idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
@@ -334,7 +334,7 @@ class path_planner(object):
 				while row == self.height:
 					# print(idxNbest)
 					idxNbest=self.priority_queue()
-					if len(idxNbest)==0:
+					if len(idxNbest) == 0:
 						return []
 					else:
 						# Update the row
@@ -381,24 +381,25 @@ class path_planner(object):
 			return self.get_path_from_backpointers(starting_location, all_cost_backpointers)
 
 
-	def draw_path(self, path):
+	def draw_path(self, path, lines=False):
 
-		unit_size = 60
+		unit_size = 10
 		height = len(self.map)
 		width = len(self.map[0])
 		t_h = unit_size * height
 		t_w = unit_size * width
 		world = np.array([[[240] * 3] * (t_w)] * (t_h)).astype(np.uint8)
 
-		for x in range(0, t_w, unit_size):
-			pt1 = (x, 0)
-			pt2 = (x, t_h)
-			world = cv2.line(world, pt1, pt2, (255, 0, 0))
-        
-		for y in range(0, t_h, unit_size):
-			pt1 = (0, y)
-			pt2 = (t_w, y)
-			world = cv2.line(world, pt1, pt2, (255, 0, 0))
+		if lines:
+			for x in range(0, t_w, unit_size):
+				pt1 = (x, 0)
+				pt2 = (x, t_h)
+				world = cv2.line(world, pt1, pt2, (255, 0, 0))
+			
+			for y in range(0, t_h, unit_size):
+				pt1 = (0, y)
+				pt2 = (t_w, y)
+				world = cv2.line(world, pt1, pt2, (255, 0, 0))
 
         # Draw Obstacles
 		ofs = int(unit_size / 5)
@@ -408,7 +409,7 @@ class path_planner(object):
 					# Draw an obstacle in world
 					pt1 = (j * unit_size + ofs, i * unit_size + ofs)
 					pt2 = ((j+1) * unit_size - ofs, (i+1) * unit_size - ofs)
-					cv2.rectangle(world, pt1, pt2, (0, 0, 255), 5)
+					cv2.rectangle(world, pt1, pt2, (0, 0, 255), 3)
 
 		# Draw Optimal Path 
 		x_ofs = int(unit_size / 2)
