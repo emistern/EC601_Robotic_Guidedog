@@ -2,6 +2,16 @@
 # both A* and Dijkstra path planners for pre-recorded
 # videos.
 
+# Recorded approciamtely 10 second long videos. Videos will run on repeat until the wrapper
+# has gone through 200 frames. 
+
+
+# Hallway
+# Scale 26 rows x 39 columns (Avg Scale)
+# A Star 
+# Planning Time Avg: 0.1695 seconds Std Dev 0.0349
+# Dijkstra
+
 import numpy as np
 import matplotlib.pyplot as plt
 
