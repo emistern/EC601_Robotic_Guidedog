@@ -32,11 +32,16 @@
 #######################################################
 #######################################################
 
+# - Measure time for generate graph function and all functions
+# - see which ones are taking the longest for various cases
+# - then try to implement a better solution
+
 
 #Import Libraries
 import cv2
 import numpy as np
 m_v = float("inf")
+import time
 
 #######################################################
 ############ Define Path Planner Class ################
@@ -383,7 +388,8 @@ class path_planner(object):
 
 	def draw_path(self, path, lines=False):
 
-		unit_size = 10
+		unit_size = 60
+		# set the unit size to 10 for faster implementation
 		height = len(self.map)
 		width = len(self.map[0])
 		t_h = unit_size * height
@@ -476,27 +482,44 @@ if __name__ == "__main__":
 	        [1, 1, 0]
 	    ]
 
-
+	start_time = time.time()
 	# Test the Class
 	goal = []
-	# goal = [4,4]	
-	p = path_planner(big_blocked_map, goal)
+	# goal = [6,1]	
+	p = path_planner(default_map, goal)
 	if len(p.goal)==0:
 		path = []
 	else:
-		h = p.gen_heuristics(2)
+		h = p.gen_heuristics(1)
+		heuristics_time = time.time()
 		# print("Heuristics:")
 		# for j in range(len(h)):
 		# 	print(h[j])
 		t = p.gen_graph()
+		graph_time = time.time()
 		# print("Graph:")
 		# for i in range(len(p.graph)):
 		# 	print(p.graph[i])
 		startpos = p.pick_start_pos()
+		pick_start_time = time.time()
 		# print(startpos)
 		path = p.path_search(startpos)
+		path_search_time = time.time()
+	end_time = time.time()
 	print(path)
 	p.draw_path(path)
 	cv2.waitKey(0)
+
+	Total_time = end_time - start_time
+	time_for_heuristics = heuristics_time - start_time
+	time_for_graph = graph_time - heuristics_time
+	time_for_start_pos = pick_start_time - graph_time
+	time_for_search  = path_search_time - pick_start_time
+
+	print("Total Time: ", Total_time)
+	print("Heuristics: ", time_for_heuristics)
+	print("Graph: ", time_for_graph)
+	print("Start Pos: ", time_for_start_pos)
+	print("Search: ", time_for_search)
 
 
