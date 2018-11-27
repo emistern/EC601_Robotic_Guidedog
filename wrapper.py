@@ -4,8 +4,8 @@ from voice import voice_class
 import time
 import numpy as np
 from realsense.rs_depth_util import *
-from get_frame import *
-from door_coord_bag import find_door
+from get_frame_bag import *
+from door_coord import find_door
 from tinyYOLOv2 import obj_det
 import argparse
 

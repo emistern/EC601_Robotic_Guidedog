@@ -21,7 +21,7 @@ class obj_det(object):
                  video_source = 0,
                  speed = 2):
 
-        self.OBJECT = 'person'
+        self.OBJECT = 'chair'
         self.Res_x = 640
         self.Res_y = 480
 
@@ -84,7 +84,7 @@ class obj_det(object):
         for objects in nms_predictions:
             label = objects[2]
             box = objects[0]
-            if(label == 'chair'):
+            if(label == self.OBJECT):
                 # determin boundraies of the predict box
                 left = 0 if (box[0] <= 0) else box[0]
                 top  = 0 if (box[1] <= 0) else box[1]
