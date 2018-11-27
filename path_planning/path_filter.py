@@ -13,7 +13,7 @@ def compute_exp_weights(length, roi):
 
     return 1.0 / np.exp(list_flo)
 
-def compute_weighted_average(path, num_row, num_col, roi_sqr=0.3, thresh=0.5):
+def compute_weighted_average(path, num_row, num_col, roi_sqr=0.3, thresh=0.8):
 
     """
     compute the weighted average of path with roi

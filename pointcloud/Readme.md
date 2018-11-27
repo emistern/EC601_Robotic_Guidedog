@@ -57,3 +57,8 @@ utilities
 2. get_pointcloud.py
 
     generate points from bag file
+
+## Point Cloud Registration and Stitching
+
+(11/21)
+trying to perform point cloud registration in MATLAB, with samples taken from bag file
