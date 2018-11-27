@@ -4,9 +4,9 @@ import time
 from playsound import playsound as play
 class VoiceInterface(object):
 
-  def __init__(self, straight_file = 'straight.mp3',
-                     turnleft_file = 'turnleft.mp3',
-                     turnright_file = 'turnright.mp3',
+  def __init__(self, straight_file = 'straight.wav',
+                     turnleft_file = 'turnleft.wav',
+                     turnright_file = 'turnright.wav',
                      hardleft_file = 'hardleft.mp3',
                      hardright_file = 'hardright.mp3',
                      STOP_file = 'STOP.mp3',

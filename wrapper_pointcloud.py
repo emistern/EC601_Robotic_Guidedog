@@ -62,9 +62,9 @@ def ModuleWrapper(args):
         img_gen = get_frame()
 
     # instantiate an interface
-    interface = voice_class.VoiceInterface(straight_file='voice/straight.mp3',
-                                            turnleft_file = 'voice/turnleft.mp3',
-                                            turnright_file = 'voice/turnright.mp3',
+    interface = voice_class.VoiceInterface(straight_file='voice/straight.wav',
+                                            turnleft_file = 'voice/turnleft.wav',
+                                            turnright_file = 'voice/turnright.wav',
                                             hardleft_file = 'voice/hardleft.mp3',
                                             hardright_file = 'voice/hardright.mp3',
                                             STOP_file = 'voice/STOP.mp3',
