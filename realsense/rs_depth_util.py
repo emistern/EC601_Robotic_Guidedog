@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import argparse
 
 class depth_worker():
 
@@ -249,7 +250,7 @@ class depth_worker():
             pass
         return
 
-    def save_pointcloud_to_ply(self, bagfile_dir, n_img = 20, interval = 100, filter = False):
+    def save_pointcloud_to_ply(self, bagfile_dir, n_img = 50, interval = 1, filter = False):
 
         # -------------------------------------------- #
         # Read the bag file and save point cloud to .ply file
@@ -258,8 +259,6 @@ class depth_worker():
         # -------------------------------------------- #
 
         import pyrealsense2 as rs
-
-        input = bagfile_dir
 
         try:
             # Declare pointcloud object, for calculating pointclouds and texture mappings
@@ -275,14 +274,19 @@ class depth_worker():
             config = rs.config()
             
             # Tell config that we will use a recorded device from filem to be used by the pipeline through playback.
-            rs.config.enable_device_from_file(config, input)
+            rs.config.enable_device_from_file(config, bagfile_dir)
         
             # Configure the pipeline to stream the depth and color stream
-            config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
-            config.enable_stream(rs.stream.color, 1280, 720, rs.format.rgb8, 30)
+            #config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+            #config.enable_stream(rs.stream.color, 1280, 720, rs.format.rgb8, 30)
+            config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+            config.enable_stream(rs.stream.color, 640, 480, rs.format.rgb8, 30)
+            
+            # Start streaming from file
+            profile = pipeline.start(config)
 
             # Declare filters
-            dec_filter = rs.decimation_filter()   # Decimation - reduces depth frame density
+            #dec_filter = rs.decimation_filter()   # Decimation - reduces depth frame density
             
             spat_filter = rs.spatial_filter()          # Spatial    - edge-preserving spatial smoothing
             
@@ -291,9 +295,6 @@ class depth_worker():
             fill_filter = rs.hole_filling_filter()  # Hole Filling filter
 
             disp_filter = rs.disparity_transform()  # Disparity Transform filter
-
-            # Start streaming from file
-            profile = pipeline.start(config)
 
             depth_sensor = profile.get_device().first_depth_sensor()
             depth_scale = depth_sensor.get_depth_scale()
@@ -321,15 +322,15 @@ class depth_worker():
 
                     if (filter):
                         # Perform filtering
-                        filtered = dec_filter.process(depth_frame)
+                        #filtered = dec_filter.process(depth_frame)
 
-                        filtered = spat_filter.process(filtered)
+                        filtered = spat_filter.process(depth_frame)
 
-                        filtered = fill_filter.process(filtered)
+                        #filtered = fill_filter.process(filtered)
 
                         depth_frame = temp_filter.process(filtered)
 
-                        color_frame = dec_filter.process(color_frame)
+                        #color_frame = dec_filter.process(color_frame)
                     
                     # Tell pointcloud object to map to this color frame
                     pc.map_to(color_frame)
@@ -358,6 +359,6 @@ if __name__ == "__main__":
     
     #w.save_depth_to_npy("./20181011_223353.bag")
 
-    w.save_pointcloud_to_ply("./20181011_223353.bag")
+    w.save_pointcloud_to_ply("./kitchen.bag")
 
     #w.verify_depth_matrix()
