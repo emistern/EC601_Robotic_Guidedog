@@ -38,6 +38,8 @@ def ModuleWrapper(args):
     map_time_buf = 0
     plan_time_buf = 0
     disp_time_buf = 0
+    if num_frames > 0: # if run a finite number of frames
+        time_record = np.zeros((num_frames, 2)) # init a buffer for storing running time
 
     # arrow images
     arrow_f = cv2.imread("./images/arrow_f.png")
@@ -167,15 +169,17 @@ def ModuleWrapper(args):
         if(num_frames != 0 and frame_count >= num_frames):   # check limited number for playing
             print("------ Print Running Stats ------")
             print("Total frame number:    ", num_frames)
-            print("Average planning time: ", plan_time_buf / num_frames)
-            print("Average mapping time:  ", map_time_buf  / num_frames)
+            print("Average planning time: ", plan_time_buf / num_frames,  " standard deviation: ", np.std(time_record[:, 1]))
+            print("Average mapping time:  ", map_time_buf  / num_frames,  " standard deviation: ", np.std(time_record[:, 0]))
             print("Average display time:  ", disp_time_buf / num_frames)
             quit()
         else:
-            frame_count += 1
             map_time_buf += map_time
             plan_time_buf += plan_time
             disp_time_buf += disp_time
+            time_record[frame_count, 0] = map_time
+            time_record[frame_count, 1] = plan_time
+            frame_count += 1
 
         if(args.input):   # check input
             input()
