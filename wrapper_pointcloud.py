@@ -37,6 +37,7 @@ def ModuleWrapper(args):
     frame_count = 0
     map_time_buf = 0
     plan_time_buf = 0
+    disp_time_buf = 0
 
     # arrow images
     arrow_f = cv2.imread("./images/arrow_f.png")
@@ -71,7 +72,7 @@ def ModuleWrapper(args):
 
     while(True):
         if timing:
-            print("------ new frame ------")
+            print("------ frame", frame_count," ------")
         facing_wall = False
         target = None
 
@@ -142,13 +143,13 @@ def ModuleWrapper(args):
             if timing:
                 map_time = t_map_e - t_map_s
                 plan_time = t_plan_e - t_plan_s
+                disp_time = t_ds_ed - t_ds_st
                 print("map  time  " + str(map_time))
                 print("plan time  " + str(plan_time))
-                print("disp time  " + str(t_ds_ed - t_ds_st))
+                print("disp time  " + str(disp_time))
                 print("total time" + str(t_plan_e - t_map_s))
                 if(num_frames != 0):
-                    map_time_buf += map_time
-                    plan_time_buf += plan_time
+                    pass
             
             if use_voice:
                 interface.play2([direc])
@@ -164,11 +165,17 @@ def ModuleWrapper(args):
         cv2.waitKey(20)
 
         if(num_frames != 0 and frame_count >= num_frames):   # check limited number for playing
-            print("Average planning time: ", plan_time_buf / frame_count)
-            print("Average Mapping time: ", map_time_buf / frame_count)
+            print("------ Print Running Stats ------")
+            print("Total frame number:    ", num_frames)
+            print("Average planning time: ", plan_time_buf / num_frames)
+            print("Average mapping time:  ", map_time_buf  / num_frames)
+            print("Average display time:  ", disp_time_buf / num_frames)
             quit()
         else:
             frame_count += 1
+            map_time_buf += map_time
+            plan_time_buf += plan_time
+            disp_time_buf += disp_time
 
         if(args.input):   # check input
             input()
