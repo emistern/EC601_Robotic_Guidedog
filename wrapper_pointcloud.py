@@ -31,6 +31,7 @@ def ModuleWrapper(args):
     num_frames = args.frames
     downsample_rate = args.downsamplerate
     roi_mtr = args.roi
+    inflate_diag = args.inflate_diag
 
     # local variables
     frame_count = 0
@@ -90,7 +91,8 @@ def ModuleWrapper(args):
                                                             ds_rate=downsample_rate,
                                                             row_num = num_row, col_num = num_col, 
                                                             row_size = size_row, col_size = size_col, 
-                                                            show=show, cheb=use_chebyshev, timing=timing)
+                                                            show=show, cheb=use_chebyshev, inflate_diag=inflate_diag,
+                                                            timing=timing)
 
         t_map_e = time.time()  # mapping time end
 
@@ -103,22 +105,26 @@ def ModuleWrapper(args):
             djikstra_planner.gen_paths()   # path planner initializetion
             djikstra_planner.gen_buffer_mats() # path planner initializetion
             djikstra_planner.plan()        # path planner planning
+            if target is None:  # if not using chebyshev center to find target, use default target
+                target = djikstra_planner.find_default_target(int(num_row/size_col))
         else:
-            pass # put astar here
+            pass # put astar planning here
 
         t_plan_e = time.time() # planning time end
 
-        if target is None:  # if not using chebyshev center to find target, use default target
-            target = djikstra_planner.find_default_target(int(num_row/size_col))
+        
         if not facing_wall and target != None: # if there is a valid target
-            if (djikstra_planner.check_target_valid(target)):
-                path = djikstra_planner.find_optimal_path(target)
-            else:
-                path = []
 
             t_ds_st = time.time() # displaying time start
 
-            djikstra_planner.draw_path(path)
+            if not args.astar:
+                if (djikstra_planner.check_target_valid(target)):
+                    path = djikstra_planner.find_optimal_path(target)
+                else:
+                    path = []
+                djikstra_planner.draw_path(path)
+            else:
+                pass # put astar path findind and drawing here
             #dw.show_depth_matrix("", dep_mat)
 
             t_ds_ed = time.time() # displaying time end
@@ -192,6 +198,7 @@ if __name__ == "__main__":
     parser.add_argument("--roi", help="region of interest in meters", default=1.5, type=float)
     parser.add_argument("--astar", help="wether use astar path planning algorithm", default=False, type=bool)
     parser.add_argument("--path_thresh", help="threshold for path filter", default=0.8, type=float)
+    parser.add_argument("--inflate_diag", default=False, type=bool)
     args = parser.parse_args()
     
     print("-------- PRINT ARGUMENTS --------")

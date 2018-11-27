@@ -13,7 +13,8 @@ def pointcloud_pipeline(pc_raw,
                         ds_rate = 60,
                         row_num = 14, col_num = 11, 
                         row_size = 6, col_size = 10, 
-                        show=True, cheb=True, timing=True):
+                        show=True, cheb=True, inflate_diag=False,
+                        timing=True):
     
     """
     The Point Cloud Map Builder Pipeline
@@ -85,7 +86,7 @@ def pointcloud_pipeline(pc_raw,
     t_ths_st = time.time()
 
     grid = thresholding_np(grid)      # thresholding the grid map(turn into bit map)
-    grid = inflate(grid, row_num, col_num)
+    grid = inflate(grid, row_num, col_num, diag=inflate_diag)
     
     t_ths_ed = time.time()
     if timing:
