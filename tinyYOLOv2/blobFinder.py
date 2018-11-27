@@ -4,8 +4,8 @@ from sklearn.mixture import GaussianMixture as GMM
 
 class blobFinder(object):
     def __init__(self,
-                 input_width = 640,
-                 input_height= 480
+                 input_width = 416,
+                 input_height= 416
                  ):
         self.input_width  = input_width
         self.input_height = input_height
