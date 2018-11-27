@@ -292,7 +292,7 @@ class path_planner(object):
 			idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
 			self.openset.pop(idxNbest, None)
 			self.closedset.append(idxNbest)
-		return idxNbest
+			return idxNbest
 
 
 	def path_search(self, starting_location):
