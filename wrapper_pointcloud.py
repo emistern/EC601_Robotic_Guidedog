@@ -31,7 +31,11 @@ def ModuleWrapper(args):
     num_frames = args.frames
     downsample_rate = args.downsamplerate
     roi_mtr = args.roi
+
+    # local variables
     frame_count = 0
+    map_time_buf = 0
+    plan_time_buf = 0
 
     # arrow images
     arrow_f = cv2.imread("./images/arrow_f.png")
@@ -93,11 +97,14 @@ def ModuleWrapper(args):
         # perform path planning on the map
         t_plan_s = time.time() # planning time start
         
-        djikstra_planner = path_planner.path_planner(map_depth)
-        djikstra_planner.gen_nodes()   # path planner initializetion
-        djikstra_planner.gen_paths()   # path planner initializetion
-        djikstra_planner.gen_buffer_mats() # path planner initializetion
-        djikstra_planner.plan()        # path planner planning
+        if not args.astar:
+            djikstra_planner = path_planner.path_planner(map_depth)
+            djikstra_planner.gen_nodes()   # path planner initializetion
+            djikstra_planner.gen_paths()   # path planner initializetion
+            djikstra_planner.gen_buffer_mats() # path planner initializetion
+            djikstra_planner.plan()        # path planner planning
+        else:
+            pass # put astar here
 
         t_plan_e = time.time() # planning time end
 
@@ -117,7 +124,7 @@ def ModuleWrapper(args):
             t_ds_ed = time.time() # displaying time end
             
             roi_sqr = int(roi_mtr / (size_col / num_row))
-            direc = path_filter.compute_weighted_average(path, num_row, num_col, roi_sqr)
+            direc = path_filter.compute_weighted_average(path, num_row, num_col, roi_sqr, thresh=args.path_thresh)
 
             if (direc == 0):
                 cv2.imshow("direction", arrow_f)
@@ -127,10 +134,15 @@ def ModuleWrapper(args):
                 cv2.imshow("direction", arrow_l)
 
             if timing:
-                print("map  time  " + str(t_map_e - t_map_s))
-                print("plan time  " + str(t_plan_e - t_plan_s))
+                map_time = t_map_e - t_map_s
+                plan_time = t_plan_e - t_plan_s
+                print("map  time  " + str(map_time))
+                print("plan time  " + str(plan_time))
                 print("disp time  " + str(t_ds_ed - t_ds_st))
                 print("total time" + str(t_plan_e - t_map_s))
+                if(num_frames != 0):
+                    map_time_buf += map_time
+                    plan_time_buf += plan_time
             
             if use_voice:
                 interface.play2([direc])
@@ -146,6 +158,8 @@ def ModuleWrapper(args):
         cv2.waitKey(20)
 
         if(num_frames != 0 and frame_count >= num_frames):   # check limited number for playing
+            print("Average planning time: ", plan_time_buf / frame_count)
+            print("Average Mapping time: ", map_time_buf / frame_count)
             quit()
         else:
             frame_count += 1
@@ -171,14 +185,21 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input", help="press enter for each frame", default=False, type=bool)
     parser.add_argument("-f", "--frames", help="how many frames you want to play", default=0, type=int)
     parser.add_argument("-r", "--downsamplerate", help="downsampling rate", default=60, type=int)
-    parser.add_argument("--row", help="number of rows in map", default=20, type=int)
-    parser.add_argument("--col", help="number of columns in map", default=29, type=int)
+    parser.add_argument("--row", help="number of rows in map", default=26, type=int)
+    parser.add_argument("--col", help="number of columns in map", default=39, type=int)
     parser.add_argument("--row_size", help="size of each row in meters", default=6, type=int)
     parser.add_argument("--col_size", help="size of each column in meters", default=4, type=int)
     parser.add_argument("--roi", help="region of interest in meters", default=1.5, type=float)
+    parser.add_argument("--astar", help="wether use astar path planning algorithm", default=False, type=bool)
+    parser.add_argument("--path_thresh", help="threshold for path filter", default=0.8, type=float)
     args = parser.parse_args()
-    print("Using Bag File:    ", args.bagfile)
-    print("Using Point Cloud: ", args.pointcloud)
-    print("Timing:            ", args.time)
-    #quit()
+    
+    print("-------- PRINT ARGUMENTS --------")
+    arg_data = parser.parse_args()
+    for key, value in vars(arg_data).items():
+        print("{:<15}".format(key), " : ", value)
+    print("---------------------------------")
+    print("press ENTER to start:")
+    input()
+
     ModuleWrapper(args)

@@ -5,6 +5,7 @@ from decomposite_pc import append_offset, compute_mask, decomp, thresholding
 from decomposite_pc import append_offset2D, compute_mask2D, decomp_np, thresholding_np
 from display_pc import show_pointcloud, show_points2D
 from map_mask import gen_mask
+from transform import inflate
 import time
 import numpy as np
 
@@ -84,7 +85,8 @@ def pointcloud_pipeline(pc_raw,
     t_ths_st = time.time()
 
     grid = thresholding_np(grid)      # thresholding the grid map(turn into bit map)
-
+    grid = inflate(grid, row_num, col_num)
+    
     t_ths_ed = time.time()
     if timing:
         print("Thresholding in time: ", t_ths_ed - t_ths_st, " seconds")
