@@ -209,23 +209,49 @@ class path_planner(object):
 		# obstacles then set the first row to be 2 1 2 centered at center
 		#Initialize the three steps surround center in the first row to be 2, 1, 2 + obstacle cost
 		first_row = [-1 ,0, 1]
-		for a_point in first_row:
-			if self.map[0][self.center+a_point] == 1:
-				continue
-			else:
-				next2you_obstacles = self.get_next_2_you_neighbors(0, self.center+a_point)
-				diag2you_obstacles = self.get_diag_2_you(0, self.center+a_point)
-				# Add boundary cost
-				boundary_cost = 0
-				if self.center+a_point == 0 or self.center+a_point == self.width-1:
-					boundary_cost = 200
-				obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost
+		# for a_point in first_row:
+		# 	if self.map[0][self.center+a_point] == 1:
+		# 		continue
+		# 	else:
+		# 		next2you_obstacles = self.get_next_2_you_neighbors(0, self.center+a_point)
+		# 		diag2you_obstacles = self.get_diag_2_you(0, self.center+a_point)
+		# 		# Add boundary cost
+		# 		boundary_cost = 0
+		# 		if self.center+a_point == 0 or self.center+a_point == self.width-1:
+		# 			boundary_cost = 200
+		# 		obstacles_cost = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost
 
-				if a_point != 0:
-					cost = 2
-				else:
-					cost = 1
-				self.graph[0][self.center][self.center+a_point] = cost + obstacles_cost
+		# 		if a_point != 0:
+		# 			cost = 2
+		# 		else:
+		# 			cost = 1
+		# 		self.graph[0][self.center][self.center+a_point] = cost + obstacles_cost
+
+		if self.map[0][self.center-1] != 1:
+			next2you_obstacles = self.get_next_2_you_neighbors(0, self.center-1)
+			diag2you_obstacles = self.get_diag_2_you(0, self.center-1)
+			# Add boundary cost
+			boundary_cost = 0
+			if self.center-1 == 0 or self.center-1 == self.width-1:
+				boundary_cost = 50
+			self.graph[0][self.center][self.center-1] = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost + 2
+		elif self.map[0][self.center+1] != 1:
+			next2you_obstacles = self.get_next_2_you_neighbors(0, self.center+1)
+			diag2you_obstacles = self.get_diag_2_you(0, self.center+1)
+			# Add boundary cost
+			boundary_cost = 0
+			if self.center+1 == 0 or self.center+1 == self.width-1:
+				boundary_cost = 50
+			self.graph[0][self.center][self.center+1] = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost + 2
+		elif self.map[0][self.center] != 1:
+			next2you_obstacles = self.get_next_2_you_neighbors(0, self.center)
+			diag2you_obstacles = self.get_diag_2_you(0, self.center)
+			# Add boundary cost
+			boundary_cost = 0
+			if self.center == 0 or self.center == self.width-1:
+				boundary_cost = 50
+			self.graph[0][self.center][self.center] = next2you_obstacles*25 + diag2you_obstacles*15 + boundary_cost + 1
+
 		
 		for a_row in range(self.height-1):
 			new_layer = []
@@ -616,8 +642,8 @@ if __name__ == "__main__":
 		path_search_time = time.time()
 	end_time = time.time()
 	print(path)
-	p.draw_path(path)
-	cv2.waitKey(0)
+	# p.draw_path(path)
+	# cv2.waitKey(0)
 
 	Total_time = end_time - start_time
 	time_for_heuristics = heuristics_time - start_time
@@ -625,9 +651,9 @@ if __name__ == "__main__":
 	time_for_start_pos = pick_start_time - graph_time
 	time_for_search  = path_search_time - pick_start_time
 
-	# print("Total Time: ", Total_time)
+	print("Total Time: ", Total_time)
 	# print("Heuristics: ", time_for_heuristics)
-	# print("Graph: ", time_for_graph)
+	print("Graph: ", time_for_graph)
 	# print("Start Pos: ", time_for_start_pos)
 	# print("Search: ", time_for_search)
 
