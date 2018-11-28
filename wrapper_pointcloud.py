@@ -1,5 +1,6 @@
 from wall_detection import image2birdview
 from path_planning import path_planner, path_filter
+from path_planning.path_planner_aStar import path_planner as path_planner_aStar
 from voice import voice_class
 import time
 import cv2
@@ -112,11 +113,23 @@ def ModuleWrapper(args):
                 target = djikstra_planner.find_default_target(int(num_row/size_col))
         else:
             pass # put astar planning here
+            a_star_plan = path_planner_aStar(map_depth, [])
+            if len(a_star_plan.goal)==0:
+                path = []
+            else:
+                print(a_star_plan.goal)
+                a_star_plan.gen_heuristics(2)
+                a_star_plan.gen_graph()
+                startpos = a_star_plan.pick_start_pos()
+                path = a_star_plan.path_search(startpos)
+                print(startpos, path)
 
         t_plan_e = time.time() # planning time end
-
+        if timing:
+                map_time = t_map_e - t_map_s
+                plan_time = t_plan_e - t_plan_s
         
-        if not facing_wall and target != None: # if there is a valid target
+        if not facing_wall: # if there is a valid target
 
             t_ds_st = time.time() # displaying time start
 
@@ -128,6 +141,8 @@ def ModuleWrapper(args):
                 djikstra_planner.draw_path(path)
             else:
                 pass # put astar path findind and drawing here
+                a_star_plan.draw_path(path)
+
             #dw.show_depth_matrix("", dep_mat)
 
             t_ds_ed = time.time() # displaying time end
@@ -149,7 +164,7 @@ def ModuleWrapper(args):
                 print("map  time  " + str(map_time))
                 print("plan time  " + str(plan_time))
                 print("disp time  " + str(disp_time))
-                print("total time" + str(t_plan_e - t_map_s))
+                print("total time " + str(t_plan_e - t_map_s))
                 if(num_frames != 0):
                     pass
             
@@ -158,7 +173,10 @@ def ModuleWrapper(args):
         else:  # there is not valid target
             if use_voice:
                 interface.play2([])
-            djikstra_planner.draw_path([])
+            if not args.astar:
+                djikstra_planner.draw_path([])
+            else:
+                a_star_plan.draw_path([])
             cv2.imshow("direction", stop_sn)
             #dw.show_depth_matrix("", dep_mat)
 
@@ -171,15 +189,17 @@ def ModuleWrapper(args):
             print("Total frame number:    ", num_frames)
             print("Average planning time: ", plan_time_buf / num_frames,  " standard deviation: ", np.std(time_record[:, 1]))
             print("Average mapping time:  ", map_time_buf  / num_frames,  " standard deviation: ", np.std(time_record[:, 0]))
-            print("Average display time:  ", disp_time_buf / num_frames)
+            #print("Average display time:  ", disp_time_buf / num_frames)
             quit()
         else:
-            map_time_buf += map_time
-            plan_time_buf += plan_time
-            disp_time_buf += disp_time
-            time_record[frame_count, 0] = map_time
-            time_record[frame_count, 1] = plan_time
-            frame_count += 1
+            if timing:
+                map_time_buf += map_time
+                plan_time_buf += plan_time
+                #disp_time_buf += disp_time
+                if num_frames > 0:
+                    time_record[frame_count, 0] = map_time
+                    time_record[frame_count, 1] = plan_time
+                    frame_count += 1
 
         if(args.input):   # check input
             input()

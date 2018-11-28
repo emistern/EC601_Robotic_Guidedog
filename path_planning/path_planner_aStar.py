@@ -264,6 +264,8 @@ class path_planner(object):
 		for a_pos in range(len(graph_vals)):
 			if graph_vals[a_pos] != m_v:
 				total_cost = total_cost + [graph_vals[a_pos]+self.heuristics[0][a_pos]]
+			else:
+				total_cost = total_cost + [m_v]
 		# If the first row is all obstacles then pass back an empty start list, which
 		# should tell the path_planner that there is no start
 		if (self.map[0][self.center]==1) and (self.map[0][self.center-1]==1) and (self.map[0][self.center+1]==1):
@@ -288,10 +290,13 @@ class path_planner(object):
 			return []
 
 	def priority_queue(self):
-		idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
-		self.openset.pop(idxNbest, None)
-		self.closedset.append(idxNbest)
-		return idxNbest
+		if len(self.openset) == 0:
+			return []
+		else:
+			idxNbest=min(self.openset.items(), key=lambda x: x[1])[0]
+			self.openset.pop(idxNbest, None)
+			self.closedset.append(idxNbest)
+			return idxNbest
 
 
 	def path_search(self, starting_location):
@@ -333,11 +338,14 @@ class path_planner(object):
 				while row == self.height:
 					# print(idxNbest)
 					idxNbest=self.priority_queue()
-					# Update the row
-					row = idxNbest[0] + 1
-					# If you're at the goal location then run through the backpointers
-					if idxNbest == (self.goal[0], self.goal[1]):
-						return self.get_path_from_backpointers(starting_location, all_cost_backpointers)
+					if len(idxNbest) == 0:
+						return []
+					else:
+						# Update the row
+						row = idxNbest[0] + 1
+						# If you're at the goal location then run through the backpointers
+						if idxNbest == (self.goal[0], self.goal[1]):
+							return self.get_path_from_backpointers(starting_location, all_cost_backpointers)
 
 
 				# Get the neighbors of idxNbest
@@ -377,24 +385,25 @@ class path_planner(object):
 			return self.get_path_from_backpointers(starting_location, all_cost_backpointers)
 
 
-	def draw_path(self, path):
+	def draw_path(self, path, lines=False):
 
-		unit_size = 60
+		unit_size = 10
 		height = len(self.map)
 		width = len(self.map[0])
 		t_h = unit_size * height
 		t_w = unit_size * width
 		world = np.array([[[240] * 3] * (t_w)] * (t_h)).astype(np.uint8)
 
-		for x in range(0, t_w, unit_size):
-			pt1 = (x, 0)
-			pt2 = (x, t_h)
-			world = cv2.line(world, pt1, pt2, (255, 0, 0))
-        
-		for y in range(0, t_h, unit_size):
-			pt1 = (0, y)
-			pt2 = (t_w, y)
-			world = cv2.line(world, pt1, pt2, (255, 0, 0))
+		if lines:
+			for x in range(0, t_w, unit_size):
+				pt1 = (x, 0)
+				pt2 = (x, t_h)
+				world = cv2.line(world, pt1, pt2, (255, 0, 0))
+			
+			for y in range(0, t_h, unit_size):
+				pt1 = (0, y)
+				pt2 = (t_w, y)
+				world = cv2.line(world, pt1, pt2, (255, 0, 0))
 
         # Draw Obstacles
 		ofs = int(unit_size / 5)
@@ -404,7 +413,7 @@ class path_planner(object):
 					# Draw an obstacle in world
 					pt1 = (j * unit_size + ofs, i * unit_size + ofs)
 					pt2 = ((j+1) * unit_size - ofs, (i+1) * unit_size - ofs)
-					cv2.rectangle(world, pt1, pt2, (0, 0, 255), 5)
+					cv2.rectangle(world, pt1, pt2, (0, 0, 255), 3)
 
 		# Draw Optimal Path 
 		x_ofs = int(unit_size / 2)

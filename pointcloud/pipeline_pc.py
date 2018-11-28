@@ -86,14 +86,14 @@ def pointcloud_pipeline(pc_raw,
     t_ths_st = time.time()
 
     grid = thresholding_np(grid)      # thresholding the grid map(turn into bit map)
-    grid = inflate(grid, row_num, col_num, diag=inflate_diag)
+    #grid = inflate(grid, row_num, col_num, diag=inflate_diag)
     
     t_ths_ed = time.time()
     if timing:
         print("Thresholding in time: ", t_ths_ed - t_ths_st, " seconds")
     grid_mask = gen_mask(row_num, col_num)
 
-    grid = grid + grid_mask
+    #grid = grid + grid_mask
     ovlp_x, ovlp_y = np.where(grid > 1)
     for i in range(len(ovlp_x)):
         grid[ovlp_x[i], ovlp_y[i]] = 1
