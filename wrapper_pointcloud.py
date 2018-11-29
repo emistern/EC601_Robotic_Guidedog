@@ -57,14 +57,14 @@ def ModuleWrapper(args):
 
     # initialize the camera frame iterator
     if use_bag:
-        img_gen = get_pointcloud_frame("./realsense/20181011_223353.bag")
+        img_gen = get_pointcloud_frame("./realsense/hallway.bag")
     else:
         img_gen = get_frame()
 
     # instantiate an interface
-    interface = voice_class.VoiceInterface(straight_file='voice/straight.wav',
-                                            turnleft_file = 'voice/turnleft.wav',
-                                            turnright_file = 'voice/turnright.wav',
+    interface = voice_class.VoiceInterface(straight_file = 'voice/straight.mp3',
+                                            turnleft_file = 'voice/turnleft.mp3',
+                                            turnright_file = 'voice/turnright.mp3',
                                             hardleft_file = 'voice/hardleft.mp3',
                                             hardright_file = 'voice/hardright.mp3',
                                             STOP_file = 'voice/STOP.mp3',
@@ -117,45 +117,52 @@ def ModuleWrapper(args):
             if len(a_star_plan.goal)==0:
                 path = []
             else:
-                print(a_star_plan.goal)
                 a_star_plan.gen_heuristics(2)
                 a_star_plan.gen_graph()
                 startpos = a_star_plan.pick_start_pos()
                 path = a_star_plan.path_search(startpos)
-                print(startpos, path)
 
         t_plan_e = time.time() # planning time end
         if timing:
                 map_time = t_map_e - t_map_s
                 plan_time = t_plan_e - t_plan_s
-        
-        if not facing_wall: # if there is a valid target
 
-            t_ds_st = time.time() # displaying time start
+        t_ds_st = time.time() # displaying time start
 
-            if not args.astar:
-                if (djikstra_planner.check_target_valid(target)):
-                    path = djikstra_planner.find_optimal_path(target)
-                else:
-                    path = []
-                djikstra_planner.draw_path(path)
+        if not args.astar:
+            if (target != None and djikstra_planner.check_target_valid(target)):
+                path = djikstra_planner.find_optimal_path(target)
             else:
-                pass # put astar path findind and drawing here
-                a_star_plan.draw_path(path)
+                path = []
+            djikstra_planner.draw_path(path)
+        else:
+            pass # put astar path findind and drawing here
+            a_star_plan.draw_path(path)
 
-            #dw.show_depth_matrix("", dep_mat)
+        #dw.show_depth_matrix("", dep_mat)
 
-            t_ds_ed = time.time() # displaying time end
+        t_ds_ed = time.time() # displaying time end
+        
+        if len(path) > 0: # if there is a valid target
+
+            
             
             roi_sqr = int(roi_mtr / (size_col / num_row))
-            direc = path_filter.compute_weighted_average(path, num_row, num_col, roi_sqr, thresh=args.path_thresh)
 
-            if (direc == 0):
-                cv2.imshow("direction", arrow_f)
-            elif (direc == 1):
-                cv2.imshow("direction", arrow_r)
+            if len(path) > 0:
+
+                direc = path_filter.compute_weighted_average(path, num_row, num_col, roi_sqr, thresh=args.path_thresh)
+
+                if (direc == 0):
+                    cv2.imshow("direction", arrow_f)
+                elif (direc == 1):
+                    cv2.imshow("direction", arrow_r)
+                else:
+                    cv2.imshow("direction", arrow_l)
+                if use_voice:
+                    interface.play2([direc])
             else:
-                cv2.imshow("direction", arrow_l)
+                cv2.imshow("direction", stop_sn)
 
             if timing:
                 map_time = t_map_e - t_map_s
@@ -168,8 +175,7 @@ def ModuleWrapper(args):
                 if(num_frames != 0):
                     pass
             
-            if use_voice:
-                interface.play2([direc])
+            
         else:  # there is not valid target
             if use_voice:
                 interface.play2([])
@@ -192,14 +198,13 @@ def ModuleWrapper(args):
             #print("Average display time:  ", disp_time_buf / num_frames)
             quit()
         else:
-            if timing:
+            if timing and num_frames > 0:
                 map_time_buf += map_time
                 plan_time_buf += plan_time
                 #disp_time_buf += disp_time
-                if num_frames > 0:
-                    time_record[frame_count, 0] = map_time
-                    time_record[frame_count, 1] = plan_time
-                    frame_count += 1
+                time_record[frame_count, 0] = map_time
+                time_record[frame_count, 1] = plan_time
+                frame_count += 1
 
         if(args.input):   # check input
             input()
