@@ -25,7 +25,7 @@ def downsample(pc_raw, rate = 50):
 
     return downsampled_points
 
-def downsample_vector(pc_raw, rate = 50):
+def downsample_vector(pc_raw, rate = 50, num_pts = 10000):
 
     """ 
     down sample the raw point cloud(trying to improve performance using at the expense of memory)
@@ -45,5 +45,12 @@ def downsample_vector(pc_raw, rate = 50):
 
     smp_pts = np.ndarray((len(smp_pts), 3), dtype=np.float32, buffer=smp_pts)
     smp_pts = np.matmul(np.asarray(smp_pts), swap_mtx)  # swap axies
+
+    # add a fixed number random downsample
+    num_smp_pts = smp_pts.shape[0]
+    if num_smp_pts > num_pts:
+        rnd_idx = np.random.randint(num_smp_pts, size=num_pts)
+        rnd_pts = np.take(smp_pts, rnd_idx, axis=0)
+        return rnd_pts
 
     return smp_pts    
