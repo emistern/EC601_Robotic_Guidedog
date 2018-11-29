@@ -5,13 +5,6 @@
 # Recorded approciamtely 10 second long videos. Videos will run on repeat until the wrapper
 # has gone through 200 frames. 
 
-
-# Hallway
-# Scale 26 rows x 39 columns (Avg Scale)
-# A Star 
-# Planning Time Avg: 0.1695 seconds Std Dev 0.0349
-# Dijkstra
-
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -36,10 +29,18 @@ plt.ylabel('A*/Dijkstra (%)')
 
 
 ## Individual Timed Plots
-
-
-
 plt.figure(2)
+plt.plot(x, df['Open Time']-df['Open Time DJK'], 'ro', label='Open Space')
+plt.plot(x, df['Hallway TIme']-df['Hallway TIme DJK'], 'bs', label='Hallway')
+plt.plot(x, df['Sparse Time']-df['Sparse Time DJK'], 'g^', label='Sparse Obstacles')
+plt.plot(x, df['Dense Time']-df['Dense Time DJK'], 'c*', label='Dense Obstacles')
+plt.legend()
+plt.xlabel('Scale')
+plt.xticks(x, ['Super Coarse', 'Coarse', 'Average', 'Fine', 'Super Fine'])
+plt.ylabel('A* - Dijkstra (s)')
+
+
+plt.figure(3)
 plt.plot(x, df['Open Time'], 'bo', label='Open A*')
 plt.plot(x, df['Hallway TIme'], 'bx', label='Hallway A*')
 plt.plot(x, df['Sparse Time'], 'b^', label='Sparse Obstacles A*')
@@ -48,9 +49,7 @@ plt.plot(x, df['Open Time DJK'], 'go', label='Open Dijkstra')
 plt.plot(x, df['Hallway TIme DJK'], 'gx', label='Hallway Dijkstra')
 plt.plot(x, df['Sparse Time DJK'], 'g^', label='Sparse Dijkstra')
 plt.plot(x, df['Dense Time DJK'], 'g*', label='Dense Dijkstra')
-# Color Differences
-# first_legend =plt.legend(handles=['Open A*', 'Hallway A*', 'Sparse Obstacles A*', 'Dense Obstacles A'])
-# second_legend = plt.legend(handles=['Open Dijkstra', 'Hallway Dijkstra', 'Sparse Dijkstra', 'Dense Dijkstra'])
+# Find a Better Way to Show legend?
 plt.legend()
 plt.xlabel('Scale')
 plt.xticks(x, ['Super Coarse', 'Coarse', 'Average', 'Fine', 'Super Fine'])
