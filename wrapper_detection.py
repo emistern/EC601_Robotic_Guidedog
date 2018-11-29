@@ -4,11 +4,13 @@ from voice import voice_class
 import time
 import numpy as np
 from realsense.rs_depth_util import *
-from get_frame import *
+from get_frame_bag import *
 from door_coord import find_door
-
+from tinyYOLOv2 import obj_det
 import argparse
-use_darknet = True
+
+use_darknet = False
+use_tensor = True
 
 if use_darknet:
     import sys
@@ -38,9 +40,13 @@ class ModuleWrapper(object):
             net = darknet.load_net(b"/home/yly/darknet/cfg/yolov3.cfg", b"/home/yly/darknet/yolov3.weights", 0)
             meta = darknet.load_meta(b"/home/yly/darknet/data/coco.data")
 
+
+
         # initialize the camera frame iterator
         img_gen = get_frame()
 
+        if use_tensor:
+            t = obj_det.obj_det()
         # instantiate an interface
         interface = voice_class.VoiceInterface(straight_file='voice/straight.mp3',
                                                turnleft_file = 'voice/turnleft.mp3',
@@ -65,19 +71,27 @@ class ModuleWrapper(object):
             map_depth = self.squeeze.quantilize(squeezed_matrix, n_sec=nun_section, max_per_occ=max_per_occ)
             t_qu_e = time.time()
 
-            # Use YOLO to detect the color image.
-            coord = darknet.detect(net, meta, color_mat)
-            print('length is ',len(coord))
-            print(coord) 
+            if use_darknet:
+                # Use YOLO to detect the color image.
+                coord = darknet.detect(net, meta, color_mat)
+                print('length is ',len(coord))
+                print(coord) 
+
+            if use_tensor:
+                coord = t.detect_frame(color_mat)
             
             target_door = []
+
             # find the coordinate in map with depth matrix and bounding box
             if(len(coord)!=0):
+                cv2.rectangle(color_mat,(coord[0],coord[2]),(coord[1],coord[3]),(0,255,0),3)
                 target_door = find_door( dep_mat, coord, 500 , nun_section)
                 print(target_door)
                 if(target_door[0]>9):
                     target_door[0]=9
                 map_depth[target_door[0], target_door[1]] = 0
+
+            cv2.imshow( "Display window", color_mat);
             
             # perform path planning on the map
             t_plan_s = time.time()
