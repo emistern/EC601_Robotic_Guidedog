@@ -2,6 +2,7 @@ from wall_detection import image2birdview
 from path_planning import path_planner, path_filter
 from path_planning.path_planner_aStar import path_planner as path_planner_aStar
 from voice import voice_class
+from voice.inst_filter import InstructionFilter
 import time
 import cv2
 import numpy as np
@@ -47,6 +48,7 @@ def ModuleWrapper(args):
     arrow_l = cv2.imread("./images/arrow_l.png")
     arrow_r = cv2.imread("./images/arrow_r.png")
     stop_sn = cv2.imread("./images/stop.png")
+    wait_sn = cv2.imread("./images/wait.jpg")
 
     # Specify the depth matrix you want to use
     dep_mat_fn = 'wall_detection/samples/depth0009.npy'
@@ -57,7 +59,7 @@ def ModuleWrapper(args):
 
     # initialize the camera frame iterator
     if use_bag:
-        img_gen = get_pointcloud_frame("./realsense/hallway.bag")
+        img_gen = get_pointcloud_frame("./realsense/dense.bag")
     else:
         img_gen = get_frame()
 
@@ -72,6 +74,9 @@ def ModuleWrapper(args):
 
     # slice and quantilize the depth matrix
     squeeze = image2birdview.depth_bird_view()
+
+    # instruction temporal filter
+    inst_filt = InstructionFilter()
 
     while(True):
         if timing:
@@ -142,52 +147,41 @@ def ModuleWrapper(args):
         #dw.show_depth_matrix("", dep_mat)
 
         t_ds_ed = time.time() # displaying time end
-        
-        if len(path) > 0: # if there is a valid target
+                    
+        roi_sqr = int(roi_mtr / (size_col / num_row))
 
-            
-            
-            roi_sqr = int(roi_mtr / (size_col / num_row))
+        if len(path) > 0:
+            direc = path_filter.compute_weighted_average(path, num_row, num_col, roi_sqr, thresh=args.path_thresh)
+            direc = inst_filt.update(direc)
+        else:
+            direc = inst_filt.update(path)
+            if direc != []:
+                direc = 2
 
-            if len(path) > 0:
-
-                direc = path_filter.compute_weighted_average(path, num_row, num_col, roi_sqr, thresh=args.path_thresh)
-
-                if (direc == 0):
-                    cv2.imshow("direction", arrow_f)
-                elif (direc == 1):
-                    cv2.imshow("direction", arrow_r)
-                else:
-                    cv2.imshow("direction", arrow_l)
-                if use_voice:
-                    interface.play2([direc])
-            else:
-                cv2.imshow("direction", stop_sn)
-
-            if timing:
-                map_time = t_map_e - t_map_s
-                plan_time = t_plan_e - t_plan_s
-                disp_time = t_ds_ed - t_ds_st
-                print("map  time  " + str(map_time))
-                print("plan time  " + str(plan_time))
-                print("disp time  " + str(disp_time))
-                print("total time " + str(t_plan_e - t_map_s))
-                if(num_frames != 0):
-                    pass
-            
-            
-        else:  # there is not valid target
-            if use_voice:
-                interface.play2([])
-            if not args.astar:
-                djikstra_planner.draw_path([])
-            else:
-                a_star_plan.draw_path([])
+        if (direc == 0):
+            cv2.imshow("direction", arrow_f)
+        elif (direc == 1):
+            cv2.imshow("direction", arrow_r)
+        elif (direc == -1):
+            cv2.imshow("direction", arrow_l)
+        elif (direc == []):
             cv2.imshow("direction", stop_sn)
-            #dw.show_depth_matrix("", dep_mat)
+        elif (direc == 2):
+            cv2.imshow("direction", wait_sn)
+        if use_voice:
+            interface.play2([direc])
 
-            print("no path")
-        
+        if timing:
+            map_time = t_map_e - t_map_s
+            plan_time = t_plan_e - t_plan_s
+            disp_time = t_ds_ed - t_ds_st
+            print("map  time  " + str(map_time))
+            print("plan time  " + str(plan_time))
+            print("disp time  " + str(disp_time))
+            print("total time " + str(t_plan_e - t_map_s))
+            if(num_frames != 0):
+                pass
+
         cv2.waitKey(20)
 
         if(num_frames != 0 and frame_count >= num_frames):   # check limited number for playing
