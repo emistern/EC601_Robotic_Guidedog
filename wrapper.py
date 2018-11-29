@@ -8,7 +8,7 @@ from get_frame import *
 from door_coord import find_door
 
 import argparse
-use_darknet = True
+use_darknet = False
 
 if use_darknet:
     import sys
