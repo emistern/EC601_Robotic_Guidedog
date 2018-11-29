@@ -469,9 +469,9 @@ class path_planner(object):
 			return self.get_path_from_backpointers(starting_location, all_cost_backpointers)
 
 
-	def draw_path(self, path, lines=True):
+	def draw_path(self, path, lines=False):
 
-		unit_size = 60
+		unit_size = 10
 		# set the unit size to 10 for faster implementation
 		height = len(self.map)
 		width = len(self.map[0])
