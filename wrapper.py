@@ -81,8 +81,10 @@ class ModuleWrapper(object):
                 coord = t.detect_frame(color_mat)
             
             target_door = []
+
             # find the coordinate in map with depth matrix and bounding box
             if(len(coord)!=0):
+                cv2.rectangle(color_mat,(coord[0],coord[2]),(coord[1],coord[3]),(0,255,0),3)
                 target_door = find_door( dep_mat, coord, 500 , nun_section)
                 print(target_door)
                 if(target_door[0]>9):

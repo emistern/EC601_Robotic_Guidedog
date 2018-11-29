@@ -1,5 +1,4 @@
 import numpy as np
-import math
 
 def find_door( view_in_3D, coord, slice_distance = 500, numsec = 7):
 
@@ -49,13 +48,14 @@ def find_door( view_in_3D, coord, slice_distance = 500, numsec = 7):
     distance = distance / n
     '''
 
-    distance = math.inf
+    distance = 20000
 
     # Find the distance to the chair and the ground where the chair stands on.
     for i in range (lowermost,h_cent):
         for j in range (leftmost,rightmost):
             if(distance_array.item(i,j) < distance):
                 if(distance_array.item(i,j) != 0):
+                    print("It's in the IF.")
                     distance = distance_array.item(i,j)
 
     layer = int((distance-250)/slice_distance)
@@ -63,6 +63,7 @@ def find_door( view_in_3D, coord, slice_distance = 500, numsec = 7):
     ret_coor[1] = int((orig_x*numsec)/width)
 
     ret_coor[0] = layer
+
     '''
     Below is for detecting the hollow goal, such as an opened door.
     '''

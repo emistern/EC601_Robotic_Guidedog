@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from os import listdir
 import sys
-sys.path.append("./wall_detection/wall_detection")
+sys.path.append("./wall_detection/wall_detection/")
 from wall_detection import slicer
 import squeeze
 import math
