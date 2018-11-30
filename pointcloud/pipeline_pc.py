@@ -58,7 +58,6 @@ def pointcloud_pipeline(pc_raw,
         print("Cropping in: ", t_cp_ed - t_cp_st, " seconds")
 
     # check empty points list: totally empty space
-    #print(crop_pts)
     if (len(crop_pts) <= 10):
         return  gen_mask(row_num, col_num), None, False
 
@@ -71,17 +70,17 @@ def pointcloud_pipeline(pc_raw,
 
     pts_row, pts_col = append_offset(obs_pts, row_size, col_size)  # prepare for decomposite
 
+    if (len(pts_row) <= 10):
+        return  gen_mask(row_num, col_num), None, False
+
     mask_row, mask_col = compute_mask(row_num, col_num, row_size, col_size)  # prepare for decomposite
 
     grid = decomp_np(pts_row, pts_col, row_num, col_num, mask_row, mask_col) # build the grid occupency map
-    #grid_ = decomp(pts_row, pts_col, row_num, col_num, mask_row, mask_col) # build the grid occupency map
 
     t_dcp_ed = time.time()
     if timing:
         print("Decomposition in: ", t_dcp_ed - t_dcp_st, " seconds")
-        #print(grid)
-        #print(grid_)
-        #assert grid.any() == grid_.any()
+
 
     if cheb:
         target = find_target(center, row_size, mask_row, mask_col)  # find the corresponding suqare in grid map with chebyshev center

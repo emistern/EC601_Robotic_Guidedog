@@ -4,7 +4,7 @@ import operator
 
 class InstructionFilter(object):
 
-    def __init__(self, buf_size = 10, thresh = 0.5):
+    def __init__(self, buf_size = 7, thresh = 0.35):
 
         """
         This is a temporal filter for instruction selection
@@ -87,7 +87,7 @@ class InstructionFilter(object):
         # step 3: integrate each channel
         intg_dict = {}
         for name, filt_data in filt_dict.items():
-            _sum = np.sum(filt_data)
+            _sum = np.dot(filt_data, filt_data)
             intg_dict[name] = _sum / self.buf_size
         
         # find the dominant instruction
