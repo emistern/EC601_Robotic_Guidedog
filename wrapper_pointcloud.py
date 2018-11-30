@@ -64,7 +64,19 @@ def ModuleWrapper(args):
         img_gen = get_frame()
 
     # instantiate an interface
-    interface = voice_class.VoiceInterface(straight_file = 'voice/straight.mp3',
+    if args.stereo:
+        interface = voice_class.VoiceInterface(
+            straight_file ='sounds/steel_bell.wav',
+            turnleft_file = 'sounds/left.wav',
+            turnright_file = 'sounds/right.wav',
+            hardleft_file = 'voice/hardleft.mp3',
+            hardright_file = 'voice/hardright.mp3',
+            STOP_file = 'voice/STOP.mp3',
+            noway_file = 'sounds/guitar.wav',
+            wait_file = 'sounds/ice_bell.wav'
+        )
+    else:
+        interface = voice_class.VoiceInterface(straight_file = 'voice/straight.mp3',
                                             turnleft_file = 'voice/turnleft.mp3',
                                             turnright_file = 'voice/turnright.mp3',
                                             hardleft_file = 'voice/hardleft.mp3',
@@ -166,10 +178,11 @@ def ModuleWrapper(args):
             cv2.imshow("direction", arrow_l)
         elif (direc == []):
             cv2.imshow("direction", stop_sn)
+            direc = 3
         elif (direc == 2):
             cv2.imshow("direction", wait_sn)
         if use_voice:
-            interface.play2([direc])
+            interface.play_on_edge(direc)
 
         if timing:
             map_time = t_map_e - t_map_s
@@ -221,6 +234,7 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input", help="press enter for each frame", default=False, type=bool)
     parser.add_argument("-f", "--frames", help="how many frames you want to play", default=0, type=int)
     parser.add_argument("-r", "--downsamplerate", help="downsampling rate", default=60, type=int)
+    parser.add_argument("-s", "--stereo", help="if use stereo sound", default=False, type=bool)
     parser.add_argument("--row", help="number of rows in map", default=26, type=int)
     parser.add_argument("--col", help="number of columns in map", default=39, type=int)
     parser.add_argument("--row_size", help="size of each row in meters", default=6, type=int)

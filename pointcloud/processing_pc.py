@@ -31,7 +31,7 @@ def filt_pointcloud(pc):
 
     return pc_filtered
 
-def get_bound(pc, t = 0.4):
+def get_bound(pc, t = 0.3):
 
     """
     get the bounds of 3 axis in the point cloud
