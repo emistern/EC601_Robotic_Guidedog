@@ -556,9 +556,9 @@ if __name__ == "__main__":
 
 	big_map = [
 	    [0, 0, 0, 0, 0],
-	    [1, 0, 0, 0, 0],
+	    [1, 0, 1, 0, 0],
+	    [0, 0, 0, 1, 1],
 	    [0, 0, 1, 1, 1],
-	    [1, 0, 0, 1, 1],
 	    [0, 0, 1, 0, 0]]
 
 	big_blocked_map = [
@@ -624,8 +624,8 @@ if __name__ == "__main__":
 		path_search_time = time.time()
 	end_time = time.time()
 	print(path)
-	# p.draw_path(path)
-	# cv2.waitKey(0)
+	p.draw_path(path)
+	cv2.waitKey(0)
 
 	Total_time = end_time - start_time
 	time_for_heuristics = heuristics_time - start_time
