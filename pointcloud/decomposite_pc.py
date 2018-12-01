@@ -7,6 +7,8 @@ def append_offset(points, row_size, col_size):
     points = np.squeeze(np.take(points, inlier_row_idx, axis=0))
     inlier_col_idx = np.where((points[:, 1] > 0) & (points[:, 1] < col_size))
     points = np.squeeze(np.take(points, inlier_col_idx, axis=0))
+    if points.shape[0] < 10:
+        return [], []
     #print(points)
     pts_row = points[:, 0]
     pts_col = points[:, 1]

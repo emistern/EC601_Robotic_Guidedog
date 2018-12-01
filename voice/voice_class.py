@@ -10,7 +10,8 @@ class VoiceInterface(object):
                      hardleft_file = 'hardleft.mp3',
                      hardright_file = 'hardright.mp3',
                      STOP_file = 'STOP.mp3',
-                     noway_file = 'noway.mp3'):
+                     noway_file = 'noway.mp3',
+                     wait_file = 'wait.mp3'):
     self.straight_file= straight_file
     self.turnleft_file= turnleft_file
     self.turnright_file=turnright_file
@@ -18,9 +19,18 @@ class VoiceInterface(object):
     self.hardright_file=hardright_file
     self.STOP_file=STOP_file
     self.noway_file=noway_file
+    self.wait_file = wait_file
 
     self.prev_path = None
     self.count=0
+
+    self.play_dict = {
+          0: self.straight_file,
+          1: self.turnright_file,
+          -1: self.turnleft_file,
+          3: self.noway_file,
+          2 : self.wait_file
+      }
 
   def play(self, pat, width):
     b=10
@@ -91,6 +101,11 @@ class VoiceInterface(object):
         play(self.straight_file)
 
     self.prev_path = step
+
+  def play_on_edge(self, direc):
+    if direc != self.prev_path:
+        play(self.play_dict[direc])
+    self.prev_path = direc
 
   def play3(self, pat, width):
     center=width/2-0.5

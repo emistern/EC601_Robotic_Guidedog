@@ -10,8 +10,10 @@ from realsense.rs_depth_util import depth_worker
 from get_frame import get_frame
 import sys
 sys.path.append("./pointcloud/")
+sys.path.append("./postprocess/")
 from pointcloud.get_pointcloud import get_pointcloud_frame
 from pointcloud.pipeline_pc import pointcloud_pipeline
+from postprocess.fuzzyfilter import FuzzyFilter
 import argparse
 
 
@@ -59,12 +61,24 @@ def ModuleWrapper(args):
 
     # initialize the camera frame iterator
     if use_bag:
-        img_gen = get_pointcloud_frame("./realsense/dense.bag")
+        img_gen = get_pointcloud_frame("./realsense/sparse.bag")
     else:
         img_gen = get_frame()
 
     # instantiate an interface
-    interface = voice_class.VoiceInterface(straight_file = 'voice/straight.mp3',
+    if args.stereo:
+        interface = voice_class.VoiceInterface(
+            straight_file ='sounds/steel_bell.wav',
+            turnleft_file = 'sounds/left.wav',
+            turnright_file = 'sounds/right.wav',
+            hardleft_file = 'voice/hardleft.mp3',
+            hardright_file = 'voice/hardright.mp3',
+            STOP_file = 'voice/STOP.mp3',
+            noway_file = 'sounds/guitar.wav',
+            wait_file = 'sounds/ice_bell.wav'
+        )
+    else:
+        interface = voice_class.VoiceInterface(straight_file = 'voice/straight.mp3',
                                             turnleft_file = 'voice/turnleft.mp3',
                                             turnright_file = 'voice/turnright.mp3',
                                             hardleft_file = 'voice/hardleft.mp3',
@@ -78,6 +92,8 @@ def ModuleWrapper(args):
     # instruction temporal filter
     inst_filt = InstructionFilter()
 
+    fuzzy_filter = FuzzyFilter(size_col, num_row, num_col, 0.75, roi_mtr)
+
     while(True):
         if timing:
             print("------ frame", frame_count," ------")
@@ -85,7 +101,10 @@ def ModuleWrapper(args):
         target = None
 
         # fetch an image from camera
-        dep_mat, pointcloud = next(img_gen)
+        if show:
+            col_mat, dep_mat, pointcloud = next(img_gen)
+        else:
+            _, dep_mat, pointcloud = next(img_gen)
 
         t_map_s = time.time() # mapping time start
 
@@ -100,7 +119,7 @@ def ModuleWrapper(args):
                                                             ds_rate=downsample_rate,
                                                             row_num = num_row, col_num = num_col, 
                                                             row_size = size_row, col_size = size_col, 
-                                                            show=show, cheb=use_chebyshev, inflate_diag=inflate_diag,
+                                                            show=False, cheb=use_chebyshev, inflate_diag=inflate_diag,
                                                             timing=timing)
 
         t_map_e = time.time()  # mapping time end
@@ -144,13 +163,17 @@ def ModuleWrapper(args):
             pass # put astar path findind and drawing here
             a_star_plan.draw_path(path)
 
-        #dw.show_depth_matrix("", dep_mat)
+        if show:
+            dw.show_depth_matrix("depth image", cv2.resize(dep_mat, (640, 480)))
+            cv2.imshow("color image", cv2.resize(col_mat, (640, 480)))
 
         t_ds_ed = time.time() # displaying time end
                     
         roi_sqr = int(roi_mtr / (size_col / num_row))
 
-        if len(path) > 0:
+        if args.fuzzy:
+            direc = fuzzy_filter.update(path)
+        elif len(path) > 0:
             direc = path_filter.compute_weighted_average(path, num_row, num_col, roi_sqr, thresh=args.path_thresh)
             direc = inst_filt.update(direc)
         else:
@@ -166,10 +189,11 @@ def ModuleWrapper(args):
             cv2.imshow("direction", arrow_l)
         elif (direc == []):
             cv2.imshow("direction", stop_sn)
+            direc = 3
         elif (direc == 2):
             cv2.imshow("direction", wait_sn)
         if use_voice:
-            interface.play2([direc])
+            interface.play_on_edge(direc)
 
         if timing:
             map_time = t_map_e - t_map_s
@@ -221,6 +245,7 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input", help="press enter for each frame", default=False, type=bool)
     parser.add_argument("-f", "--frames", help="how many frames you want to play", default=0, type=int)
     parser.add_argument("-r", "--downsamplerate", help="downsampling rate", default=60, type=int)
+    parser.add_argument("-s", "--stereo", help="if use stereo sound", default=False, type=bool)
     parser.add_argument("--row", help="number of rows in map", default=26, type=int)
     parser.add_argument("--col", help="number of columns in map", default=39, type=int)
     parser.add_argument("--row_size", help="size of each row in meters", default=6, type=int)
@@ -229,6 +254,7 @@ if __name__ == "__main__":
     parser.add_argument("--astar", help="wether use astar path planning algorithm", default=False, type=bool)
     parser.add_argument("--path_thresh", help="threshold for path filter", default=0.8, type=float)
     parser.add_argument("--inflate_diag", default=False, type=bool)
+    parser.add_argument("--fuzzy", default=False, type=bool)
     args = parser.parse_args()
     
     print("-------- PRINT ARGUMENTS --------")
