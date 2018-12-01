@@ -74,4 +74,4 @@ def get_frame():
         depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
         #images = np.hstack((bg_removed, depth_colormap))
 
-        yield np.asanyarray(aligned_depth_frame.get_data()), points_array
+        yield color_image, depth_image, points_array

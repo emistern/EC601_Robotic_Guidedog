@@ -59,7 +59,7 @@ def ModuleWrapper(args):
 
     # initialize the camera frame iterator
     if use_bag:
-        img_gen = get_pointcloud_frame("./realsense/open.bag")
+        img_gen = get_pointcloud_frame("./realsense/sparse.bag")
     else:
         img_gen = get_frame()
 
@@ -97,7 +97,10 @@ def ModuleWrapper(args):
         target = None
 
         # fetch an image from camera
-        dep_mat, pointcloud = next(img_gen)
+        if show:
+            col_mat, dep_mat, pointcloud = next(img_gen)
+        else:
+            _, dep_mat, pointcloud = next(img_gen)
 
         t_map_s = time.time() # mapping time start
 
@@ -112,7 +115,7 @@ def ModuleWrapper(args):
                                                             ds_rate=downsample_rate,
                                                             row_num = num_row, col_num = num_col, 
                                                             row_size = size_row, col_size = size_col, 
-                                                            show=show, cheb=use_chebyshev, inflate_diag=inflate_diag,
+                                                            show=False, cheb=use_chebyshev, inflate_diag=inflate_diag,
                                                             timing=timing)
 
         t_map_e = time.time()  # mapping time end
@@ -156,7 +159,9 @@ def ModuleWrapper(args):
             pass # put astar path findind and drawing here
             a_star_plan.draw_path(path)
 
-        #dw.show_depth_matrix("", dep_mat)
+        if show:
+            dw.show_depth_matrix("depth image", cv2.resize(dep_mat, (640, 480)))
+            cv2.imshow("color image", cv2.resize(col_mat, (640, 480)))
 
         t_ds_ed = time.time() # displaying time end
                     

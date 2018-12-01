@@ -109,4 +109,7 @@ def pointcloud_pipeline(pc_raw,
         target = None
         facing_wall = False
 
+    if show:
+        show_points2D(obs_pts)
+        
     return grid, target, facing_wall
