@@ -10,8 +10,10 @@ from realsense.rs_depth_util import depth_worker
 from get_frame import get_frame
 import sys
 sys.path.append("./pointcloud/")
+sys.path.append("./postprocess/")
 from pointcloud.get_pointcloud import get_pointcloud_frame
 from pointcloud.pipeline_pc import pointcloud_pipeline
+from postprocess.fuzzyfilter import FuzzyFilter
 import argparse
 
 
@@ -90,6 +92,8 @@ def ModuleWrapper(args):
     # instruction temporal filter
     inst_filt = InstructionFilter()
 
+    fuzzy_filter = FuzzyFilter(size_col, num_row, num_col, 0.75, roi_mtr)
+
     while(True):
         if timing:
             print("------ frame", frame_count," ------")
@@ -167,7 +171,9 @@ def ModuleWrapper(args):
                     
         roi_sqr = int(roi_mtr / (size_col / num_row))
 
-        if len(path) > 0:
+        if args.fuzzy:
+            direc = fuzzy_filter.update(path)
+        elif len(path) > 0:
             direc = path_filter.compute_weighted_average(path, num_row, num_col, roi_sqr, thresh=args.path_thresh)
             direc = inst_filt.update(direc)
         else:
@@ -248,6 +254,7 @@ if __name__ == "__main__":
     parser.add_argument("--astar", help="wether use astar path planning algorithm", default=False, type=bool)
     parser.add_argument("--path_thresh", help="threshold for path filter", default=0.8, type=float)
     parser.add_argument("--inflate_diag", default=False, type=bool)
+    parser.add_argument("--fuzzy", default=False, type=bool)
     args = parser.parse_args()
     
     print("-------- PRINT ARGUMENTS --------")
