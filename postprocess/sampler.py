@@ -68,7 +68,7 @@ class StepSampler(object):
 
 if __name__ == "__main__":
 
-    s = StepSampler(4, 26, 0.5, 1.5)
+    s = StepSampler(4, 26, 0.75, 1.5)
     sample = s.gen_sample()
     for i in range(sample.shape[0]):
         plt.plot(sample[i ,:])

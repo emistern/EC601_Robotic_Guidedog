@@ -111,5 +111,8 @@ def pointcloud_pipeline(pc_raw,
 
     if show:
         show_points2D(obs_pts)
+        show_pointcloud(filt_pts)
+        show_pointcloud(crop_pts)
+
         
     return grid, target, facing_wall

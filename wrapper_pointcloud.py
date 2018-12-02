@@ -119,7 +119,7 @@ def ModuleWrapper(args):
                                                             ds_rate=downsample_rate,
                                                             row_num = num_row, col_num = num_col, 
                                                             row_size = size_row, col_size = size_col, 
-                                                            show=False, cheb=use_chebyshev, inflate_diag=inflate_diag,
+                                                            show=show, cheb=use_chebyshev, inflate_diag=inflate_diag,
                                                             timing=timing)
 
         t_map_e = time.time()  # mapping time end
