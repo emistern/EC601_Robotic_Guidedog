@@ -44,6 +44,8 @@ def ModuleWrapper(args):
     disp_time_buf = 0
     if num_frames > 0: # if run a finite number of frames
         time_record = np.zeros((num_frames, 2)) # init a buffer for storing running time
+    if args.count_grid:
+        grid_count = 0
 
     # arrow images
     arrow_f = cv2.imread("./images/arrow_f.png")
@@ -61,7 +63,7 @@ def ModuleWrapper(args):
 
     # initialize the camera frame iterator
     if use_bag:
-        img_gen = get_pointcloud_frame("./realsense/sparse.bag")
+        img_gen = get_pointcloud_frame("./realsense/dense.bag")
     else:
         img_gen = get_frame()
 
@@ -119,10 +121,16 @@ def ModuleWrapper(args):
                                                             ds_rate=downsample_rate,
                                                             row_num = num_row, col_num = num_col, 
                                                             row_size = size_row, col_size = size_col, 
-                                                            show=False, cheb=use_chebyshev, inflate_diag=inflate_diag,
-                                                            timing=timing)
+                                                            show=show, cheb=use_chebyshev, inflate_diag=inflate_diag,
+                                                            timing=timing, no_mask=args.no_mask, no_inflate=args.no_inflate)
 
         t_map_e = time.time()  # mapping time end
+
+        if args.count_grid:
+            # count the number of 1s in grid map
+            count = np.sum(np.matrix(map_depth))
+            grid_count += count
+            print("number of 1s in grid map: ", count, "; total suqare: ", num_row*num_col, "; percentage: ", count/(num_row*num_col))
 
         # perform path planning on the map
         t_plan_s = time.time() # planning time start
@@ -208,12 +216,15 @@ def ModuleWrapper(args):
 
         cv2.waitKey(20)
 
-        if(num_frames != 0 and frame_count >= num_frames):   # check limited number for playing
+        if(num_frames != 0 and frame_count >= num_frames-1):   # check limited number for playing
             print("------ Print Running Stats ------")
             print("Total frame number:    ", num_frames)
             print("Average planning time: ", plan_time_buf / num_frames,  " standard deviation: ", np.std(time_record[:, 1]))
             print("Average mapping time:  ", map_time_buf  / num_frames,  " standard deviation: ", np.std(time_record[:, 0]))
             #print("Average display time:  ", disp_time_buf / num_frames)
+            if args.count_grid:
+                avr_count = grid_count / num_frames
+                print("average 1s in grid map: ", avr_count, "; total suqare: ", num_row*num_col, "; percentage: ", avr_count/(num_row*num_col))
             quit()
         else:
             if timing and num_frames > 0:
@@ -244,8 +255,8 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--oneshot", help="one shot for testing", default=False, type=bool)
     parser.add_argument("-i", "--input", help="press enter for each frame", default=False, type=bool)
     parser.add_argument("-f", "--frames", help="how many frames you want to play", default=0, type=int)
-    parser.add_argument("-r", "--downsamplerate", help="downsampling rate", default=60, type=int)
-    parser.add_argument("-s", "--stereo", help="if use stereo sound", default=False, type=bool)
+    parser.add_argument("-r", "--downsamplerate", help="downsampling rate", default=120, type=int)
+    parser.add_argument("-s", "--stereo", help="if use stereo sound", default=True, type=bool)
     parser.add_argument("--row", help="number of rows in map", default=26, type=int)
     parser.add_argument("--col", help="number of columns in map", default=39, type=int)
     parser.add_argument("--row_size", help="size of each row in meters", default=6, type=int)
@@ -253,8 +264,11 @@ if __name__ == "__main__":
     parser.add_argument("--roi", help="region of interest in meters", default=1.5, type=float)
     parser.add_argument("--astar", help="wether use astar path planning algorithm", default=False, type=bool)
     parser.add_argument("--path_thresh", help="threshold for path filter", default=0.8, type=float)
+    parser.add_argument("--no_mask", default=False)
+    parser.add_argument("--no_inflate", default=False)
     parser.add_argument("--inflate_diag", default=False, type=bool)
     parser.add_argument("--fuzzy", default=False, type=bool)
+    parser.add_argument("--count_grid", default=False, type=bool)
     args = parser.parse_args()
     
     print("-------- PRINT ARGUMENTS --------")

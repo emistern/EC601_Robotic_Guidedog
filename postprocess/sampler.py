@@ -46,7 +46,7 @@ class StepSampler(object):
         return sample
 
     def compute_decay_mask(self):
-        return self.compute_exp_weights(self.num_step, 1)
+        return self.compute_exp_weights(self.num_step, 3)
 
     def compute_gaussian(self, mu, sigma, x):
         # compute value of a gaussian function at some point
@@ -68,7 +68,7 @@ class StepSampler(object):
 
 if __name__ == "__main__":
 
-    s = StepSampler(4, 26, 0.5, 1.5)
+    s = StepSampler(4, 26, 0.75, 1.5)
     sample = s.gen_sample()
     for i in range(sample.shape[0]):
         plt.plot(sample[i ,:])

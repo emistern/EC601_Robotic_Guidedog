@@ -4,6 +4,7 @@ import numpy as np
 import skfuzzy as fuzzy
 from sampler import StepSampler
 from inst_filter2d import InstructionFilter2D
+from correlate_filter import CorrelateFilter4Channels
 import matplotlib.pyplot as plt
 
 class FuzzyFilter(object):
@@ -32,6 +33,7 @@ class FuzzyFilter(object):
         self.samples = sampler.gen_sample()
         self.decay_mask = sampler.compute_decay_mask()
         self.inst_filter = InstructionFilter2D(self.num_step)
+        self.corr_filter = CorrelateFilter4Channels(self.num_step)
 
     def update(self, path, show=False):
 
@@ -65,7 +67,8 @@ class FuzzyFilter(object):
             's': np.multiply(s, self.decay_mask)
         }
 
-        comm = self.inst_filter.update(sig_dict)
+        #comm = self.inst_filter.update(sig_dict)
+        comm = self.corr_filter.update(sig_dict)
 
         if show:
             plt.show()
@@ -101,4 +104,4 @@ if __name__ == "__main__":
     f = FuzzyFilter(4, 26, 39, 0.5, 1.5)
     path = [19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 19, 19, 19, 19, 19, 19, 19, 19, 19]
     path1 = [19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 19, 19, 19]
-    f.update(path1)
+    f.update(path1, True)

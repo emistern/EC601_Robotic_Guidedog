@@ -14,7 +14,7 @@ def pointcloud_pipeline(pc_raw,
                         row_num = 14, col_num = 11, 
                         row_size = 6, col_size = 10, 
                         show=True, cheb=True, inflate_diag=False,
-                        timing=True):
+                        timing=True, no_mask=False, no_inflate=False):
     
     """
     The Point Cloud Map Builder Pipeline
@@ -90,14 +90,18 @@ def pointcloud_pipeline(pc_raw,
     t_ths_st = time.time()
 
     grid = thresholding_np(grid)      # thresholding the grid map(turn into bit map)
-    grid = inflate(grid, row_num, col_num, diag=inflate_diag)
+    
+    if not no_inflate:
+        grid = inflate(grid, row_num, col_num, diag=inflate_diag)
     
     t_ths_ed = time.time()
     if timing:
         print("Thresholding in time: ", t_ths_ed - t_ths_st, " seconds")
-    grid_mask = gen_mask(row_num, col_num)
-
-    grid = grid + grid_mask
+    
+    if not no_mask:
+        grid_mask = gen_mask(row_num, col_num)
+    
+        grid = grid + grid_mask
     ovlp_x, ovlp_y = np.where(grid > 1)
     for i in range(len(ovlp_x)):
         grid[ovlp_x[i], ovlp_y[i]] = 1
@@ -111,5 +115,8 @@ def pointcloud_pipeline(pc_raw,
 
     if show:
         show_points2D(obs_pts)
+        show_pointcloud(filt_pts)
+        show_pointcloud(crop_pts)
+
         
     return grid, target, facing_wall
