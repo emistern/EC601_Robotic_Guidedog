@@ -63,7 +63,7 @@ def ModuleWrapper(args):
 
     # initialize the camera frame iterator
     if use_bag:
-        img_gen = get_pointcloud_frame("./realsense/sparse.bag")
+        img_gen = get_pointcloud_frame("./realsense/dense.bag")
     else:
         img_gen = get_frame()
 

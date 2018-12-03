@@ -46,7 +46,7 @@ class StepSampler(object):
         return sample
 
     def compute_decay_mask(self):
-        return self.compute_exp_weights(self.num_step, 1)
+        return self.compute_exp_weights(self.num_step, 3)
 
     def compute_gaussian(self, mu, sigma, x):
         # compute value of a gaussian function at some point
