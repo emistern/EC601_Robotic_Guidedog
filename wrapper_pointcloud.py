@@ -241,8 +241,8 @@ def ModuleWrapper(args):
                 frame_count += 1
 
         if(args.monitor):
-            send_data = np.array(cv2.resize(col_mat, (160, 120))).tolist()
-            image_server.publish(send_data)
+            send_data = np.array(cv2.resize(col_mat, (320, 240)))
+            image_server.publish_encode(send_data)
 
         if(args.input):   # check input
             input()

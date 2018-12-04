@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import paho.mqtt.client as mqtt
+from imgutil import encodejpg
 
 class ImageServer(object):
 
@@ -10,7 +11,7 @@ class ImageServer(object):
 
     def __init__(self):
 
-        broker_address="iot.eclipse.org"
+        broker_address="broker.hivemq.com"
         self.topic_color = "RoboticGuideDog/image/color"
 
         self.client = mqtt.Client()
@@ -22,7 +23,13 @@ class ImageServer(object):
     def publish(self, image):
 
         # publish an image using the server
-        self.client.publish(self.topic_color, json.dumps(image))
+        self.client.publish(self.topic_color, json.dumps(image.tolist()))
+
+    def publish_encode(self, image):
+
+        text = encodejpg(image)
+
+        self.client.publish(self.topic_color, text)
 
     def on_msg_debug(self, client, user, msg):
 
