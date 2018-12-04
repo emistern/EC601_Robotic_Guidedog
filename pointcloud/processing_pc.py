@@ -27,7 +27,7 @@ def filt_pointcloud(pc):
 
     # remove radius outliers
     pc_filtered, _ = radius_outlier_removal(pc,
-            nb_points=5, radius=0.07)
+            nb_points=3, radius=0.05)
 
     return pc_filtered
 

@@ -308,32 +308,45 @@ if __name__ == "__main__":
 
     debug_map = [
         [0., 0., 0., 0., 0., 0., 0., 0., 0.],
-        [0., 0., 0., 1., 1., 0., 0., 0., 0.],
-        [0., 0., 1., 1., 1., 0., 0., 0., 0.],
-        [0., 0., 1., 1., 0., 0., 1., 0., 0.],
-        [0., 1., 1., 1., 1., 1., 1., 0., 0.],
-        [0., 1., 1., 1., 1., 1., 0., 0., 0.],
-        [0., 1., 1., 1., 1., 0., 0., 0., 0.],
-        [0., 0., 0., 0., 0., 0., 0., 0., 0.],
+        [0., 0., 0., 1., 0., 0., 0., 0., 0.],
+        [0., 0., 1., 1., 0., 0., 0., 0., 0.],
+        [0., 0., 1., 0., 0., 0., 1., 0., 0.],
+        [0., 1., 1., 0., 0., 1., 1., 0., 0.],
+        [0., 1., 1., 0., 0., 1., 0., 0., 0.],
+        [0., 1., 1., 0., 0., 0., 0., 0., 0.],
+        [0., 0., 0., 0., 1., 0., 0., 0., 0.],
         [0., 0., 0., 0., 0., 0., 0., 0., 0.],
         [0., 0., 0., 0., 0., 0., 0., 0., 0.],
         [0., 0., 0., 0., 0., 0., 0., 0., 0.],
         [0., 0., 0., 0., 0., 0., 0., 0., 0.]
         ]
-    p = path_planner(debug_map)
 
+    big_maper = [
+        [0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [0, 0, 1, 1, 1],
+        [1, 0, 0, 1, 1],
+        [0, 0, 1, 0, 0]]
+
+    start_time = time.time()
+    p = path_planner(big_maper)
     p.gen_nodes()
-    print(p.nodes)
+    # print(p.nodes)
+    start_graph = time.time()
     p.gen_paths()
+    path_graph_time = time.time()
     p.gen_buffer_mats()
     p.plan()
-    target = p.find_default_target()
+    target = p.find_default_target(0)
     if len(target) > 0:
-        print(p.paths)
-        print(p.values)
-        print(p.prevs)
-        path = p.find_optimal_path([3,4])
-        p.draw_path(path)
+        # print(p.paths)
+        # print(p.values)
+        # print(p.prevs)
+        path = p.find_optimal_path(target)
+        end_time = time.time()
+        # p.draw_path(path)
 
-        cv2.waitKey(0)
+        # cv2.waitKey(0)
+        print("Total TIme: ", end_time - start_time)
+        print("Graph TIme: ", path_graph_time - start_graph)
                       

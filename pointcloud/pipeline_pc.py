@@ -14,7 +14,7 @@ def pointcloud_pipeline(pc_raw,
                         row_num = 14, col_num = 11, 
                         row_size = 6, col_size = 10, 
                         show=True, cheb=True, inflate_diag=False,
-                        timing=True):
+                        timing=True, no_mask=False, no_inflate=False):
     
     """
     The Point Cloud Map Builder Pipeline
@@ -57,6 +57,10 @@ def pointcloud_pipeline(pc_raw,
     if timing:
         print("Cropping in: ", t_cp_ed - t_cp_st, " seconds")
 
+    # check empty points list: totally empty space
+    if (len(crop_pts) <= 10):
+        return  gen_mask(row_num, col_num), None, False
+
     obs_pts = cast_points(crop_pts)       # Cast 3D points onto 2D plane
 
     if cheb:
@@ -66,17 +70,17 @@ def pointcloud_pipeline(pc_raw,
 
     pts_row, pts_col = append_offset(obs_pts, row_size, col_size)  # prepare for decomposite
 
+    if (len(pts_row) <= 10):
+        return  gen_mask(row_num, col_num), None, False
+
     mask_row, mask_col = compute_mask(row_num, col_num, row_size, col_size)  # prepare for decomposite
 
     grid = decomp_np(pts_row, pts_col, row_num, col_num, mask_row, mask_col) # build the grid occupency map
-    #grid_ = decomp(pts_row, pts_col, row_num, col_num, mask_row, mask_col) # build the grid occupency map
 
     t_dcp_ed = time.time()
     if timing:
         print("Decomposition in: ", t_dcp_ed - t_dcp_st, " seconds")
-        #print(grid)
-        #print(grid_)
-        #assert grid.any() == grid_.any()
+
 
     if cheb:
         target = find_target(center, row_size, mask_row, mask_col)  # find the corresponding suqare in grid map with chebyshev center
@@ -86,14 +90,18 @@ def pointcloud_pipeline(pc_raw,
     t_ths_st = time.time()
 
     grid = thresholding_np(grid)      # thresholding the grid map(turn into bit map)
-    #grid = inflate(grid, row_num, col_num, diag=inflate_diag)
+    
+    if not no_inflate:
+        grid = inflate(grid, row_num, col_num, diag=inflate_diag)
     
     t_ths_ed = time.time()
     if timing:
         print("Thresholding in time: ", t_ths_ed - t_ths_st, " seconds")
-    grid_mask = gen_mask(row_num, col_num)
-
-    #grid = grid + grid_mask
+    
+    if not no_mask:
+        grid_mask = gen_mask(row_num, col_num)
+    
+        grid = grid + grid_mask
     ovlp_x, ovlp_y = np.where(grid > 1)
     for i in range(len(ovlp_x)):
         grid[ovlp_x[i], ovlp_y[i]] = 1
@@ -105,4 +113,10 @@ def pointcloud_pipeline(pc_raw,
         target = None
         facing_wall = False
 
+    if show:
+        show_points2D(obs_pts)
+        show_pointcloud(filt_pts)
+        show_pointcloud(crop_pts)
+
+        
     return grid, target, facing_wall
