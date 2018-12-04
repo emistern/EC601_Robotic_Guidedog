@@ -65,10 +65,11 @@ class ModuleWrapper(object):
             map_depth = self.squeeze.quantilize(squeezed_matrix, n_sec=nun_section, max_per_occ=max_per_occ)
             t_qu_e = time.time()
 
-            # Use YOLO to detect the color image.
-            coord = darknet.detect(net, meta, color_mat)
-            print('length is ',len(coord))
-            print(coord) 
+            if use_darknet:
+                # Use YOLO to detect the color image.
+                coord = darknet.detect(net, meta, color_mat)
+                print('length is ',len(coord))
+                print(coord) 
             
             target_door = []
             # find the coordinate in map with depth matrix and bounding box

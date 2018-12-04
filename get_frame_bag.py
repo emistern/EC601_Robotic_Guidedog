@@ -6,7 +6,7 @@ import os.path
 
 def get_frame():
 
-    Use_bag_file = 0
+    Use_bag_file = 1
 
     if(Use_bag_file):
         # Create object for parsing command-line options

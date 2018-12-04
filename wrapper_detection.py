@@ -7,6 +7,7 @@ from realsense.rs_depth_util import *
 from get_frame_bag import *
 from door_coord import find_door
 from tinyYOLOv2 import obj_det
+from postprocess import fuzzyfilter_detect
 import argparse
 
 use_darknet = False
@@ -45,6 +46,8 @@ class ModuleWrapper(object):
         # initialize the camera frame iterator
         img_gen = get_frame()
 
+        f = fuzzyfilter_detect.FuzzyFilter( 5.25, 10, 7, 0.5, 3)
+
         if use_tensor:
             t = obj_det.obj_det()
         # instantiate an interface
@@ -81,15 +84,15 @@ class ModuleWrapper(object):
                 coord = t.detect_frame(color_mat)
             
             target_door = []
-
-            # find the coordinate in map with depth matrix and bounding box
-            if(len(coord)!=0):
-                cv2.rectangle(color_mat,(coord[0],coord[2]),(coord[1],coord[3]),(0,255,0),3)
-                target_door = find_door( dep_mat, coord, 500 , nun_section)
-                print(target_door)
-                if(target_door[0]>9):
-                    target_door[0]=9
-                map_depth[target_door[0], target_door[1]] = 0
+            if use_tensor:
+                # find the coordinate in map with depth matrix and bounding box
+                if(len(coord)!=0):
+                    cv2.rectangle(color_mat,(coord[0],coord[2]),(coord[1],coord[3]),(0,255,0),3)
+                    target_door = find_door( dep_mat, coord)
+                    print(target_door)
+                    if(target_door[0]>9):
+                        target_door[0]=9
+                    map_depth[target_door[0], target_door[1]] = 0
 
             cv2.imshow( "Display window", color_mat);
             
@@ -97,15 +100,17 @@ class ModuleWrapper(object):
             t_plan_s = time.time()
             print(map_depth)
             p = path_planner.path_planner(map_depth)
-            p.gen_nodes()
-            p.gen_paths()
-            p.gen_buffer_mats()
-            p.plan()
+            p.gen_nodes()   # path planner initializetion
+            p.gen_paths()   # path planner initializetion
+            p.gen_buffer_mats() # path planner initializetion
+            p.plan()        # path planner planning
 
-            if target_door is not None:
+            print("target door is ",target_door)
+
+            if len(target_door) != 0:
                 target = target_door
             else:
-                target = p.find_default_target()
+                target = p.find_default_target(0)
 
             if len(target) > 0:
                 path = p.find_optimal_path(target)
@@ -116,8 +121,11 @@ class ModuleWrapper(object):
                 print("plan time" + str(t_plan_e - t_plan_s))
 
                 cv2.waitKey(200)
-                
-                #interface.play1(path,nun_section)
+                print(path)
+
+                print("Filter ",f.update(path))
+
+                interface.play4(path,nun_section)
             else:
                 #interface.play1([],nun_section)
                 print("no path")
