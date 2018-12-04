@@ -89,47 +89,12 @@ class VoiceInterface(object):
         self.prev_path=10
         return
     step=pat[0]
-    if step == -1 and step!=self.prev_path:
-        play(self.turnleft_file)
-    if step == -2 and step!=self.prev_path:
-        play(self.hardleft_file)
-    if step == 1 and step!=self.prev_path:
-        play(self.turnright_file)
-    if step == 2 and step!=self.prev_path:
-        play(self.hardright_file)
-    if step == 0 and step!=self.prev_path:
-        play(self.straight_file)
 
-    self.prev_path = step
-
-  def play_on_edge(self, direc):
-    if direc != self.prev_path:
-        play(self.play_dict[direc])
-    self.prev_path = direc
-
-  def play3(self, pat, width):
-    center=width/2-0.5
-    if len(pat)==0:
-        play(self.noway_file)
-        self.prev_path=10
-        return
-    path=[]
-    path.append(pat[0]-center)
-    for i in range (1,len(pat)):
-        path.append(pat[i]-pat[i-1])
-    print(path)
-    step=path[0]
     if step == -1 and (step!=self.prev_path or self.count>=5):
         play(self.turnleft_file)
         self.count=0
-    if step == -2 and (step!=self.prev_path or self.count>=5):
-        play(self.hardleft_file)
-        self.count=0
     if step == 1 and (step!=self.prev_path or self.count>=5):
         play(self.turnright_file)
-        self.count=0
-    if step == 2 and (step!=self.prev_path or self.count>=5):
-        play(self.hardright_file)
         self.count=0
     if step == 0 and (step!=self.prev_path or self.count>=5):
         play(self.straight_file)
@@ -137,6 +102,13 @@ class VoiceInterface(object):
     if step == self.prev_path:
         self.count+=1
     self.prev_path = step
+
+    self.prev_path = step
+
+  def play_on_edge(self, direc):
+    if direc != self.prev_path:
+        play(self.play_dict[direc])
+    self.prev_path = direc
 
 
   def play4(self, pat, width):
@@ -154,12 +126,7 @@ class VoiceInterface(object):
         play(self.noway_file)
         self.prev_path=10
         return
-    if len(path)==1:
-        step=path[0]
-    if len(path)==2:
-        step=path[0]*0.8+path[1]*0.2
-    if len(path)==3:
-        step=path[0]*0.7+path[1]*0.2+path[2]*0.1
+    step=path[0]
     if step == -1 and (step!=self.prev_path or self.count>=5):
         play(self.turnleft_file)
         self.count=0

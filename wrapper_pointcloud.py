@@ -11,9 +11,11 @@ from get_frame import get_frame
 import sys
 sys.path.append("./pointcloud/")
 sys.path.append("./postprocess/")
+sys.path.append("./monitor/")
 from pointcloud.get_pointcloud import get_pointcloud_frame
 from pointcloud.pipeline_pc import pointcloud_pipeline
 from postprocess.fuzzyfilter import FuzzyFilter
+from monitor.image_server import ImageServer
 import argparse
 
 
@@ -96,6 +98,9 @@ def ModuleWrapper(args):
 
     fuzzy_filter = FuzzyFilter(size_col, num_row, num_col, 0.75, roi_mtr)
 
+    if args.monitor:
+        image_server = ImageServer()
+
     while(True):
         if timing:
             print("------ frame", frame_count," ------")
@@ -106,7 +111,7 @@ def ModuleWrapper(args):
         if show:
             col_mat, dep_mat, pointcloud = next(img_gen)
         else:
-            _, dep_mat, pointcloud = next(img_gen)
+            col_mat, dep_mat, pointcloud = next(img_gen)
 
         t_map_s = time.time() # mapping time start
 
@@ -235,13 +240,16 @@ def ModuleWrapper(args):
                 time_record[frame_count, 1] = plan_time
                 frame_count += 1
 
+        if(args.monitor):
+            send_data = np.array(cv2.resize(col_mat, (320, 240)))
+            image_server.publish_encode(send_data)
+
         if(args.input):   # check input
             input()
 
         if(args.oneshot):  # check oneshot
             quit()
 
-        
 
 if __name__ == "__main__":
 
@@ -269,6 +277,7 @@ if __name__ == "__main__":
     parser.add_argument("--inflate_diag", default=False, type=bool)
     parser.add_argument("--fuzzy", default=False, type=bool)
     parser.add_argument("--count_grid", default=False, type=bool)
+    parser.add_argument("--monitor", default=False)
     args = parser.parse_args()
     
     print("-------- PRINT ARGUMENTS --------")
