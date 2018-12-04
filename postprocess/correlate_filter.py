@@ -65,7 +65,7 @@ class CorrelateFilter4Channels(object):
             max_val_dict[sym] = max(sig)
 
         symbol = max(corr_dict.keys(), key=(lambda key: max_val_dict[key]))
-        print(corr_dict)
+        #print(corr_dict)
         if max_val_dict[symbol] > self.thresh:
             return self.return_dict[symbol]
         else:
