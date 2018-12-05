@@ -4,19 +4,16 @@ from voice import voice_class
 import time
 import numpy as np
 from realsense.rs_depth_util import *
-from get_frame_bag import *
-from door_coord import find_door
+import sys
+sys.path.append("./tinyYOLOv2/")
+from tinyYOLOv2.get_frame_bag import *
+from tinyYOLOv2.door_coord import find_door
 from tinyYOLOv2 import obj_det
 from postprocess import fuzzyfilter_detect
 import argparse
 
-use_darknet = False
 use_tensor = True
-
-if use_darknet:
-    import sys
-    sys.path.append("/home/yly/darknet")
-    from darknet_interface import *
+Use_bag_file = True
 
 class ModuleWrapper(object):
 
@@ -35,16 +32,8 @@ class ModuleWrapper(object):
         #dw = depth_worker()
         #dw.show_depth_matrix(dep_mat_fn)
 
-        if use_darknet:
-            # init darknet
-            darknet = DarknetInterface()
-            net = darknet.load_net(b"/home/yly/darknet/cfg/yolov3.cfg", b"/home/yly/darknet/yolov3.weights", 0)
-            meta = darknet.load_meta(b"/home/yly/darknet/data/coco.data")
-
-
-
         # initialize the camera frame iterator
-        img_gen = get_frame()
+        img_gen = get_frame(Use_bag_file)
 
         f = fuzzyfilter_detect.FuzzyFilter( 5.25, 10, 7, 0.5, 3)
 
@@ -74,16 +63,11 @@ class ModuleWrapper(object):
             map_depth = self.squeeze.quantilize(squeezed_matrix, n_sec=nun_section, max_per_occ=max_per_occ)
             t_qu_e = time.time()
 
-            if use_darknet:
-                # Use YOLO to detect the color image.
-                coord = darknet.detect(net, meta, color_mat)
-                print('length is ',len(coord))
-                print(coord) 
-
             if use_tensor:
-                coord = t.detect_frame(color_mat)
+                coord = t.detect_frame(color_mat,use_bag = Use_bag_file)
             
             target_door = []
+
             if use_tensor:
                 # find the coordinate in map with depth matrix and bounding box
                 if(len(coord)!=0):
@@ -129,7 +113,7 @@ class ModuleWrapper(object):
             else:
                 #interface.play1([],nun_section)
                 print("no path")
-            input()
+            #input()
 
 if __name__ == "__main__":
 

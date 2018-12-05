@@ -1,6 +1,6 @@
 import numpy as np
 
-def find_door( view_in_3D, coord, slice_distance = 500, numsec = 7, num_slice = 26,  n_sec = 39):
+def find_door( view_in_3D, coord, slice_distance = 500, numsec = 7):
 
     # The input coord is in shape of[x_left,x_right,y_lower,y_upper]
     distance_array = view_in_3D

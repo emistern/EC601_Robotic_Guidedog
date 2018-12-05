@@ -12,13 +12,14 @@ import sys
 sys.path.append("./pointcloud/")
 sys.path.append("./postprocess/")
 sys.path.append("./monitor/")
+sys.path.append("./tinyYOLOv2/")
 from pointcloud.get_pointcloud import get_pointcloud_frame
 from pointcloud.pipeline_pc import pointcloud_pipeline
 from postprocess.fuzzyfilter import FuzzyFilter
 from monitor.image_server import ImageServer
-from door_coord import find_door_pointcloud
+from tinyYOLOv2.door_coord import find_door_pointcloud
 from tinyYOLOv2 import obj_det
-from s2cart import sphere2cart
+from tinyYOLOv2.s2cart import sphere2cart
 import argparse
 
 

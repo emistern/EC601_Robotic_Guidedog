@@ -22,8 +22,6 @@ class obj_det(object):
                  speed = 2):
 
         self.OBJECT = 'chair'
-        self.Res_x = 640
-        self.Res_y = 480
 
         # Step 1: Setup TensorFlow environment for object detection
 
@@ -57,13 +55,20 @@ class obj_det(object):
 
         self.speed = speed
 
-    def detect_frame(self,frame):
+    def detect_frame(self,frame,use_bag = False):
         '''
         # Read frame from video
         for i in range(self.speed):
             _, frame = self.video_capture.read()
         print(type(frame))
         '''
+
+        if use_bag:
+            Res_x = 1280
+            Res_y = 720
+        else:
+            Res_x = 640
+            Res_y = 480
         # Image preprocessing
         preprocessed_image = preprocessing(frame,self.input_height,self.input_width)
 
@@ -91,10 +96,10 @@ class obj_det(object):
                 right  = self.input_width - 1 if (box[2] >= self.input_width) else box[2]
                 bottom = self.input_height- 1 if (box[3] >= self.input_height)else box[3]
 
-                left = left*self.Res_x/416
-                right = right*self.Res_x/416
-                top =top*self.Res_y/416
-                bottom =bottom*self.Res_y/416
+                left = left*Res_x/416
+                right = right*Res_x/416
+                top =top*Res_y/416
+                bottom =bottom*Res_y/416
                 print('top is ',top,' ',bottom)
 
                 coord = [int(left),int(right),int(top),int(bottom)]
@@ -119,10 +124,10 @@ class obj_det(object):
         #display_img = self.finder.draw_color_mask(output_image, colors, masks)
         
         # dispay_img = self.decider.detect_blob(filt_image)
-        '''
-        cv2.imshow('Video', output_image)
+                cv2.imshow('Video', output_image)
         cv2.waitKey(10)
         #input()
+        '''
 
     def detect_video(self):
 

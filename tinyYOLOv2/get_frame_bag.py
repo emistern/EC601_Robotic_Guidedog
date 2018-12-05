@@ -4,9 +4,7 @@ import pyrealsense2 as rs
 import argparse
 import os.path
 
-def get_frame():
-
-    Use_bag_file = 1
+def get_frame(Use_bag_file):
 
     if(Use_bag_file):
         # Create object for parsing command-line options
