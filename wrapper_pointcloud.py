@@ -171,10 +171,10 @@ def ModuleWrapper(args):
                 path = djikstra_planner.find_optimal_path(target)
             else:
                 path = []
-            djikstra_planner.draw_path(path)
+            disp_map = djikstra_planner.draw_path(path)
         else:
             pass # put astar path findind and drawing here
-            a_star_plan.draw_path(path)
+            disp_map = a_star_plan.draw_path(path)
 
         if show:
             dw.show_depth_matrix("depth image", cv2.resize(dep_mat, (640, 480)))
@@ -195,16 +195,23 @@ def ModuleWrapper(args):
                 direc = 2
 
         if (direc == 0):
-            cv2.imshow("direction", arrow_f)
+            disp_sgn = arrow_f
         elif (direc == 1):
-            cv2.imshow("direction", arrow_r)
+            disp_sgn = arrow_r
         elif (direc == -1):
-            cv2.imshow("direction", arrow_l)
+            disp_sgn = arrow_l
         elif (direc == []):
-            cv2.imshow("direction", stop_sn)
+            disp_sgn = stop_sn
             direc = 3
         elif (direc == 2):
-            cv2.imshow("direction", wait_sn)
+            disp_sgn = wait_sn
+
+        if not args.generator:
+            cv2.imshow("map", disp_map)
+            cv2.imshow("direction", disp_sgn)
+        else:
+            yield col_mat, dep_mat, disp_map, disp_sgn
+
         if use_voice:
             interface.play_on_edge(direc)
 
@@ -251,7 +258,7 @@ def ModuleWrapper(args):
             quit()
 
 
-if __name__ == "__main__":
+def wrapper_args():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-b", "--bagfile", help="if use bagfile", default=False, type=bool)
@@ -278,10 +285,17 @@ if __name__ == "__main__":
     parser.add_argument("--fuzzy", default=False, type=bool)
     parser.add_argument("--count_grid", default=False, type=bool)
     parser.add_argument("--monitor", default=False)
-    args = parser.parse_args()
+    parser.add_argument("--generator", help="use the wrapper as a generator", default=False, type=bool)
+
+    return parser.parse_args()
+
+if __name__ == "__main__":
+
+    
+    args = wrapper_args()
     
     print("-------- PRINT ARGUMENTS --------")
-    arg_data = parser.parse_args()
+    arg_data = args
     for key, value in vars(arg_data).items():
         print("{:<15}".format(key), " : ", value)
     print("---------------------------------")
