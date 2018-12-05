@@ -11,15 +11,15 @@ from get_frame import get_frame
 import sys
 sys.path.append("./pointcloud/")
 sys.path.append("./postprocess/")
+sys.path.append("./monitor/")
 from pointcloud.get_pointcloud import get_pointcloud_frame
 from pointcloud.pipeline_pc import pointcloud_pipeline
 from postprocess.fuzzyfilter import FuzzyFilter
+from monitor.image_server import ImageServer
 from door_coord import find_door_pointcloud
 from tinyYOLOv2 import obj_det
 from s2cart import sphere2cart
 import argparse
-
-use_tensor = True
 
 
 def ModuleWrapper(args):
@@ -41,6 +41,7 @@ def ModuleWrapper(args):
     downsample_rate = args.downsamplerate
     roi_mtr = args.roi
     inflate_diag = args.inflate_diag
+    use_tensor = args.tensorflow
 
     # local variables
     frame_count = 0
@@ -104,6 +105,9 @@ def ModuleWrapper(args):
     if use_tensor:
         t = obj_det.obj_det()
 
+    if args.monitor:
+        image_server = ImageServer()
+
     while(True):
         if timing:
             print("------ frame", frame_count," ------")
@@ -111,10 +115,10 @@ def ModuleWrapper(args):
         target = None
 
         # fetch an image from camera
-        if show or use_tensor:
+        if show:
             col_mat, dep_mat, pointcloud = next(img_gen)
         else:
-            _, dep_mat, pointcloud = next(img_gen)
+            col_mat, dep_mat, pointcloud = next(img_gen)
 
         t_map_s = time.time() # mapping time start
 
@@ -132,7 +136,6 @@ def ModuleWrapper(args):
                                                             show=show, cheb=use_chebyshev, inflate_diag=inflate_diag,
                                                             timing=timing, no_mask=args.no_mask, no_inflate=args.no_inflate)
 
-
              # Coord is the coordinate of the target
             if use_tensor:
                 coord = t.detect_frame(col_mat)
@@ -140,16 +143,9 @@ def ModuleWrapper(args):
 
                 # find the coordinate in map with depth matrix and bounding box
                 if(len(coord)!=0):
-                    print("In the coord")
                     cv2.rectangle(col_mat,(coord[0],coord[2]),(coord[1],coord[3]),(0,255,0),3)
                     target_door = find_door_pointcloud(dep_mat, coord)
-                    print("size_row: "+str(size_row))
-                    print("y is: "+str(target_door[1]))
-                    print("num_row is: "+str(num_row))
-                    print("num_col is: "+str(num_col))
-                    target = sphere2cart(target_door[0], target_door[1], target_door[2], num_row, num_col, size_row, size_col,map_depth, hfov = 69.4, vfov = 42.5, resolution_x = 640, resolution_z = 480)
-                    print(target)
-                print(target)
+                    target = sphere2cart(target_door[0], target_door[1], target_door[2], num_row, num_col, size_row, size_col, map_depth, hfov = 69.4, vfov = 42.5, resolution_x = 640, resolution_z = 480)
 
 
         t_map_e = time.time()  # mapping time end
@@ -173,10 +169,7 @@ def ModuleWrapper(args):
                 target = djikstra_planner.find_default_target(int(num_row/size_col))
         else:
             pass # put astar planning here
-            if target is not None:
-                a_star_plan = path_planner_aStar(map_depth, target)
-            else:
-                a_star_plan = path_planner_aStar(map_depth, [])
+            a_star_plan = path_planner_aStar(map_depth, [])
             if len(a_star_plan.goal)==0:
                 path = []
             else:
@@ -204,7 +197,10 @@ def ModuleWrapper(args):
 
         if show:
             dw.show_depth_matrix("depth image", cv2.resize(dep_mat, (640, 480)))
-        cv2.imshow("color image", cv2.resize(col_mat, (640, 480)))
+            cv2.imshow("color image", cv2.resize(col_mat, (640, 480)))
+
+        if use_tensor:
+            cv2.imshow("color image", cv2.resize(col_mat, (640, 480)))
 
         t_ds_ed = time.time() # displaying time end
                     
@@ -266,13 +262,16 @@ def ModuleWrapper(args):
                 time_record[frame_count, 1] = plan_time
                 frame_count += 1
 
+        if(args.monitor):
+            send_data = np.array(cv2.resize(col_mat, (320, 240)))
+            image_server.publish_encode(send_data)
+
         if(args.input):   # check input
             input()
 
         if(args.oneshot):  # check oneshot
             quit()
 
-        
 
 if __name__ == "__main__":
 
@@ -300,6 +299,8 @@ if __name__ == "__main__":
     parser.add_argument("--inflate_diag", default=False, type=bool)
     parser.add_argument("--fuzzy", default=False, type=bool)
     parser.add_argument("--count_grid", default=False, type=bool)
+    parser.add_argument("--tensorflow", default=True, type=bool)
+    parser.add_argument("--monitor", default=False)
     args = parser.parse_args()
     
     print("-------- PRINT ARGUMENTS --------")
