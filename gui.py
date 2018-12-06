@@ -7,8 +7,9 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
         QGridLayout, QGroupBox, QHBoxLayout, QLabel,
         QProgressBar, QPushButton, QRadioButton,
         QVBoxLayout, QWidget)
-from PyQt5 import QtGui
-from wrapper_pointcloud import ModuleWrapper, wrapper_args
+from PyQt5 import QtGui, QtCore
+from wrapper_for import ModuleWrapper, wrapper_args
+from wrapper_det import ModuleWrapperDet, wrapper_args_det
 
 class RDGgui(QDialog):
 
@@ -16,8 +17,8 @@ class RDGgui(QDialog):
         super(RDGgui, self).__init__(parent)
 
         self.mode_dict = {
-            "infinite forward": "wrapper_pointcloud.py",
-            "object detection": "wrapper.py"
+            "infinite forward": (ModuleWrapper, wrapper_args),
+            "object detection": (ModuleWrapperDet, wrapper_args_det)
         }
 
         modeComboBox = QComboBox()
@@ -29,11 +30,13 @@ class RDGgui(QDialog):
         startButton.clicked.connect(self.startRun)
         stopButton = QPushButton("Stop", self)
         stopButton.clicked.connect(self.stopRun)
-        pauseButton = QPushButton("Pause", self)
-        pauseButton.clicked.connect(self.pauseRun)
-        resumeButton = QPushButton("Resume", self)
-        resumeButton.clicked.connect(self.resumeRun)
-
+        monitorCheckBox = QCheckBox("Monitor", self)
+        monitorCheckBox.stateChanged.connect(self.checkMonitor)
+        voiceCheckBox = QCheckBox("Voice", self)
+        voiceCheckBox.stateChanged.connect(self.checkVoice)
+        bagCheckBox = QCheckBox("Bagfile", self)
+        bagCheckBox.stateChanged.connect(self.checkBag)
+        
         self.progLabel = QLabel("Choose a function.")
 
         self.rgbLabel = QLabel(self)
@@ -46,8 +49,9 @@ class RDGgui(QDialog):
         topLayout.addWidget(modeComboBox)
         topLayout.addWidget(startButton)
         topLayout.addWidget(stopButton)
-        topLayout.addWidget(pauseButton)
-        topLayout.addWidget(resumeButton)
+        topLayout.addWidget(monitorCheckBox)
+        topLayout.addWidget(voiceCheckBox)
+        topLayout.addWidget(bagCheckBox)
 
         topLeftLayout = QHBoxLayout()
         topLeftLayout.addWidget(self.rgbLabel)
@@ -76,51 +80,47 @@ class RDGgui(QDialog):
 
         self.run_flag = False
         self.pause_flag = False
+        self.monitor_flag = False
+        self.voice_flag = False
+        self.bag_flag = False
+
+        self.funcName = None
 
     def changeMode(self, funcName):
-        py_fn = self.mode_dict[funcName]
+        self.funcName = funcName
         self.progLabel.setText(" use " + funcName)
 
     def startRun(self):
         self.progLabel.setText("start running!")
-        args = wrapper_args()
-        args.bagfile = True
-        args.frames = 10
+        wrapper, arg_func = self.mode_dict[self.funcName]
+        args = arg_func()
+        args.bagfile = self.bag_flag
         args.generator = True
-        #args.voice = True
-        gen = ModuleWrapper(args)
+        args.voice = self.voice_flag
+        args.monitor = self.monitor_flag
+        gen = wrapper(args)
         self.run_flag = True
         while(True):
-            if not self.pause_flag:
-                disp_col, disp_dep, disp_map, disp_sgn = next(gen)
-                disp_dep = np.asanyarray(disp_dep / np.amax(disp_dep) * 255.0).astype(np.uint8)
-                disp_dep = cv2.applyColorMap(disp_dep, cv2.COLORMAP_JET)
-                disp_dict = {
-                    self.rgbLabel: disp_col,
-                    self.mapLabel: disp_map,
-                    self.dirLabel: disp_sgn,
-                    self.depLabel: disp_dep
-                }
-                for lb, img in disp_dict.items():
-                    rz_img = cv2.resize(img, (240, 160))
-                    rgb_img = cv2.cvtColor(rz_img, cv2.COLOR_BGR2RGB)
-                    self.setImage(lb, rgb_img)
-            else:
-                time.sleep(1)
+            disp_col, disp_dep, disp_map, disp_sgn = next(gen)
+            disp_dep = np.asanyarray(disp_dep / np.amax(disp_dep) * 255.0).astype(np.uint8)
+            disp_dep = cv2.applyColorMap(disp_dep, cv2.COLORMAP_JET)
+            disp_dict = {
+                self.rgbLabel: disp_col,
+                self.mapLabel: disp_map,
+                self.dirLabel: disp_sgn,
+                self.depLabel: disp_dep
+            }
+            for lb, img in disp_dict.items():
+                rz_img = cv2.resize(img, (240, 160))
+                rgb_img = cv2.cvtColor(rz_img, cv2.COLOR_BGR2RGB)
+                self.setImage(lb, rgb_img)
+
             if not self.run_flag:
                 break
 
     def stopRun(self):
         self.progLabel.setText("stop running!")
         self.run_flag = False
-
-    def pauseRun(self):
-
-        self.pause_flag = True
-    
-    def resumeRun(self):
-
-        self.pause_flag = False
 
     def setImage(self, label, image):
         height, width, byteValue = image.shape
@@ -129,6 +129,24 @@ class RDGgui(QDialog):
         qimage = QtGui.QImage(image, width, height, byteValue, QtGui.QImage.Format_RGB888)
         qpix = QtGui.QPixmap(qimage)
         label.setPixmap(qpix)
+
+    def checkMonitor(self, state):
+        if state == QtCore.Qt.Checked:
+            self.monitor_flag = True
+        else:
+            self.monitor_flag = False
+
+    def checkVoice(self, state):
+        if state == QtCore.Qt.Checked:
+            self.voice_flag = True
+        else:
+            self.voice_flag = False
+
+    def checkBag(self, state):
+        if state == QtCore.Qt.Checked:
+            self.bag_flag = True
+        else:
+            self.bag_flag = False
 
 if __name__ == "__main__":
     app = QApplication([])

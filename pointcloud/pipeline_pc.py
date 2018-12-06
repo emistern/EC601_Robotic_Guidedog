@@ -13,6 +13,7 @@ def pointcloud_pipeline(pc_raw,
                         ds_rate = 60,
                         row_num = 14, col_num = 11, 
                         row_size = 6, col_size = 10, 
+                        num_pts = 10000,
                         show=True, cheb=True, inflate_diag=False,
                         timing=True, no_mask=False, no_inflate=False):
     
@@ -29,7 +30,7 @@ def pointcloud_pipeline(pc_raw,
 
     t_ds_vec_st = time.time() # start time for downsampling
 
-    ds_pts = downsample_vector(pc_raw, ds_rate)  # downsample the points
+    ds_pts = downsample_vector(pc_raw, ds_rate, num_pts=num_pts)  # downsample the points
 
     t_ds_vec_ed = time.time() # end time for downsampling
     if timing:
