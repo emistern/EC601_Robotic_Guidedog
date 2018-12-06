@@ -92,7 +92,10 @@ class RDGgui(QDialog):
 
     def startRun(self):
         self.progLabel.setText("start running!")
-        wrapper, arg_func = self.mode_dict[self.funcName]
+        try:
+            wrapper, arg_func = self.mode_dict[self.funcName]
+        except:
+            return
         args = arg_func()
         args.bagfile = self.bag_flag
         args.generator = True
