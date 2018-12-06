@@ -12,14 +12,18 @@ import sys
 sys.path.append("./pointcloud/")
 sys.path.append("./postprocess/")
 sys.path.append("./monitor/")
+sys.path.append("./tinyYOLOv2/")
 from pointcloud.get_pointcloud import get_pointcloud_frame
 from pointcloud.pipeline_pc import pointcloud_pipeline
 from postprocess.fuzzyfilter import FuzzyFilter
 from monitor.image_server import ImageServer
+from tinyYOLOv2.door_coord import find_door_pointcloud
+from tinyYOLOv2 import obj_det
+from tinyYOLOv2.s2cart import sphere2cart
 import argparse
 
 
-def ModuleWrapper(args):
+def ModuleWrapperDet(args):
     
     # Parameters used by map builder
     num_row = args.row    # how many slices of the depth matrix
@@ -38,6 +42,7 @@ def ModuleWrapper(args):
     downsample_rate = args.downsamplerate
     roi_mtr = args.roi
     inflate_diag = args.inflate_diag
+    use_tensor = args.tensorflow
 
     # local variables
     frame_count = 0
@@ -98,6 +103,9 @@ def ModuleWrapper(args):
 
     fuzzy_filter = FuzzyFilter(size_col, num_row, num_col, 0.75, roi_mtr)
 
+    if use_tensor:
+        t = obj_det.obj_det()
+
     if args.monitor:
         image_server = ImageServer()
 
@@ -128,6 +136,18 @@ def ModuleWrapper(args):
                                                             row_size = size_row, col_size = size_col, 
                                                             show=show, cheb=use_chebyshev, inflate_diag=inflate_diag,
                                                             timing=timing, no_mask=args.no_mask, no_inflate=args.no_inflate)
+
+             # Coord is the coordinate of the target
+            if use_tensor:
+                coord = t.detect_frame(col_mat)
+                print(coord)
+
+                # find the coordinate in map with depth matrix and bounding box
+                if(len(coord)!=0):
+                    cv2.rectangle(col_mat,(coord[0],coord[2]),(coord[1],coord[3]),(0,255,0),3)
+                    target_door = find_door_pointcloud(dep_mat, coord)
+                    target = sphere2cart(target_door[0], target_door[1], target_door[2], num_row, num_col, size_row, size_col, map_depth, hfov = 69.4, vfov = 42.5, resolution_x = 640, resolution_z = 480)
+
 
         t_map_e = time.time()  # mapping time end
 
@@ -171,14 +191,17 @@ def ModuleWrapper(args):
                 path = djikstra_planner.find_optimal_path(target)
             else:
                 path = []
-            djikstra_planner.draw_path(path)
+            disp_map = djikstra_planner.draw_path(path)
         else:
             pass # put astar path findind and drawing here
-            a_star_plan.draw_path(path)
+            disp_map = a_star_plan.draw_path(path)
 
         if show:
             dw.show_depth_matrix("depth image", cv2.resize(dep_mat, (640, 480)))
             cv2.imshow("color image", cv2.resize(col_mat, (640, 480)))
+
+        #if use_tensor:
+            #cv2.imshow("color image", cv2.resize(col_mat, (640, 480)))
 
         t_ds_ed = time.time() # displaying time end
                     
@@ -195,18 +218,25 @@ def ModuleWrapper(args):
                 direc = 2
 
         if (direc == 0):
-            cv2.imshow("direction", arrow_f)
+            disp_sgn = arrow_f
         elif (direc == 1):
-            cv2.imshow("direction", arrow_r)
+            disp_sgn = arrow_r
         elif (direc == -1):
-            cv2.imshow("direction", arrow_l)
+            disp_sgn = arrow_l
         elif (direc == []):
-            cv2.imshow("direction", stop_sn)
+            disp_sgn = stop_sn
             direc = 3
         elif (direc == 2):
-            cv2.imshow("direction", wait_sn)
+            disp_sgn = wait_sn
+
         if use_voice:
             interface.play_on_edge(direc)
+
+        if not args.generator:
+            cv2.imshow("map", disp_map)
+            cv2.imshow("direction", disp_sgn)
+        else:
+            yield col_mat, dep_mat, disp_map, disp_sgn
 
         if timing:
             map_time = t_map_e - t_map_s
@@ -250,8 +280,7 @@ def ModuleWrapper(args):
         if(args.oneshot):  # check oneshot
             quit()
 
-
-if __name__ == "__main__":
+def wrapper_args_det():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-b", "--bagfile", help="if use bagfile", default=False, type=bool)
@@ -277,15 +306,26 @@ if __name__ == "__main__":
     parser.add_argument("--inflate_diag", default=False, type=bool)
     parser.add_argument("--fuzzy", default=False, type=bool)
     parser.add_argument("--count_grid", default=False, type=bool)
+    parser.add_argument("--tensorflow", default=True, type=bool)
     parser.add_argument("--monitor", default=False)
-    args = parser.parse_args()
+    parser.add_argument("--generator", help="use the wrapper as a generator", default=False, type=bool)
+
+    return parser.parse_args()
+
+if __name__ == "__main__":
+
+    
+    args = wrapper_args_det()
     
     print("-------- PRINT ARGUMENTS --------")
-    arg_data = parser.parse_args()
+    arg_data = args
     for key, value in vars(arg_data).items():
         print("{:<15}".format(key), " : ", value)
     print("---------------------------------")
     print("press ENTER to start:")
     input()
 
-    ModuleWrapper(args)
+    gen = ModuleWrapperDet(args)
+
+    while(True):
+        next(gen)

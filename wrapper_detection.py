@@ -78,7 +78,7 @@ class ModuleWrapper(object):
                         target_door[0]=9
                     map_depth[target_door[0], target_door[1]] = 0
 
-            cv2.imshow( "Display window", color_mat);
+            #cv2.imshow( "Display window", color_mat)
             
             # perform path planning on the map
             t_plan_s = time.time()
