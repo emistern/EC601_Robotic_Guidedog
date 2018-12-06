@@ -7,7 +7,7 @@ import paho.mqtt.client as mqtt
 
 class ImageClient(object):
 
-    def __init__(self):
+    def __init__(self, ):
 
         broker_address="broker.hivemq.com"
         self.topic_color = "RoboticGuideDog/image/color"
