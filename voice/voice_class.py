@@ -11,7 +11,8 @@ class VoiceInterface(object):
                      hardright_file = 'hardright.mp3',
                      STOP_file = 'STOP.mp3',
                      noway_file = 'noway.mp3',
-                     wait_file = 'wait.mp3'):
+                     wait_file = 'wait.mp3',
+                     chair_file='chair.mp3'):
     self.straight_file= straight_file
     self.turnleft_file= turnleft_file
     self.turnright_file=turnright_file
@@ -20,6 +21,7 @@ class VoiceInterface(object):
     self.STOP_file=STOP_file
     self.noway_file=noway_file
     self.wait_file = wait_file
+    self.chair_file=chair_file
 
     self.prev_path = None
     self.count=0
@@ -29,7 +31,8 @@ class VoiceInterface(object):
           1: self.turnright_file,
           -1: self.turnleft_file,
           3: self.noway_file,
-          2 : self.wait_file
+          2 : self.wait_file,
+          4 : self.chair_file
       }
 
   def play(self, pat, width):

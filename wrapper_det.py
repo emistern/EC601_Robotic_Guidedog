@@ -20,6 +20,7 @@ from monitor.image_server import ImageServer
 from tinyYOLOv2.door_coord import find_door_pointcloud
 from tinyYOLOv2 import obj_det
 from tinyYOLOv2.s2cart import sphere2cart
+from tinyYOLOv2.door_detection_filter import *
 import argparse
 
 
@@ -43,6 +44,7 @@ def ModuleWrapperDet(args):
     roi_mtr = args.roi
     inflate_diag = args.inflate_diag
     use_tensor = args.tensorflow
+    min_dist = args.min_dist
 
     # local variables
     frame_count = 0
@@ -60,6 +62,7 @@ def ModuleWrapperDet(args):
     arrow_r = cv2.imread("./images/arrow_r.png")
     stop_sn = cv2.imread("./images/stop.png")
     wait_sn = cv2.imread("./images/wait.jpg")
+    chair_sn = cv2.imread("./images/chair.jpg")
 
     # Specify the depth matrix you want to use
     dep_mat_fn = 'wall_detection/samples/depth0009.npy'
@@ -84,7 +87,8 @@ def ModuleWrapperDet(args):
             hardright_file = 'voice/hardright.mp3',
             STOP_file = 'voice/STOP.mp3',
             noway_file = 'sounds/guitar.wav',
-            wait_file = 'sounds/ice_bell.wav'
+            wait_file = 'sounds/ice_bell.wav',
+            chair_file='sounds/chair.mp3'
         )
     else:
         interface = voice_class.VoiceInterface(straight_file = 'voice/straight.mp3',
@@ -139,13 +143,14 @@ def ModuleWrapperDet(args):
 
              # Coord is the coordinate of the target
             if use_tensor:
-                coord = t.detect_frame(col_mat)
-                print(coord)
+                coord = t.detect_frame(col_mat) # use TinyYOLOv2 to detect the color frame
+                for one_coord in coord:
+                    cv2.rectangle(col_mat,(one_coord[0],one_coord[2]),(one_coord[1],one_coord[3]),(255,0,0),3)
 
                 # find the coordinate in map with depth matrix and bounding box
                 if(len(coord)!=0):
-                    cv2.rectangle(col_mat,(coord[0],coord[2]),(coord[1],coord[3]),(0,255,0),3)
-                    target_door = find_door_pointcloud(dep_mat, coord)
+                    target_door, img_coord = find_door_pointcloud(dep_mat, coord)
+                    cv2.rectangle(col_mat,(img_coord[0],img_coord[2]),(img_coord[1],img_coord[3]),(0,255,0),3)
                     target = sphere2cart(target_door[0], target_door[1], target_door[2], num_row, num_col, size_row, size_col, map_depth, hfov = 69.4, vfov = 42.5, resolution_x = 640, resolution_z = 480)
 
 
@@ -200,8 +205,8 @@ def ModuleWrapperDet(args):
             dw.show_depth_matrix("depth image", cv2.resize(dep_mat, (640, 480)))
             cv2.imshow("color image", cv2.resize(col_mat, (640, 480)))
 
-        #if use_tensor:
-            #cv2.imshow("color image", cv2.resize(col_mat, (640, 480)))
+        # if use_tensor:
+            # cv2.imshow("color image", cv2.resize(col_mat, (640, 480)))
 
         t_ds_ed = time.time() # displaying time end
                     
@@ -217,6 +222,11 @@ def ModuleWrapperDet(args):
             if direc != []:
                 direc = 2
 
+        if use_tensor and target is not None:
+            if door_detection_filter(target, min_dist, num_row, size_row):
+                direc = 4
+                print("Arrived")
+
         if (direc == 0):
             disp_sgn = arrow_f
         elif (direc == 1):
@@ -226,6 +236,8 @@ def ModuleWrapperDet(args):
         elif (direc == []):
             disp_sgn = stop_sn
             direc = 3
+        elif (direc == 4):
+            disp_sgn = chair_sn
         elif (direc == 2):
             disp_sgn = wait_sn
 
@@ -270,6 +282,9 @@ def ModuleWrapperDet(args):
                 time_record[frame_count, 1] = plan_time
                 frame_count += 1
 
+        if direc == 4 and use_tensor:
+            input("You are at the chair, press Enter to start again.")
+
         if(args.monitor):
             send_data = np.array(cv2.resize(col_mat, (320, 240)))
             image_server.publish_encode(send_data)
@@ -298,7 +313,7 @@ def wrapper_args_det():
     parser.add_argument("--col", help="number of columns in map", default=39, type=int)
     parser.add_argument("--row_size", help="size of each row in meters", default=6, type=int)
     parser.add_argument("--col_size", help="size of each column in meters", default=4, type=int)
-    parser.add_argument("--roi", help="region of interest in meters", default=1.5, type=float)
+    parser.add_argument("--roi", help="region of interest in meters", default=2.5, type=float)
     parser.add_argument("--astar", help="wether use astar path planning algorithm", default=False, type=bool)
     parser.add_argument("--path_thresh", help="threshold for path filter", default=0.8, type=float)
     parser.add_argument("--no_mask", default=False)
@@ -309,6 +324,7 @@ def wrapper_args_det():
     parser.add_argument("--tensorflow", default=True, type=bool)
     parser.add_argument("--monitor", default=False)
     parser.add_argument("--generator", help="use the wrapper as a generator", default=False, type=bool)
+    parser.add_argument("--min_dist", default=1.5, type=int)
 
     return parser.parse_args()
 
