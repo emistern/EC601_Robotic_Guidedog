@@ -280,7 +280,8 @@ class path_planner(object):
                 world = cv2.circle(world, pt2, int(unit_size / 3), (255, 0, 255), 10)
 
         world = np.flip(np.array(world), 0)
-        cv2.imshow("path", world)
+        #cv2.imshow("path", world)
+        return world
 
 if __name__ == "__main__":
     default_map = [
