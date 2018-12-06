@@ -80,7 +80,7 @@ def ModuleWrapperDet(args):
     # instantiate an interface
     if args.stereo:
         interface = voice_class.VoiceInterface(
-            straight_file ='sounds/steel_bell.wav',
+            straight_file ='sounds/guitar.wav',
             turnleft_file = 'sounds/left.wav',
             turnright_file = 'sounds/right.wav',
             hardleft_file = 'voice/hardleft.mp3',

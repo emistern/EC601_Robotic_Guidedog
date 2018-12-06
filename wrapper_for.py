@@ -72,14 +72,14 @@ def ModuleWrapper(args):
     # instantiate an interface
     if args.stereo:
         interface = voice_class.VoiceInterface(
-            straight_file ='sounds/steel_bell.wav',
+            straight_file ='sounds/guitar.wav',
             turnleft_file = 'sounds/left.wav',
             turnright_file = 'sounds/right.wav',
             hardleft_file = 'voice/hardleft.mp3',
             hardright_file = 'voice/hardright.mp3',
             STOP_file = 'voice/STOP.mp3',
-            noway_file = 'sounds/guitar.wav',
-            wait_file = 'sounds/ice_bell.wav'
+            noway_file = 'voice/STOP.mp3',
+            wait_file = 'voice/WAIT.mp3'
         )
     else:
         interface = voice_class.VoiceInterface(straight_file = 'voice/straight.mp3',
