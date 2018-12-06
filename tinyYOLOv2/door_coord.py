@@ -11,157 +11,105 @@ def find_door( view_in_3D, coord, slice_distance = 500, numsec = 7):
 
     # The output coord is in shape of [x_center,distance]
     ret_coor = [0,0]
-    orig_x = int((coord[0] + coord[1])/2)
-    h_cent = int((coord[2] + coord[3])/2)
 
-    '''
-    Below is for the goal detection of solid mono.
-    '''
+    dist_min = 2000000
+    for door_coord in coord:
+        orig_x = int((door_coord[0] + door_coord[1])/2)
+        h_cent = int((door_coord[2] + door_coord[3])/2)
 
-    # Find out the range of the points we wants to go through
-    leftmost = coord[0]
-    if(leftmost < 0):
-        leftmost = 0
-    rightmost = coord[1]
-    if(rightmost > distance_array.shape[1]-1):
-        rightmost = distance_array.shape[1]-1
+        '''
+        Below is for the goal detection of solid mono.
+        '''
 
-    # Set up the uppermost and lowermost side of the distance detection
-    lowermost = coord[2]
-    if(lowermost < 0):
-        lowermost = 0
-    #uppermost = coord[0][3]
-    #if(uppermost > distance_array.shape[0]-1):
-        #uppermost = distance_array.shape[0]-1
+        # Find out the range of the points we wants to go through
+        leftmost = door_coord[0]
+        if(leftmost < 0):
+            leftmost = 0
+        rightmost = door_coord[1]
+        if(rightmost > distance_array.shape[1]-1):
+            rightmost = distance_array.shape[1]-1
 
-    n = 0
-    '''
-    distance = 0
+        # Set up the uppermost and lowermost side of the distance detection
+        lowermost = door_coord[2]
+        if(lowermost < 0):
+            lowermost = 0
+        #uppermost = coord[0][3]
+        #if(uppermost > distance_array.shape[0]-1):
+            #uppermost = distance_array.shape[0]-1
 
-    # Find the distance to the chair and the ground where the chair stands on.
-    for i in range (lowermost,h_cent):
-        for j in range (leftmost,rightmost):
-            if(distance_array.item(i,j) != 0):
-                n = n + 1
-                distance = distance + distance_array.item(i,j)    
+        distance = 2000000
 
-    distance = distance / n
-    '''
+        for i in range (lowermost,h_cent):
+            for j in range (leftmost,rightmost):
+                if(distance_array.item(i,j) < distance):
+                    if(distance_array.item(i,j) != 0):
+                        distance = distance_array.item(i,j)
 
-    distance = 20000
+        if(distance < dist_min):
+            dist_min = distance
+            orig_x_min = orig_x
+            h_cent_min = h_cent
+            coord_print = door_coord
 
-    # Find the distance to the chair and the ground where the chair stands on.
-    for i in range (lowermost,h_cent):
-        for j in range (leftmost,rightmost):
-            if(distance_array.item(i,j) < distance):
-                if(distance_array.item(i,j) != 0):
-                    distance = distance_array.item(i,j)
+    layer = int((dist_min-250)/slice_distance)
 
-    layer = int((distance-250)/slice_distance)
-
-    ret_coor[1] = int((orig_x * numsec)/width)
+    ret_coor[1] = int((orig_x_min * numsec)/width)
 
     ret_coor[0] = layer
 
-    '''
-    Below is for detecting the hollow goal, such as an opened door.
-    '''
-
-
-    '''
-    # Reset the distance in order to find the distance to the door
-    distance = math.inf
-
-    # Set up the leftmost and rightmost side of the distance detection
-    #leftmost = coord[0][0]-int(0.2*(coord[0][1]-coord[0][0]))
-    leftmost = coord[0][0] - 20
-    if(leftmost < 0):
-        leftmost = 0
-    #rightmost = coord[0][1]+int(0.2*(coord[0][1]-coord[0][0]))
-    rightmost = coord[0][1] + 20
-    if(rightmost > distance_array.shape[1]-1):
-        rightmost = distance_array.shape[1]-1
-
-    # Set up the uppermost and lowermost side of the distance detection
-    lowermost = h_cent - int(0.2*(coord[0][3]-coord[0][2]))
-    if(lowermost < 0):
-        lowermost = 0
-    uppermost = h_cent + int(0.2*(coord[0][3]-coord[0][2]))
-    if(uppermost > distance_array.shape[0]-1):
-        uppermost = distance_array.shape[0]-1
-        
-    # Find the distance to the door
-    for i in range (lowermost,uppermost):
-        for j in range (leftmost,coord[0][0]):
-            if(distance_array.item(i,j) < distance):
-                if(distance_array.item(i,j) != 0):
-                    distance = distance_array.item(i,j)
-
-    for i in range (lowermost,uppermost):
-        for j in range (coord[0][1],rightmost):
-            if(distance_array.item(i,j) < distance):
-                if(distance_array.item(i,j) != 0):
-                    distance = distance_array.item(i,j)
-
-    layer = int((distance-250)/slice_distance)
-    ret_coor[1] = int((orig_x*numsec)/width)
-
-    ret_coor[0] = layer
-    if(ret_coor[0]>9):
-        ret_coor[0]=9
-    print(ret_coor)
-    '''
-    return ret_coor
+    return ret_coor, coord_print
 
 def find_door_pointcloud( view_in_3D, coord):
 
     # The input coord is in shape of[x_left,x_right,y_lower,y_upper]
     distance_array = view_in_3D
-    print("the [0] is ",distance_array.shape[0])
-    print("the [1] is ",distance_array.shape[1])
     width = view_in_3D.shape[1]
-    print('coord is ',coord)
 
-    # The output coord is in shape of [x_center,distance]
+    # The output coord is in shape of [x_center,distance,height]
     ret_coor = [0,0,0]
-    orig_x = int((coord[0] + coord[1])/2)
-    h_cent = int((coord[2] + coord[3])/2)
+    dist_min = 2000000
+    for door_coord in coord:
+        orig_x = int((door_coord[0] + door_coord[1])/2)
+        h_cent = int((door_coord[2] + door_coord[3])/2)
 
-    '''
-    Below is for the goal detection of solid mono.
-    '''
+        '''
+        Below is for the goal detection of solid objects.
+        '''
 
-    # Find out the range of the points we wants to go through
-    leftmost = coord[0]
-    if(leftmost < 0):
-        leftmost = 0
-    rightmost = coord[1]
-    if(rightmost > distance_array.shape[1]-1):
-        rightmost = distance_array.shape[1]-1
+        # Find out the range of the points we wants to go through
+        leftmost = door_coord[0]
+        if(leftmost < 0):
+            leftmost = 0
+        rightmost = door_coord[1]
+        if(rightmost > distance_array.shape[1]-1):
+            rightmost = distance_array.shape[1]-1
 
-    # Set up the uppermost and lowermost side of the distance detection
-    lowermost = coord[2]
-    if(lowermost < 0):
-        lowermost = 0
-    #uppermost = coord[0][3]
-    #if(uppermost > distance_array.shape[0]-1):
-        #uppermost = distance_array.shape[0]-1
+        # Set up the uppermost and lowermost side of the distance detection
+        lowermost = door_coord[2]
+        if(lowermost < 0):
+            lowermost = 0
+        #uppermost = coord[0][3]
+        #if(uppermost > distance_array.shape[0]-1):
+            #uppermost = distance_array.shape[0]-1
 
-    n = 0
+        distance = 2000000
 
-    distance = 20000
-
-    # Find the distance to the chair and the ground where the chair stands on.
-    for i in range (lowermost,h_cent):
-        for j in range (leftmost,rightmost):
-            if(distance_array.item(i,j) < distance):
-                if(distance_array.item(i,j) != 0):
-                    distance = distance_array.item(i,j)
+        # Find the distance to the chair and the ground where the chair stands on.
+        for i in range (lowermost,h_cent):
+            for j in range (leftmost,rightmost):
+                if(distance_array.item(i,j) < distance):
+                    if(distance_array.item(i,j) != 0):
+                        distance = distance_array.item(i,j)
+        if(distance<dist_min):
+            orig_x_min = orig_x
+            h_cent_min = h_cent
+            dist_min = distance
+            coord_print = door_coord
     
-    ret_coor[0] = orig_x
+    ret_coor[0] = orig_x_min
 
-    ret_coor[2] = h_cent
+    ret_coor[2] = h_cent_min
 
-    ret_coor[1] = distance
+    ret_coor[1] = dist_min
 
-    return ret_coor
+    return ret_coor , coord_print

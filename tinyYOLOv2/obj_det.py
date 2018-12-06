@@ -100,9 +100,8 @@ class obj_det(object):
                 right = right*Res_x/416
                 top =top*Res_y/416
                 bottom =bottom*Res_y/416
-                print('top is ',top,' ',bottom)
 
-                coord = [int(left),int(right),int(top),int(bottom)]
+                coord.append([int(left),int(right),int(top),int(bottom)])
                 break
 
         return coord
