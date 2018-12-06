@@ -7,7 +7,7 @@ def sphere2cart(x, y, z, map_len, map_width, x_max, y_max, pcmap, hfov = 69.4, v
     yc = y/1000*np.cos((resolution_z/2-z)*vfov/resolution_z*np.pi/180)
     #zc = y/1000*np.cos((resolution_x/2-x)*hfov/resolution_x*np.pi/180)*np.cos((resolution_z/2-z)*vfov/resolution_z*np.pi/180)
     xm = int((xc/x_max+0.5)*map_width)+1
-    ym = int(yc/y_max*map_len)-2
+    ym = int(yc/y_max*map_len)
     if ym > map_len-1:
         ym = map_len-1
     angle = (xm-origin_x)/ym
@@ -21,8 +21,6 @@ def sphere2cart(x, y, z, map_len, map_width, x_max, y_max, pcmap, hfov = 69.4, v
             ym -= 1/angle
     xm = int(xm)
     ym = int(ym)
-    print("xm is: "+str(xm))
-    print("ym is: "+str(ym))
     return ym, xm
 '''
 def sphere2map(x, y, hfov = 69.4, vfov = 42.5, resolution_x = 1280, resolution_z = 720):

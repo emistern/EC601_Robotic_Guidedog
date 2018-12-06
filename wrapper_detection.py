@@ -13,7 +13,7 @@ from postprocess import fuzzyfilter_detect
 import argparse
 
 use_tensor = True
-Use_bag_file = True
+Use_bag_file = False
 
 class ModuleWrapper(object):
 
@@ -71,8 +71,8 @@ class ModuleWrapper(object):
             if use_tensor:
                 # find the coordinate in map with depth matrix and bounding box
                 if(len(coord)!=0):
-                    cv2.rectangle(color_mat,(coord[0],coord[2]),(coord[1],coord[3]),(0,255,0),3)
-                    target_door = find_door( dep_mat, coord)
+                    target_door, img_coord = find_door( dep_mat, coord)
+                    cv2.rectangle(color_mat,(img_coord[0],img_coord[2]),(img_coord[1],img_coord[3]),(0,255,0),3)
                     print(target_door)
                     if(target_door[0]>9):
                         target_door[0]=9
@@ -91,7 +91,7 @@ class ModuleWrapper(object):
 
             print("target door is ",target_door)
 
-            if len(target_door) != 0:
+            if target_door is not None and len(target_door) != 0:
                 target = target_door
             else:
                 target = p.find_default_target(0)
