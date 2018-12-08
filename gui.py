@@ -1,3 +1,5 @@
+import sys
+sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 import sys
 import time
@@ -8,10 +10,13 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
         QProgressBar, QPushButton, QRadioButton,
         QVBoxLayout, QWidget)
 from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import QThread, QObject, pyqtSignal
 from wrapper_for import ModuleWrapper, wrapper_args
 from wrapper_det import ModuleWrapperDet, wrapper_args_det
 
 class RDGgui(QDialog):
+
+    stop_signal = pyqtSignal()
 
     def __init__(self, parent=None):
         super(RDGgui, self).__init__(parent)
@@ -28,8 +33,9 @@ class RDGgui(QDialog):
         modeComboBox.activated[str].connect(self.changeMode)
         startButton = QPushButton("Start", self)
         startButton.clicked.connect(self.startRun)
-        stopButton = QPushButton("Stop", self)
-        stopButton.clicked.connect(self.stopRun)
+        self.stopButton = QPushButton("Stop", self)
+        self.stopButton.clicked.connect(self.stop_thread)
+        #self.stopButton.clicked.connect(self.stopRun)
         monitorCheckBox = QCheckBox("Monitor", self)
         monitorCheckBox.stateChanged.connect(self.checkMonitor)
         voiceCheckBox = QCheckBox("Voice", self)
@@ -48,7 +54,7 @@ class RDGgui(QDialog):
         topLayout.addWidget(modeLabel)
         topLayout.addWidget(modeComboBox)
         topLayout.addWidget(startButton)
-        topLayout.addWidget(stopButton)
+        topLayout.addWidget(self.stopButton)
         topLayout.addWidget(monitorCheckBox)
         topLayout.addWidget(voiceCheckBox)
         topLayout.addWidget(bagCheckBox)
@@ -86,6 +92,7 @@ class RDGgui(QDialog):
 
         self.funcName = None
 
+
     def changeMode(self, funcName):
         self.funcName = funcName
         self.progLabel.setText(" use " + funcName)
@@ -101,29 +108,33 @@ class RDGgui(QDialog):
         args.generator = True
         args.voice = self.voice_flag
         args.monitor = self.monitor_flag
+        args.time = True
         gen = wrapper(args)
         self.run_flag = True
-        while(True):
-            disp_col, disp_dep, disp_map, disp_sgn = next(gen)
-            disp_dep = np.asanyarray(disp_dep / np.amax(disp_dep) * 255.0).astype(np.uint8)
-            disp_dep = cv2.applyColorMap(disp_dep, cv2.COLORMAP_JET)
-            disp_dict = {
-                self.rgbLabel: disp_col,
-                self.mapLabel: disp_map,
-                self.dirLabel: disp_sgn,
-                self.depLabel: disp_dep
-            }
-            for lb, img in disp_dict.items():
-                rz_img = cv2.resize(img, (240, 160))
-                rgb_img = cv2.cvtColor(rz_img, cv2.COLOR_BGR2RGB)
-                self.setImage(lb, rgb_img)
 
-            if not self.run_flag:
-                break
+        self.thread = QThread()
+        self.worker = Worker(gen, self.rgbLabel, self.mapLabel, self.dirLabel, self.depLabel)
+        self.stop_signal.connect(self.worker.stop)
+        self.worker.moveToThread(self.thread)
+
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+
+        self.thread.started.connect(self.worker.do_work)
+        self.thread.finished.connect(self.worker.stop)
+        self.stopButton.clicked.connect(self.stop_thread)
+        self.thread.start()
+
+        return
 
     def stopRun(self):
         self.progLabel.setText("stop running!")
         self.run_flag = False
+
+    def stop_thread(self):
+        self.stop_signal.emit()  # emit the finished signal on stop
+
 
     def setImage(self, label, image):
         height, width, byteValue = image.shape
@@ -150,6 +161,53 @@ class RDGgui(QDialog):
             self.bag_flag = True
         else:
             self.bag_flag = False
+
+class Worker(QObject):
+
+    finished = pyqtSignal()
+
+    def __init__(self,
+                gen, rgbLabel, mapLabel, dirLabel, depLabel,
+                parent=None):
+                
+        QObject.__init__(self, parent=parent)
+        self.continue_run = True
+
+        self.gen = gen
+        self.rgbLabel = rgbLabel
+        self.mapLabel = mapLabel
+        self.dirLabel = dirLabel
+        self.depLabel = depLabel
+
+    def do_work(self):
+
+        while(self.continue_run):
+            disp_col, disp_dep, disp_map, disp_sgn = next(self.gen)
+            disp_dep = np.asanyarray(disp_dep / np.amax(disp_dep) * 255.0).astype(np.uint8)
+            disp_dep = cv2.applyColorMap(disp_dep, cv2.COLORMAP_JET)
+            disp_dict = {
+                self.rgbLabel: disp_col,
+                self.mapLabel: disp_map,
+                self.dirLabel: disp_sgn,
+                self.depLabel: disp_dep
+            }
+            for lb, img in disp_dict.items():
+                rz_img = cv2.resize(img, (240, 160))
+                rgb_img = cv2.cvtColor(rz_img, cv2.COLOR_BGR2RGB)
+                self.setImage(lb, rgb_img)
+
+        self.finished.emit()
+
+    def setImage(self, label, image):
+        height, width, byteValue = image.shape
+        byteValue = byteValue * width
+		
+        qimage = QtGui.QImage(image, width, height, byteValue, QtGui.QImage.Format_RGB888)
+        qpix = QtGui.QPixmap(qimage)
+        label.setPixmap(qpix)
+
+    def stop(self):
+        self.continue_run = False
 
 if __name__ == "__main__":
     app = QApplication([])
