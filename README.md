@@ -96,6 +96,12 @@ https://drive.google.com/file/d/1b3FGtx0sY1LxHujLU3Z5INn5FbynNigf/view?usp=shari
    pip(3) install playsound
     ```
 
+    pip3 install paho-mqtt
+    pip3 install open3d-python
+    pip3 install scikit-fuzzy
+    pip3 install scikit-learn
+    pip3 install pyqt5
+
 ## How things work and Examples
 
 1. System Block Diagram

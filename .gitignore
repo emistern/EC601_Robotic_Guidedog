@@ -10,7 +10,6 @@ graph
 */build/*
 *.bag
 */tmp_img/*
-*.mp3
 */build/*
 */devel/*
 /.vs/EC601_Robotic_Guidedog/v15/Browse.VC.opendb
