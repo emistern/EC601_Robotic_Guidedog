@@ -108,14 +108,16 @@ class RDGgui(QDialog):
         args = arg_func()
         args.bagfile = self.bag_flag
         args.generator = True
-        args.voice = self.voice_flag
+        args.voice = False
         args.monitor = self.monitor_flag
         args.time = True
         gen = wrapper(args)
         self.run_flag = True
 
         self.thread = QThread()
-        self.worker = Worker(gen, self.rgbLabel, self.mapLabel, self.dirLabel, self.depLabel)
+        self.worker = Worker(gen, 
+                             self.rgbLabel, self.mapLabel, self.dirLabel, self.depLabel,
+                             self.voice_flag)
         self.stop_signal.connect(self.worker.stop)
         self.worker.moveToThread(self.thread)
 
@@ -170,6 +172,7 @@ class Worker(QObject):
 
     def __init__(self,
                 gen, rgbLabel, mapLabel, dirLabel, depLabel,
+                use_voice,
                 parent=None):
                 
         QObject.__init__(self, parent=parent)
@@ -192,6 +195,8 @@ class Worker(QObject):
             wait_file = 'voice/WAIT.mp3'
         )
 
+        self.use_voice = use_voice
+
     def do_work(self):
 
         prev_direc = None
@@ -200,7 +205,7 @@ class Worker(QObject):
             
             disp_col, disp_dep, disp_map, disp_sgn, direc = next(self.gen)
             
-            if direc != prev_direc:
+            if (direc != prev_direc) and self.use_voice:
                 self.thread = QThread()
                 self.worker = SoundWorker(direc, self.inter)
                 self.worker.moveToThread(self.thread)
