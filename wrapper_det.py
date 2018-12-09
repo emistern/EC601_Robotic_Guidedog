@@ -1,4 +1,4 @@
-from wall_detection import image2birdview
+#from wall_detection import image2birdview
 from path_planning import path_planner, path_filter
 from path_planning.path_planner_aStar import path_planner as path_planner_aStar
 from voice import voice_class
@@ -73,7 +73,7 @@ def ModuleWrapperDet(args):
 
     # initialize the camera frame iterator
     if use_bag:
-        img_gen = get_pointcloud_frame("./realsense/dense.bag")
+        img_gen = get_pointcloud_frame("./realsense/sparse.bag")
     else:
         img_gen = get_frame()
 
@@ -248,7 +248,7 @@ def ModuleWrapperDet(args):
             cv2.imshow("map", disp_map)
             cv2.imshow("direction", disp_sgn)
         else:
-            yield col_mat, dep_mat, disp_map, disp_sgn
+            yield col_mat, dep_mat, disp_map, disp_sgn, direc
 
         if timing:
             map_time = t_map_e - t_map_s
