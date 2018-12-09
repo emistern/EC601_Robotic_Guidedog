@@ -5,6 +5,7 @@ import sys
 import time
 import numpy as np
 sys.path.append("./monitor/")
+sys.path.append("./voice/")
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
         QGridLayout, QGroupBox, QHBoxLayout, QLabel,
         QProgressBar, QPushButton, QRadioButton,
@@ -13,6 +14,7 @@ from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import QThread, QObject, pyqtSignal
 from wrapper_for import ModuleWrapper, wrapper_args
 from wrapper_det import ModuleWrapperDet, wrapper_args_det
+from voice import voice_class
 
 class RDGgui(QDialog):
 
@@ -179,10 +181,38 @@ class Worker(QObject):
         self.dirLabel = dirLabel
         self.depLabel = depLabel
 
+        self.inter = voice_class.VoiceInterface(
+            straight_file ='sounds/guitar.wav',
+            turnleft_file = 'sounds/left.wav',
+            turnright_file = 'sounds/right.wav',
+            hardleft_file = 'voice/hardleft.mp3',
+            hardright_file = 'voice/hardright.mp3',
+            STOP_file = 'voice/STOP.mp3',
+            noway_file = 'voice/STOP.mp3',
+            wait_file = 'voice/WAIT.mp3'
+        )
+
     def do_work(self):
 
+        prev_direc = None
+
         while(self.continue_run):
-            disp_col, disp_dep, disp_map, disp_sgn = next(self.gen)
+            
+            disp_col, disp_dep, disp_map, disp_sgn, direc = next(self.gen)
+            
+            if direc != prev_direc:
+                self.thread = QThread()
+                self.worker = SoundWorker(direc, self.inter)
+                self.worker.moveToThread(self.thread)
+
+                self.worker.finished.connect(self.thread.quit)
+                self.worker.finished.connect(self.worker.deleteLater)
+                self.thread.finished.connect(self.thread.deleteLater)
+
+                self.thread.started.connect(self.worker.do_work)
+                self.thread.start()
+            prev_direc = direc
+
             disp_dep = np.asanyarray(disp_dep / np.amax(disp_dep) * 255.0).astype(np.uint8)
             disp_dep = cv2.applyColorMap(disp_dep, cv2.COLORMAP_JET)
             disp_dict = {
@@ -208,6 +238,21 @@ class Worker(QObject):
 
     def stop(self):
         self.continue_run = False
+
+class SoundWorker(QObject):
+
+    finished = pyqtSignal()
+
+    def __init__(self,
+                direc, inter,
+                parent=None):
+        QObject.__init__(self, parent=parent)
+        self.direc = direc
+        self.inter = inter
+
+    def do_work(self):
+        self.inter.play_on_edge(self.direc)
+        self.finished.emit()
 
 if __name__ == "__main__":
     app = QApplication([])

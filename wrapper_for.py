@@ -1,4 +1,9 @@
-from wall_detection import image2birdview
+#from wall_detection import image2birdview
+import sys
+try:
+    sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+except:
+    pass
 from path_planning import path_planner, path_filter
 from path_planning.path_planner_aStar import path_planner as path_planner_aStar
 from voice import voice_class
@@ -91,7 +96,7 @@ def ModuleWrapper(args):
                                             noway_file = 'voice/noway.mp3')
 
     # slice and quantilize the depth matrix
-    squeeze = image2birdview.depth_bird_view()
+    # squeeze = image2birdview.depth_bird_view()
 
     # instruction temporal filter
     inst_filt = InstructionFilter()
@@ -211,7 +216,7 @@ def ModuleWrapper(args):
             cv2.imshow("map", disp_map)
             cv2.imshow("direction", disp_sgn)
         else:
-            yield col_mat, dep_mat, disp_map, disp_sgn
+            yield col_mat, dep_mat, disp_map, disp_sgn, direc
 
         if use_voice:
             interface.play_on_edge(direc)
