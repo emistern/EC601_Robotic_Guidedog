@@ -1,7 +1,9 @@
 import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+try:
+    sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+except:
+    pass
 import cv2
-import sys
 import time
 import numpy as np
 sys.path.append("./monitor/")
