@@ -1,4 +1,4 @@
-#from wall_detection import image2birdview
+from wall_detection import image2birdview
 from path_planning import path_planner, path_filter
 from path_planning.path_planner_aStar import path_planner as path_planner_aStar
 from voice import voice_class
@@ -143,7 +143,7 @@ def ModuleWrapperDet(args):
 
              # Coord is the coordinate of the target
             if use_tensor:
-                coord = t.detect_frame(col_mat) # use TinyYOLOv2 to detect the color frame
+                coord = t.detect_frame(col_mat, use_bag) # use TinyYOLOv2 to detect the color frame
                 for one_coord in coord:
                     cv2.rectangle(col_mat,(one_coord[0],one_coord[2]),(one_coord[1],one_coord[3]),(255,0,0),3)
 
