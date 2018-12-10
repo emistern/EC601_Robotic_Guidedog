@@ -101,8 +101,6 @@ class obj_det(object):
                 top =top*Res_y/416
                 bottom =bottom*Res_y/416
 
-                print("Possibility is ",objects[1])
-
                 coord.append([int(left),int(right),int(top),int(bottom)])
 
         return coord

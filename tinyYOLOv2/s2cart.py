@@ -1,6 +1,12 @@
 import numpy as np
 
-def sphere2cart(x, y, z, map_len, map_width, x_max, y_max, pcmap, hfov = 69.4, vfov = 42.5, resolution_x = 1280, resolution_z = 720):
+def sphere2cart(x, y, z, map_len, map_width, x_max, y_max, pcmap, use_bag, hfov = 69.4, vfov = 42.5):
+    if use_bag:
+        resolution_x = 1280
+        resolution_z = 720
+    else:
+        resolution_x = 640
+        resolution_z = 480
     origin_x = (map_width+1)/2
     xc = y/1000*np.cos((resolution_z/2-z)*vfov/resolution_z*np.pi/180)*np.sin((x-resolution_x/2)*hfov/resolution_x*np.pi/180)
     # print("xc is: "+str(xc))

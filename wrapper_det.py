@@ -151,7 +151,7 @@ def ModuleWrapperDet(args):
                 if(len(coord)!=0):
                     target_door, img_coord = find_door_pointcloud(dep_mat, coord)
                     cv2.rectangle(col_mat,(img_coord[0],img_coord[2]),(img_coord[1],img_coord[3]),(0,255,0),3)
-                    target = sphere2cart(target_door[0], target_door[1], target_door[2], num_row, num_col, size_row, size_col, map_depth, hfov = 69.4, vfov = 42.5, resolution_x = 640, resolution_z = 480)
+                    target = sphere2cart(target_door[0], target_door[1], target_door[2], num_row, num_col, size_row, size_col, map_depth, use_bag, hfov = 69.4, vfov = 42.5)
 
 
         t_map_e = time.time()  # mapping time end
@@ -283,7 +283,8 @@ def ModuleWrapperDet(args):
                 frame_count += 1
 
         if direc == 4 and use_tensor:
-            input("You are at the chair, press Enter to start again.")
+            print("You are at the chair.")
+            break
 
         if(args.monitor):
             send_data = np.array(cv2.resize(col_mat, (320, 240)))
