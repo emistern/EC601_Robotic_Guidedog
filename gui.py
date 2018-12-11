@@ -101,7 +101,10 @@ class RDGgui(QDialog):
         gen = wrapper(args)
         self.run_flag = True
         while(True):
-            disp_col, disp_dep, disp_map, disp_sgn, direc = next(gen)
+            try:
+                disp_col, disp_dep, disp_map, disp_sgn, direc = next(gen)
+            except:
+                break
             disp_dep = np.asanyarray(disp_dep / np.amax(disp_dep) * 255.0).astype(np.uint8)
             disp_dep = cv2.applyColorMap(disp_dep, cv2.COLORMAP_JET)
             disp_dict = {

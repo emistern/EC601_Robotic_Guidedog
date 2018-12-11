@@ -30,3 +30,12 @@ def compute_weighted_average(path, num_row, num_col, roi_sqr=0.3, thresh=0.8):
         return -1
     else:
         return 0
+
+if __name__ == "__main__":
+
+    import matplotlib.pyplot as plt
+
+    wts = compute_exp_weights(26, 7)
+
+    plt.plot(wts)
+    plt.show()
