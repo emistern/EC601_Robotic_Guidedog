@@ -86,8 +86,8 @@ def ModuleWrapperDet(args):
             hardleft_file = 'voice/hardleft.mp3',
             hardright_file = 'voice/hardright.mp3',
             STOP_file = 'voice/STOP.mp3',
-            noway_file = 'sounds/guitar.wav',
-            wait_file = 'sounds/ice_bell.wav',
+            noway_file = 'voice/STOP.mp3',
+            wait_file = 'voice/WAIT.mp3',
             chair_file='sounds/chair.mp3'
         )
     else:
@@ -138,7 +138,7 @@ def ModuleWrapperDet(args):
                                                             ds_rate=downsample_rate,
                                                             row_num = num_row, col_num = num_col, 
                                                             row_size = size_row, col_size = size_col, 
-                                                            show=show, cheb=use_chebyshev, inflate_diag=inflate_diag,
+                                                            show=False, cheb=use_chebyshev, inflate_diag=inflate_diag,
                                                             timing=timing, no_mask=args.no_mask, no_inflate=args.no_inflate)
 
              # Coord is the coordinate of the target
